@@ -1,0 +1,29 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+# Demo build flag (no secrets): see frontend/.env.demo
+!frontend/.env.demo
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+
+# Local data, scratch space and logs
+/data/
+/.tmp/
+*.log
+
+# Frontend
+node_modules/
+frontend/dist/
+frontend/dist-demo/
+frontend/.wrangler/
+frontend/playwright-report/
+frontend/test-results/

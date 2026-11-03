@@ -1,0 +1,60 @@
+/* Family timeline: each child's line and its avatar at the newest end (inside the axis layer). */
+
+.lanes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lines {
+  position: absolute;
+  overflow: visible;
+}
+
+.line {
+  fill: none;
+  stroke: color-mix(in srgb, var(--lane-color) 72%, var(--color-line));
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Zero-size anchor at the line's head; the avatar centres itself on it. */
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+
+[data-orientation='horizontal'] .slot {
+  top: 50%;
+}
+
+[data-orientation='vertical'] .slot {
+  left: 50%;
+}
+
+.avatar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px var(--lane-color),
+    var(--shadow-sm);
+  translate: -50% -50%;
+}
+
+.lanes[data-reveal] {
+  animation: lanesIn 520ms var(--ease-out) var(--reveal-delay, 0ms) both;
+}
+
+@keyframes lanesIn {
+  from {
+    opacity: 0;
+  }
+}

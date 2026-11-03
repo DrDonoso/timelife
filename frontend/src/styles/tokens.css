@@ -1,0 +1,229 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Timelife design tokens.
+
+   Colour palettes ("themes"), each with a light and a dark version, chosen per device:
+   sunset (the default, below), ocean, forest, lavender and graphite (src/styles/themes.css).
+   <html> carries both choices — data-palette="sunset|ocean|forest|lavender|graphite" and
+   data-theme="light|dark" — set by ThemeProvider (and public/theme-init.js before the first paint).
+
+   - Non-colour tokens (shape, spacing, type, layers, motion, sizes) live only in the first :root
+     block. Every palette block declares every colour token, so nothing leaks from another one.
+   - Sunset light is `:root, [data-theme='light']` and sunset dark `[data-theme='dark']`; palette X
+     is `[data-palette='X'], [data-palette='X'][data-theme='light']` (light) and
+     `[data-palette='X'][data-theme='dark']` (dark), which win by specificity.
+   - Custom properties inherit: an element that forces a mode (a light preview inside a dark page)
+     must carry BOTH data-palette and data-theme (admin/categories/CategoryPreview.tsx does), and
+     wrap its content in <ThemeScope> so the colours painted from JavaScript follow
+     (useThemeColors() in src/theme/).
+
+   Sunset derives from public/logo.svg: gold #f5b450 → coral #ee8763 → rose #df7096 on a warm cream
+   background. The brand and glow token names keep those roles in every palette (gold = the bright
+   accent, e.g. the cover star; coral = the middle one; rose = the deep one).
+
+   Keep --color-bg equal to THEMES[palette].background (src/theme/themes.ts) and to the table of
+   public/theme-init.js, and --color-hub-badge-bg to THEMES[palette].hubBadge; sunset's --color-bg
+   also to the theme-color metas of index.html and (light) the colours of
+   public/manifest.webmanifest.
+
+   Contrast notes (WCAG), checked for every palette and mode by src/styles/tokens.test.ts:
+   --color-text, --color-text-muted and --color-text-subtle are all used for (small) text, so each
+   reaches ≥ 4.5:1 on --color-bg, --color-bg-elevated, --color-surface and --color-surface-2 (subtle
+   = hints, placeholders, counters; muted = secondary text); --color-border-strong outlines inputs
+   (≥ 3:1 on the surface); --color-primary carries --color-primary-contrast (white in light mode,
+   dark text in dark mode) and is the link colour (≥ 4.5:1 on the background); the status colours
+   read on the page, the surfaces and their soft backgrounds; --gradient-brand-text keeps ≥ 3.8:1 on
+   the background.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Shape & spacing ───────────────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ── Typography (Nunito Variable everywhere: friendly, rounded) ───── */
+  --font-sans: 'Nunito Variable', 'Nunito', ui-rounded, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+  --font-display: 'Nunito Variable', 'Nunito', ui-rounded, system-ui, -apple-system, 'Segoe UI', Roboto,
+    sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+
+  /* ── Layers ────────────────────────────────────────────────────────── */
+  --z-header: 30;
+  --z-panel: 40;
+  --z-modal: 100;
+  --z-popover: 150;
+  --z-toast: 200;
+  --header-height: 64px;
+
+  /* ── Motion ────────────────────────────────────────────────────────── */
+  --duration-fast: 120ms;
+  --duration-normal: 220ms;
+  --duration-slow: 420ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Default background pattern (soft dots + sparkles; timeline & login) ──
+     Usage: background-image: var(--pattern-image); background-size: var(--pattern-size);
+     (the image is a colour token of each palette). */
+  --pattern-size: 176px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --header-height: 56px;
+  }
+}
+
+/* ── Soft palette glows for full-page backgrounds (3 layers: use with background-size auto) ──
+   Composed from the palette's --glow-* tokens, so it is declared wherever a palette or a mode is
+   set: a nested preview recomputes it with its own colours. */
+:root,
+[data-theme],
+[data-palette] {
+  --background-glow:
+    radial-gradient(60% 50% at 12% 8%, var(--glow-gold), transparent 70%),
+    radial-gradient(55% 45% at 92% 92%, var(--glow-rose), transparent 70%),
+    radial-gradient(40% 35% at 88% 12%, var(--glow-coral), transparent 70%);
+}
+
+/* ═══ Sunset (default palette): warm cream, the gold → coral → rose of the logo ═══════════════ */
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #f3a637;
+  --brand-coral: #ec7a59;
+  --brand-rose: #d9628b;
+  --gradient-brand: linear-gradient(120deg, #f5b450 0%, #ee8763 52%, #df7096 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #fdecd2 0%, #fbe0d6 50%, #f8dde6 100%);
+  --gradient-brand-text: linear-gradient(120deg, #b86a0e 0%, #c4502f 50%, #b03f66 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #fbf7f2;
+  --color-bg-elevated: #fffcf8;
+  --color-surface: #ffffff;
+  --color-surface-2: #f6efe7;
+  --color-surface-3: #efe5da;
+  --color-border: #ebe1d6;
+  --color-border-strong: #a39080;
+  --color-text: #2b211c;
+  --color-text-muted: #6f5f55;
+  --color-text-subtle: #79695e;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #b9475f;
+  --color-primary-hover: #a23d53;
+  --color-primary-contrast: #ffffff;
+  --color-primary-soft: #f8e7ea;
+  --color-primary-soft-text: #8f3045;
+  --color-focus: #c24f68;
+  --color-danger: #b42318;
+  --color-danger-hover: #971c13;
+  --color-danger-contrast: #ffffff;
+  --color-danger-soft: #fdecea;
+  --color-success: #1f7a4d;
+  --color-success-soft: #e5f4eb;
+  --color-warning: #a15c07;
+  --color-warning-soft: #fdf1dc;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #dfccb9;
+  --color-overlay: rgba(43, 33, 28, 0.42);
+  --color-hub-badge-bg: #ffffff;
+  --color-tooltip-bg: #2b211c;
+  --color-tooltip-text: #fbf7f2;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 78%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(92, 58, 36, 0.06), 0 1px 3px rgba(92, 58, 36, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(92, 58, 36, 0.16), 0 2px 5px rgba(92, 58, 36, 0.06);
+  --shadow-lg: 0 28px 56px -18px rgba(92, 58, 36, 0.28), 0 10px 20px -10px rgba(92, 58, 36, 0.12);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(243, 166, 55, 0.16);
+  --glow-rose: rgba(217, 98, 139, 0.13);
+  --glow-coral: rgba(236, 122, 89, 0.1);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%23e9a23b' fill-opacity='0.22'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%23e5775a' fill-opacity='0.18'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%23d45f88' fill-opacity='0.16'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #f3a637;
+  --brand-coral: #ec7a59;
+  --brand-rose: #d9628b;
+  --gradient-brand: linear-gradient(120deg, #f5b450 0%, #ee8763 52%, #df7096 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #3a2a1c 0%, #3a241f 50%, #382128 100%);
+  --gradient-brand-text: linear-gradient(120deg, #f7c26b 0%, #f3987a 50%, #ec8fb0 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #1c1816;
+  --color-bg-elevated: #26201d;
+  --color-surface: #2a2320;
+  --color-surface-2: #342b27;
+  --color-surface-3: #3e3430;
+  --color-border: #3e3430;
+  --color-border-strong: #806f63;
+  --color-text: #f6eee7;
+  --color-text-muted: #c4b5a9;
+  --color-text-subtle: #a29488;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #f29aa6;
+  --color-primary-hover: #f6b3bc;
+  --color-primary-contrast: #2a1418;
+  --color-primary-soft: #3a2629;
+  --color-primary-soft-text: #f6c1c8;
+  --color-focus: #f4a7b4;
+  --color-danger: #f28b82;
+  --color-danger-hover: #f6a7a0;
+  --color-danger-contrast: #2a1412;
+  --color-danger-soft: #3b2220;
+  --color-success: #6fcf97;
+  --color-success-soft: #1f3328;
+  --color-warning: #f0b45a;
+  --color-warning-soft: #3a2d1a;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #54473f;
+  --color-overlay: rgba(10, 7, 6, 0.62);
+  --color-hub-badge-bg: #2b2421;
+  --color-tooltip-bg: #f6eee7;
+  --color-tooltip-text: #2b211c;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 80%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.36), 0 1px 3px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 8px 20px -8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 32px 64px -20px rgba(0, 0, 0, 0.75), 0 12px 24px -12px rgba(0, 0, 0, 0.45);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(243, 166, 55, 0.06);
+  --glow-rose: rgba(217, 98, 139, 0.08);
+  --glow-coral: rgba(236, 122, 89, 0.05);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%23f5c27a' fill-opacity='0.11'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%23f29a7e' fill-opacity='0.1'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%23f0a3bd' fill-opacity='0.1'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}

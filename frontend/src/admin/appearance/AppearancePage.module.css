@@ -1,0 +1,774 @@
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* The title and description fill the room beside the header's controls (they wrap below it when narrow). */
+.cardHeader > :first-child {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: var(--text-lg);
+  font-weight: 850;
+}
+
+.cardDescription {
+  margin-top: 4px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.empty {
+  padding: var(--space-6) var(--space-5);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.emptyAction {
+  margin-top: var(--space-3);
+}
+
+/* ── Add year ─────────────────────────────────────────────────────── */
+.addYear {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.addYearField {
+  width: 196px;
+}
+
+.addYearButton {
+  /* Lines the button up with the input under its label. */
+  margin-top: 25px;
+}
+
+/* Opens the suggestions (inside the field, after the digits). */
+.comboButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-right: -6px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.comboButton[data-hovered],
+.comboButton[data-pressed] {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.comboButton[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.comboChevron {
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.comboButton[aria-expanded='true'] .comboChevron {
+  transform: rotate(180deg);
+}
+
+.yearOption {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The year's current (automatic) colour. */
+.yearDot {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--dot);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+}
+
+/* ── Year cards ───────────────────────────────────────────────────── */
+.yearList {
+  display: flex;
+  flex-direction: column;
+}
+
+.yearCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.yearCard:last-child {
+  border-bottom: 0;
+}
+
+.yearBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* Year and tags (they wrap) on the left, the card's action pinned top-right. */
+.yearHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.yearTitleGroup {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 32px;
+}
+
+.yearTitle {
+  margin-right: var(--space-1);
+  font-size: var(--text-xl);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.tag {
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.tag[data-tone='custom'] {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+}
+
+.tag[data-tone='unsaved'] {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.yearRemove {
+  margin-left: auto;
+}
+
+.yearControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+}
+
+.yearColor {
+  width: 220px;
+}
+
+.yearActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+
+/* ── Todos juntos: each child's line ──────────────────────────────── */
+/* Mini family timeline: the lines start at the avatars (newest end) and fade at the oldest one. */
+.lanePreview {
+  --preview-start: 34px;
+
+  position: relative;
+  margin: var(--space-5) var(--space-5) var(--space-2);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+
+.previewLines {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--preview-start);
+  width: calc(100% - var(--preview-start));
+  height: 100%;
+  overflow: visible;
+  mask-image: linear-gradient(to right, #000 78%, transparent);
+}
+
+.previewLine {
+  fill: none;
+  stroke: color-mix(in srgb, var(--lane-color) 72%, var(--color-line));
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke var(--duration-normal) var(--ease-out);
+}
+
+.previewDot,
+.previewShared,
+.previewAvatar {
+  position: absolute;
+  translate: -50% -50%;
+}
+
+.previewDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--lane-color);
+  box-shadow: 0 0 0 2px var(--color-bg);
+}
+
+/* A milestone of every child: the lines meet there. */
+.previewShared {
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--color-line);
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    var(--shadow-sm);
+}
+
+.previewAvatar {
+  left: var(--preview-start);
+  display: flex;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px var(--lane-color),
+    var(--shadow-sm);
+}
+
+.laneNote {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: var(--space-4) var(--space-5) 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+.laneNote svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.laneList {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--space-2);
+}
+
+/* Avatar | name | colour | buttons: the colour fields line up from one child to the next. */
+.laneRow {
+  display: grid;
+  grid-template-areas: 'avatar heading color actions';
+  grid-template-columns: auto minmax(0, 1fr) auto minmax(200px, max-content);
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.laneRow:last-child {
+  border-bottom: 0;
+}
+
+/* The avatar wears the line's colour, as at the newest end of the timeline. */
+.laneAvatar {
+  display: flex;
+  grid-area: avatar;
+  margin: 4px;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 4px var(--lane-color);
+  transition: box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.laneHeading {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: heading;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.laneName {
+  margin-right: var(--space-1);
+  overflow-wrap: anywhere;
+  font-size: var(--text-lg);
+  font-weight: 850;
+}
+
+.laneColor {
+  grid-area: color;
+  width: 212px;
+}
+
+.laneActions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: actions;
+  align-items: center;
+  align-self: end;
+  gap: var(--space-2);
+  min-height: 44px;
+}
+
+/* ── Background, opacity and zoom ─────────────────────────────────── */
+.settingsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  padding: var(--space-5);
+}
+
+.settingsBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.blockTitle {
+  font-size: var(--text-md);
+  font-weight: 850;
+}
+
+.blockDescription {
+  margin-top: -6px;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.opacity + .blockDescription {
+  margin-top: -8px;
+  font-size: var(--text-xs);
+}
+
+.bgPreview {
+  position: relative;
+  aspect-ratio: 16 / 7;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-bg);
+  isolation: isolate;
+}
+
+.bgImage,
+.bgPattern {
+  position: absolute;
+  inset: 0;
+}
+
+.bgImage {
+  background-position: center;
+  background-size: cover;
+  transition: opacity var(--duration-fast) linear;
+}
+
+.bgPattern {
+  background-image: var(--background-glow), var(--pattern-image);
+  background-size: auto, auto, auto, var(--pattern-size);
+}
+
+.bgSample {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 5%, 36px);
+}
+
+.sampleLine {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: var(--color-line);
+  transform: translateY(-50%);
+}
+
+.sampleHub {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: var(--hub-fill);
+  box-shadow:
+    0 0 0 1px var(--color-bg),
+    var(--shadow-md);
+  color: var(--hub-text);
+  font-size: 19px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.sampleNode {
+  position: relative;
+  flex: none;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--sample-ring);
+  box-shadow: var(--shadow-sm);
+}
+
+.sampleNode::after {
+  position: absolute;
+  inset: 2px;
+  border: 2px solid var(--color-bg);
+  border-radius: 50%;
+  background: var(--sample-fill);
+  content: '';
+}
+
+.bgBadge {
+  position: absolute;
+  bottom: var(--space-3);
+  left: var(--space-3);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-bg-elevated) 88%, transparent);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.bgActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bgHint {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+.opacity {
+  margin-top: var(--space-1);
+}
+
+.zoomHint {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+/* Right column: initial view and directions, one under the other. */
+.settingsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.directionSetting {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.directionDevice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 750;
+}
+
+.directionDevice svg {
+  color: var(--color-text-subtle);
+}
+
+.directionControl {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.directionControl > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Mini timeline: oldest (small, faint) → newest (large, brand colour), laid out like the setting. */
+.directionPreview {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  width: 64px;
+  height: 64px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+}
+
+.directionPreview[data-direction='left_to_right'] {
+  flex-direction: row;
+}
+
+.directionPreview[data-direction='right_to_left'] {
+  flex-direction: row-reverse;
+}
+
+.directionPreview[data-direction='top_to_bottom'] {
+  flex-direction: column;
+}
+
+.directionPreview[data-direction='bottom_to_top'] {
+  flex-direction: column-reverse;
+}
+
+.directionLine {
+  position: absolute;
+  top: calc(50% - 1px);
+  right: 14px;
+  left: 14px;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--color-line);
+}
+
+.directionPreview[data-direction$='bottom'] .directionLine,
+.directionPreview[data-direction$='top'] .directionLine {
+  top: 14px;
+  right: auto;
+  bottom: 14px;
+  left: calc(50% - 1px);
+  width: 2px;
+  height: auto;
+}
+
+.directionDot {
+  --dot: 7px;
+  --mix: 30%;
+
+  position: relative;
+  flex: none;
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) var(--mix), var(--color-line));
+  transition: background-color var(--duration-normal) var(--ease-out);
+}
+
+.directionDot[data-step='1'] {
+  --dot: 8px;
+  --mix: 45%;
+}
+
+.directionDot[data-step='2'] {
+  --dot: 10px;
+  --mix: 65%;
+}
+
+.directionDot[data-step='3'] {
+  --dot: 14px;
+  --mix: 100%;
+
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+.formError {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0 var(--space-5) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.formError svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* With unsaved changes the bar sticks to the bottom of the viewport while the section is visible. */
+.cardFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  background: var(--color-bg-elevated);
+}
+
+.cardFooter[data-dirty] {
+  position: sticky;
+  z-index: 2;
+  bottom: 0;
+  background: color-mix(in srgb, var(--color-bg-elevated) 92%, transparent);
+  box-shadow: 0 -8px 24px -16px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Only the track dims: the label and value stay readable. */
+.opacity[data-disabled] > div:last-child {
+  opacity: 0.45;
+}
+
+.footerStatus {
+  margin-right: auto;
+  color: var(--color-warning);
+  font-size: var(--text-sm);
+  font-weight: 750;
+}
+
+@media (max-width: 1023px) {
+  .settingsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .cardHeader,
+  .yearCard,
+  .laneRow,
+  .settingsGrid {
+    padding: var(--space-4);
+  }
+
+  .cardHeader {
+    align-items: stretch;
+  }
+
+  .addYear {
+    width: 100%;
+  }
+
+  .addYearField {
+    flex: 1;
+    width: auto;
+  }
+
+  .yearCard {
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .yearColor,
+  .laneColor {
+    width: 100%;
+  }
+
+  /* The colour field and its buttons go under the child's name. */
+  .laneRow {
+    grid-template-areas:
+      'avatar heading'
+      'color color'
+      'actions actions';
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .laneActions:empty {
+    display: none;
+  }
+
+  .lanePreview {
+    margin: var(--space-4) var(--space-4) var(--space-2);
+  }
+
+  .laneNote {
+    margin: var(--space-4) var(--space-4) 0;
+  }
+
+  .bgPreview {
+    aspect-ratio: 4 / 5;
+  }
+
+  /* The phone timeline runs vertically. */
+  .bgSample {
+    flex-direction: column;
+  }
+
+  .sampleLine {
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    height: auto;
+    transform: translateX(-50%);
+  }
+
+  .cardFooter {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .formError {
+    margin: 0 var(--space-4) var(--space-4);
+  }
+}

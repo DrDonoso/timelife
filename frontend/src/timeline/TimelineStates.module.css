@@ -1,0 +1,9 @@
+.state {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--space-5) var(--space-4);
+}

@@ -1,0 +1,36 @@
+.background {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.pattern,
+.image,
+.glow {
+  position: absolute;
+  inset: 0;
+}
+
+.pattern {
+  background-image: var(--pattern-image);
+  background-size: var(--pattern-size);
+}
+
+.image {
+  background-position: center;
+  background-size: cover;
+  opacity: var(--image-opacity, 0.18);
+  animation: fadeIn 600ms var(--ease-out) both;
+}
+
+.glow {
+  background-image: var(--background-glow);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}

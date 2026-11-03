@@ -1,0 +1,39 @@
+// European Portuguese (pt-PT) dictionary. Typed against the Spanish source, so a missing or extra key fails `tsc`.
+import type { Dictionary, Messages } from '../../types'
+import { admin } from './admin'
+import { adminAppearance } from './adminAppearance'
+import { adminBackup } from './adminBackup'
+import { adminCategories } from './adminCategories'
+import { adminChildren } from './adminChildren'
+import { adminEvents } from './adminEvents'
+import { adminTrash } from './adminTrash'
+import { adminUsers } from './adminUsers'
+import { auth } from './auth'
+import { common } from './common'
+import { components } from './components'
+import { demo } from './demo'
+import { detail } from './detail'
+import { errors } from './errors'
+import { search } from './search'
+import { shell } from './shell'
+import { timeline } from './timeline'
+
+export const pt: Messages<Dictionary> = {
+  common,
+  errors,
+  auth,
+  shell,
+  admin,
+  components,
+  timeline,
+  search,
+  detail,
+  adminEvents,
+  adminTrash,
+  adminCategories,
+  adminChildren,
+  adminAppearance,
+  adminUsers,
+  adminBackup,
+  demo,
+}

@@ -1,0 +1,91 @@
+// Namespace owned by frontend-admin-settings (Admin → Usuarios).
+export const adminUsers = {
+  description: 'Quién puede entrar en Timelife y con qué permisos.',
+  count: { one: '{count} persona', other: '{count} personas' },
+  loadError: 'No se han podido cargar los usuarios.',
+  invite: {
+    title: 'Dar acceso a alguien',
+    explanation:
+      'Timelife es privado: solo entran las personas que añadas aquí. Ponle una contraseña temporal y díselo junto con su correo: la cambiará la primera vez que entre.',
+    explanationGoogle:
+      'Timelife es privado: solo entran las personas que añadas aquí. Entrarán con «Continuar con Google» usando este correo o, si les pones una contraseña temporal, con su correo y esa contraseña (la cambiarán al entrar).',
+    email: 'Correo',
+    emailPlaceholder: 'nombre@ejemplo.com',
+    name: 'Nombre',
+    nameDescription: 'Opcional.',
+    role: 'Rol',
+    password: 'Contraseña temporal',
+    passwordDescription: 'Al menos 8 caracteres. La cambiará la primera vez que entre.',
+    passwordDescriptionGoogle: 'Opcional: sin ella solo podrá entrar con Google. La cambiará la primera vez que entre.',
+    generate: 'Generar',
+    generateLabel: 'Generar una contraseña temporal',
+    submit: 'Añadir',
+    required: 'Escribe el correo de la persona.',
+    invalidEmail: 'Escribe un correo válido, por ejemplo nombre@ejemplo.com.',
+    exists: 'Este correo ya tiene acceso.',
+    success: 'Listo: {email} ya puede entrar con su correo y la contraseña temporal.',
+    successGoogle: 'Listo: {email} ya puede entrar con Google.',
+  },
+  roles: {
+    viewer: 'Ve las líneas de tiempo y las fotos',
+    admin: 'Además añade y edita hitos, fotos, niños, apariencia y usuarios',
+  },
+  notes: {
+    roles: 'Los lectores solo ven las líneas de tiempo y las fotos; los administradores además pueden cambiarlo todo y subir fotos y vídeos.',
+    sessions:
+      'Cambiar el rol de alguien, desactivarle o restablecer su contraseña cierra su sesión en todos sus dispositivos.',
+  },
+  table: {
+    caption: 'Usuarios con acceso a Timelife',
+    user: 'Persona',
+    role: 'Rol',
+    enabled: 'Activo',
+    access: 'Acceso',
+    lastLogin: 'Último acceso',
+    actions: 'Acciones',
+  },
+  you: 'Tú',
+  disabledBadge: 'Desactivado',
+  password: {
+    set: 'Contraseña',
+    setHint: 'Entra con su correo y su contraseña.',
+    temporary: 'Contraseña temporal',
+    temporaryHint: 'Tiene que cambiarla la próxima vez que entre.',
+    none: 'Sin contraseña',
+    noneHint: 'No puede entrar hasta que le pongas una contraseña.',
+    noneHintGoogle: 'Entra solo con Google.',
+  },
+  google: {
+    linked: 'Google',
+    linkedHint: 'Ya ha entrado con Google.',
+    pending: 'Google pendiente',
+    pendingHint: 'Todavía no ha entrado con Google.',
+  },
+  never: 'Nunca',
+  roleLabel: 'Rol de {email}',
+  enabledLabel: 'Acceso activo de {email}',
+  delete: 'Eliminar a {email}',
+  resetPassword: 'Restablecer la contraseña de {email}',
+  setPassword: 'Poner una contraseña a {email}',
+  lock: {
+    self: 'No puedes cambiar tu propio rol, desactivarte ni eliminarte. Tu contraseña la cambias desde tu menú.',
+  },
+  confirmDelete: {
+    title: '¿Eliminar a {email}?',
+    message: 'Perderá el acceso enseguida y se cerrará su sesión. Podrás volver a darle acceso cuando quieras.',
+    confirm: 'Eliminar acceso',
+  },
+  passwordDialog: {
+    title: 'Contraseña temporal de {email}',
+    description:
+      'Escribe o genera una contraseña temporal y díselo: tendrá que cambiarla la primera vez que entre. Se cerrará su sesión en todos sus dispositivos.',
+    submit: 'Guardar contraseña',
+  },
+  toast: {
+    role: 'Rol de {email} cambiado a {role}.',
+    enabled: '{email} vuelve a tener acceso.',
+    disabled: '{email} ya no puede entrar.',
+    deleted: '{email} ya no tiene acceso.',
+    password: 'Contraseña temporal de {email} guardada: la cambiará al entrar.',
+  },
+} as const

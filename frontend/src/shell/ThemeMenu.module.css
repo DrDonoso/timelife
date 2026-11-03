@@ -1,0 +1,113 @@
+/* Header (and sign-in corner) button: the current palette's swatch and the current mode's icon in a
+   ghost pill, like the language menu's next to it (IconButton `ghost`, 40 px). */
+.trigger {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.trigger[data-hovered],
+.trigger[data-pressed],
+.trigger[aria-expanded='true'] {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.trigger[data-pressed] {
+  transform: scale(0.95);
+}
+
+.trigger[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* A palette (THEMES[id].swatches): its primary colour on top, its accent (left) and background
+   (right) colours below. A thin edge keeps the pale colours apart from the surface. */
+.swatch {
+  --swatch-edge: inset 0 0 0 1px rgb(0 0 0 / 0.16);
+  --swatch-ring: 0 0 0 0 transparent, 0 0 0 0 transparent;
+
+  display: block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background:
+    linear-gradient(var(--swatch-primary) 50%, transparent 0),
+    linear-gradient(90deg, var(--swatch-accent) 50%, var(--swatch-background) 0);
+  box-shadow: var(--swatch-edge), var(--swatch-ring);
+}
+
+:global([data-theme='dark']) .swatch {
+  --swatch-edge: inset 0 0 0 1px rgb(255 255 255 / 0.22);
+}
+
+/* Menu sections stack their rows like the menu itself. */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Account panel on phones: the palettes as a row of round buttons, the current one ringed. */
+.picker {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pickerOption {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.pickerOption .swatch {
+  width: 32px;
+  height: 32px;
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+/* The ring sits 2 px away from the swatch (a gap in the panel's colour). */
+.pickerOption[data-hovered] .swatch {
+  --swatch-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-border-strong);
+}
+
+.pickerOption[data-selected] .swatch {
+  --swatch-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-primary);
+}
+
+.pickerOption[data-pressed] .swatch {
+  transform: scale(0.92);
+}
+
+/* Around the whole button, outside the selection ring. */
+.pickerOption[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 0;
+}

@@ -1,0 +1,10 @@
+/* Timeline page (frontend-timeline): fills the viewport under the sticky header. */
+.page {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: calc(100dvh - var(--header-height));
+  overflow: hidden;
+  isolation: isolate;
+}

@@ -1,0 +1,495 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Timelife colour palettes besides sunset (the default, in tokens.css): ocean, forest, lavender
+   and graphite, each with a light and a dark version. Imported right after tokens.css.
+
+   `[data-palette='X'], [data-palette='X'][data-theme='light']` is the light version and
+   `[data-palette='X'][data-theme='dark']` the dark one: two attributes beat sunset's single
+   `[data-theme]` selectors. Every block declares every colour token of tokens.css (the same list
+   and order), and none of the non-colour ones. The status colours (danger, success, warning) are
+   shared by every palette because they pass its contrast checks; src/styles/tokens.test.ts checks
+   them all, and that --color-bg / --color-hub-badge-bg match THEMES in src/theme/themes.ts.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══ Ocean: sea breeze, blues and turquoises, clean and fresh ═══════════════════════════ */
+
+[data-palette='ocean'],
+[data-palette='ocean'][data-theme='light'] {
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #2bb5ab;
+  --brand-coral: #2f97d4;
+  --brand-rose: #4b73d9;
+  --gradient-brand: linear-gradient(120deg, #4cc9bf 0%, #3aa6dc 52%, #5a80e2 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #dcf4f1 0%, #ddeef9 50%, #e4e9fb 100%);
+  --gradient-brand-text: linear-gradient(120deg, #0b7a72 0%, #136ba6 50%, #3a55b8 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #f2f7fa;
+  --color-bg-elevated: #f8fcff;
+  --color-surface: #ffffff;
+  --color-surface-2: #e7f0f5;
+  --color-surface-3: #dbe9f0;
+  --color-border: #d7e4ec;
+  --color-border-strong: #7d919c;
+  --color-text: #13232e;
+  --color-text-muted: #4a5f6e;
+  --color-text-subtle: #55697a;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #0e6a83;
+  --color-primary-hover: #045b71;
+  --color-primary-contrast: #ffffff;
+  --color-primary-soft: #e0f0f6;
+  --color-primary-soft-text: #00556b;
+  --color-focus: #1d738c;
+  --color-danger: #b42318;
+  --color-danger-hover: #971c13;
+  --color-danger-contrast: #ffffff;
+  --color-danger-soft: #fdecea;
+  --color-success: #1f7a4d;
+  --color-success-soft: #e5f4eb;
+  --color-warning: #a15c07;
+  --color-warning-soft: #fdf1dc;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #c4d7e1;
+  --color-overlay: rgba(19, 35, 46, 0.42);
+  --color-hub-badge-bg: #ffffff;
+  --color-tooltip-bg: #13232e;
+  --color-tooltip-text: #f2f7fa;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 78%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(22, 58, 82, 0.06), 0 1px 3px rgba(22, 58, 82, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(22, 58, 82, 0.16), 0 2px 5px rgba(22, 58, 82, 0.06);
+  --shadow-lg: 0 28px 56px -18px rgba(22, 58, 82, 0.28), 0 10px 20px -10px rgba(22, 58, 82, 0.12);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(43, 181, 171, 0.15);
+  --glow-rose: rgba(75, 115, 217, 0.12);
+  --glow-coral: rgba(47, 151, 212, 0.1);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%232aa89e' fill-opacity='0.22'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%232f8fcf' fill-opacity='0.18'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%234a6fd0' fill-opacity='0.16'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+[data-palette='ocean'][data-theme='dark'] {
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #2bb5ab;
+  --brand-coral: #2f97d4;
+  --brand-rose: #4b73d9;
+  --gradient-brand: linear-gradient(120deg, #4cc9bf 0%, #3aa6dc 52%, #5a80e2 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #12302f 0%, #132a3a 50%, #1a2544 100%);
+  --gradient-brand-text: linear-gradient(120deg, #74ddd2 0%, #7cc6f2 50%, #a2b4f7 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #0d171e;
+  --color-bg-elevated: #132028;
+  --color-surface: #16242d;
+  --color-surface-2: #1d2f3a;
+  --color-surface-3: #263946;
+  --color-border: #263946;
+  --color-border-strong: #617887;
+  --color-text: #e7f1f6;
+  --color-text-muted: #a8bdca;
+  --color-text-subtle: #8fa5b2;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #6cc8dc;
+  --color-primary-hover: #93d5e4;
+  --color-primary-contrast: #06232b;
+  --color-primary-soft: #153339;
+  --color-primary-soft-text: #a8dbe7;
+  --color-focus: #7ecfe1;
+  --color-danger: #f28b82;
+  --color-danger-hover: #f6a7a0;
+  --color-danger-contrast: #2a1412;
+  --color-danger-soft: #3b2220;
+  --color-success: #6fcf97;
+  --color-success-soft: #1f3328;
+  --color-warning: #f0b45a;
+  --color-warning-soft: #3a2d1a;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #35505e;
+  --color-overlay: rgba(3, 9, 13, 0.62);
+  --color-hub-badge-bg: #182730;
+  --color-tooltip-bg: #e7f1f6;
+  --color-tooltip-text: #13232e;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 80%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(0, 5, 10, 0.36), 0 1px 3px rgba(0, 5, 10, 0.24);
+  --shadow-md: 0 8px 20px -8px rgba(0, 5, 10, 0.6), 0 2px 6px rgba(0, 5, 10, 0.3);
+  --shadow-lg: 0 32px 64px -20px rgba(0, 5, 10, 0.75), 0 12px 24px -12px rgba(0, 5, 10, 0.45);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(43, 181, 171, 0.06);
+  --glow-rose: rgba(75, 115, 217, 0.08);
+  --glow-coral: rgba(47, 151, 212, 0.05);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%236fd6cc' fill-opacity='0.11'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%2379bdea' fill-opacity='0.1'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%239fb2f2' fill-opacity='0.1'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ═══ Forest: natural, sage, forest green and terracotta ═════════════════════════════════ */
+
+[data-palette='forest'],
+[data-palette='forest'][data-theme='light'] {
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #d4a53c;
+  --brand-coral: #cc7550;
+  --brand-rose: #5a9a6a;
+  --gradient-brand: linear-gradient(120deg, #8fbf72 0%, #d2ad52 52%, #d6835a 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #e8f2dc 0%, #f4eed7 50%, #f8e5da 100%);
+  --gradient-brand-text: linear-gradient(120deg, #3e7a35 0%, #8a6512 50%, #a84d2a 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #f4f6ef;
+  --color-bg-elevated: #fbfdf8;
+  --color-surface: #ffffff;
+  --color-surface-2: #e9eee1;
+  --color-surface-3: #e3e9d9;
+  --color-border: #dee5d5;
+  --color-border-strong: #88927a;
+  --color-text: #1c261b;
+  --color-text-muted: #4d5b49;
+  --color-text-subtle: #56644f;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #2e6a4e;
+  --color-primary-hover: #245b42;
+  --color-primary-contrast: #ffffff;
+  --color-primary-soft: #e3f1e9;
+  --color-primary-soft-text: #20553d;
+  --color-focus: #377356;
+  --color-danger: #b42318;
+  --color-danger-hover: #971c13;
+  --color-danger-contrast: #ffffff;
+  --color-danger-soft: #fdecea;
+  --color-success: #1f7a4d;
+  --color-success-soft: #e5f4eb;
+  --color-warning: #a15c07;
+  --color-warning-soft: #fdf1dc;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #cdd8c3;
+  --color-overlay: rgba(28, 38, 27, 0.42);
+  --color-hub-badge-bg: #ffffff;
+  --color-tooltip-bg: #1c261b;
+  --color-tooltip-text: #f4f6ef;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 78%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(44, 62, 36, 0.06), 0 1px 3px rgba(44, 62, 36, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(44, 62, 36, 0.16), 0 2px 5px rgba(44, 62, 36, 0.06);
+  --shadow-lg: 0 28px 56px -18px rgba(44, 62, 36, 0.28), 0 10px 20px -10px rgba(44, 62, 36, 0.12);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(212, 165, 60, 0.15);
+  --glow-rose: rgba(90, 154, 106, 0.13);
+  --glow-coral: rgba(204, 117, 80, 0.1);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%23c49a32' fill-opacity='0.22'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%23c8714b' fill-opacity='0.18'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%234f8f5e' fill-opacity='0.16'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+[data-palette='forest'][data-theme='dark'] {
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #d4a53c;
+  --brand-coral: #cc7550;
+  --brand-rose: #5a9a6a;
+  --gradient-brand: linear-gradient(120deg, #8fbf72 0%, #d2ad52 52%, #d6835a 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #1e2e1d 0%, #2e2a1a 50%, #33231c 100%);
+  --gradient-brand-text: linear-gradient(120deg, #a9d98f 0%, #e3c46f 50%, #eda07e 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #101712;
+  --color-bg-elevated: #161f19;
+  --color-surface: #18221b;
+  --color-surface-2: #1f2c23;
+  --color-surface-3: #2c3b31;
+  --color-border: #2c3b31;
+  --color-border-strong: #687a6d;
+  --color-text: #e9f0e5;
+  --color-text-muted: #b0c0aa;
+  --color-text-subtle: #93a48d;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #8fd0a6;
+  --color-primary-hover: #acdcbc;
+  --color-primary-contrast: #0f2418;
+  --color-primary-soft: #1f3326;
+  --color-primary-soft-text: #b6dcc2;
+  --color-focus: #9cd6b0;
+  --color-danger: #f28b82;
+  --color-danger-hover: #f6a7a0;
+  --color-danger-contrast: #2a1412;
+  --color-danger-soft: #3b2220;
+  --color-success: #6fcf97;
+  --color-success-soft: #1f3328;
+  --color-warning: #f0b45a;
+  --color-warning-soft: #3a2d1a;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #3a4a3e;
+  --color-overlay: rgba(4, 9, 5, 0.62);
+  --color-hub-badge-bg: #1b261e;
+  --color-tooltip-bg: #e9f0e5;
+  --color-tooltip-text: #1c261b;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 80%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(0, 6, 2, 0.36), 0 1px 3px rgba(0, 6, 2, 0.24);
+  --shadow-md: 0 8px 20px -8px rgba(0, 6, 2, 0.6), 0 2px 6px rgba(0, 6, 2, 0.3);
+  --shadow-lg: 0 32px 64px -20px rgba(0, 6, 2, 0.75), 0 12px 24px -12px rgba(0, 6, 2, 0.45);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(212, 165, 60, 0.06);
+  --glow-rose: rgba(90, 154, 106, 0.08);
+  --glow-coral: rgba(204, 117, 80, 0.05);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%23e3c06a' fill-opacity='0.11'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%23e59a78' fill-opacity='0.1'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%2395cfa0' fill-opacity='0.1'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ═══ Lavender: soft lilacs, violet and pink ═════════════════════════════════════════════ */
+
+[data-palette='lavender'],
+[data-palette='lavender'][data-theme='light'] {
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #ec8cbf;
+  --brand-coral: #b77fe0;
+  --brand-rose: #8a6ddb;
+  --gradient-brand: linear-gradient(120deg, #f2a0c8 0%, #c590ea 52%, #8f78e3 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #fbe4f0 0%, #f1e6fb 50%, #e8e5fb 100%);
+  --gradient-brand-text: linear-gradient(120deg, #a83a74 0%, #8044b8 50%, #5b48bd 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #f8f6fc;
+  --color-bg-elevated: #fcfbff;
+  --color-surface: #ffffff;
+  --color-surface-2: #efebf7;
+  --color-surface-3: #e8e3f2;
+  --color-border: #e4dfee;
+  --color-border-strong: #91899f;
+  --color-text: #241f33;
+  --color-text-muted: #5a536d;
+  --color-text-subtle: #655d78;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #6a4ea2;
+  --color-primary-hover: #5b428d;
+  --color-primary-contrast: #ffffff;
+  --color-primary-soft: #eee9fe;
+  --color-primary-soft-text: #563d86;
+  --color-focus: #7257ac;
+  --color-danger: #b42318;
+  --color-danger-hover: #971c13;
+  --color-danger-contrast: #ffffff;
+  --color-danger-soft: #fdecea;
+  --color-success: #1f7a4d;
+  --color-success-soft: #e5f4eb;
+  --color-warning: #a15c07;
+  --color-warning-soft: #fdf1dc;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #dad2ea;
+  --color-overlay: rgba(36, 31, 51, 0.42);
+  --color-hub-badge-bg: #ffffff;
+  --color-tooltip-bg: #241f33;
+  --color-tooltip-text: #f8f6fc;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 78%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(60, 44, 98, 0.06), 0 1px 3px rgba(60, 44, 98, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(60, 44, 98, 0.16), 0 2px 5px rgba(60, 44, 98, 0.06);
+  --shadow-lg: 0 28px 56px -18px rgba(60, 44, 98, 0.28), 0 10px 20px -10px rgba(60, 44, 98, 0.12);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(236, 140, 191, 0.15);
+  --glow-rose: rgba(138, 109, 219, 0.13);
+  --glow-coral: rgba(183, 127, 224, 0.1);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%23e07fb4' fill-opacity='0.22'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%23ad74d8' fill-opacity='0.18'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%237d63d0' fill-opacity='0.16'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+[data-palette='lavender'][data-theme='dark'] {
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #ec8cbf;
+  --brand-coral: #b77fe0;
+  --brand-rose: #8a6ddb;
+  --gradient-brand: linear-gradient(120deg, #f2a0c8 0%, #c590ea 52%, #8f78e3 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #36202e 0%, #2e2340 50%, #262344 100%);
+  --gradient-brand-text: linear-gradient(120deg, #f5a9cf 0%, #d3aef5 50%, #b1a5f6 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #15121d;
+  --color-bg-elevated: #1c1826;
+  --color-surface: #1f1a29;
+  --color-surface-2: #282236;
+  --color-surface-3: #393248;
+  --color-border: #393248;
+  --color-border-strong: #776f8a;
+  --color-text: #f1edf8;
+  --color-text-muted: #bdb3d0;
+  --color-text-subtle: #a097b4;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #c4aaf0;
+  --color-primary-hover: #d1bef3;
+  --color-primary-contrast: #24183a;
+  --color-primary-soft: #31293f;
+  --color-primary-soft-text: #d7c8f3;
+  --color-focus: #cbb4f3;
+  --color-danger: #f28b82;
+  --color-danger-hover: #f6a7a0;
+  --color-danger-contrast: #2a1412;
+  --color-danger-soft: #3b2220;
+  --color-success: #6fcf97;
+  --color-success-soft: #1f3328;
+  --color-warning: #f0b45a;
+  --color-warning-soft: #3a2d1a;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #433a58;
+  --color-overlay: rgba(9, 7, 14, 0.62);
+  --color-hub-badge-bg: #231f2e;
+  --color-tooltip-bg: #f1edf8;
+  --color-tooltip-text: #241f33;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 80%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(5, 2, 12, 0.36), 0 1px 3px rgba(5, 2, 12, 0.24);
+  --shadow-md: 0 8px 20px -8px rgba(5, 2, 12, 0.6), 0 2px 6px rgba(5, 2, 12, 0.3);
+  --shadow-lg: 0 32px 64px -20px rgba(5, 2, 12, 0.75), 0 12px 24px -12px rgba(5, 2, 12, 0.45);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(236, 140, 191, 0.06);
+  --glow-rose: rgba(138, 109, 219, 0.08);
+  --glow-coral: rgba(183, 127, 224, 0.05);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%23f2a8cf' fill-opacity='0.11'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%23cfa3f0' fill-opacity='0.1'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%23ac9cf2' fill-opacity='0.1'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ═══ Graphite: sober neutral greys, so the photos stand out ═════════════════════════════ */
+
+[data-palette='graphite'],
+[data-palette='graphite'][data-theme='light'] {
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #8fa3d9;
+  --brand-coral: #6b7ba3;
+  --brand-rose: #4d5b7c;
+  --gradient-brand: linear-gradient(120deg, #aab6d3 0%, #7d8db3 52%, #56658a 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #eef0f5 0%, #ebedf3 50%, #e7eaf2 100%);
+  --gradient-brand-text: linear-gradient(120deg, #4b5c85 0%, #3c4b6e 50%, #2f3b52 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #f6f6f5;
+  --color-bg-elevated: #fcfcfb;
+  --color-surface: #ffffff;
+  --color-surface-2: #eeeeec;
+  --color-surface-3: #e6e6e4;
+  --color-border: #e2e2df;
+  --color-border-strong: #8e8e8a;
+  --color-text: #1c1c1e;
+  --color-text-muted: #55575c;
+  --color-text-subtle: #5e6066;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #2f3b52;
+  --color-primary-hover: #242e43;
+  --color-primary-contrast: #ffffff;
+  --color-primary-soft: #e9edf3;
+  --color-primary-soft-text: #1f293d;
+  --color-focus: #4b5f99;
+  --color-danger: #b42318;
+  --color-danger-hover: #971c13;
+  --color-danger-contrast: #ffffff;
+  --color-danger-soft: #fdecea;
+  --color-success: #1f7a4d;
+  --color-success-soft: #e5f4eb;
+  --color-warning: #a15c07;
+  --color-warning-soft: #fdf1dc;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #d5d5d1;
+  --color-overlay: rgba(28, 28, 30, 0.42);
+  --color-hub-badge-bg: #ffffff;
+  --color-tooltip-bg: #1c1c1e;
+  --color-tooltip-text: #f6f6f5;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 78%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(30, 32, 38, 0.06), 0 1px 3px rgba(30, 32, 38, 0.05);
+  --shadow-md: 0 6px 16px -6px rgba(30, 32, 38, 0.16), 0 2px 5px rgba(30, 32, 38, 0.06);
+  --shadow-lg: 0 28px 56px -18px rgba(30, 32, 38, 0.28), 0 10px 20px -10px rgba(30, 32, 38, 0.12);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(143, 163, 217, 0.12);
+  --glow-rose: rgba(77, 91, 124, 0.08);
+  --glow-coral: rgba(107, 123, 163, 0.08);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%238a9ac0' fill-opacity='0.2'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%236f7a92' fill-opacity='0.16'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%2356627e' fill-opacity='0.14'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+[data-palette='graphite'][data-theme='dark'] {
+  /* ── Brand ──────────────────────────────────────────────────────────── */
+  --brand-gold: #8fa3d9;
+  --brand-coral: #6b7ba3;
+  --brand-rose: #4d5b7c;
+  --gradient-brand: linear-gradient(120deg, #aab6d3 0%, #7d8db3 52%, #56658a 100%);
+  --gradient-brand-soft: linear-gradient(135deg, #24262e 0%, #222532 50%, #212436 100%);
+  --gradient-brand-text: linear-gradient(120deg, #d0d8ff 0%, #b8c4f2 50%, #a2b2ea 100%);
+
+  /* ── Surfaces & text ────────────────────────────────────────────────── */
+  --color-bg: #121212;
+  --color-bg-elevated: #19191b;
+  --color-surface: #1c1c1e;
+  --color-surface-2: #252528;
+  --color-surface-3: #36363a;
+  --color-border: #36363a;
+  --color-border-strong: #747478;
+  --color-text: #ededee;
+  --color-text-muted: #b4b6bb;
+  --color-text-subtle: #9a9ca2;
+
+  /* ── Accents & status ───────────────────────────────────────────────── */
+  --color-primary: #aebcff;
+  --color-primary-hover: #c3ceff;
+  --color-primary-contrast: #161b33;
+  --color-primary-soft: #282c41;
+  --color-primary-soft-text: #c5cff8;
+  --color-focus: #b8c5ff;
+  --color-danger: #f28b82;
+  --color-danger-hover: #f6a7a0;
+  --color-danger-contrast: #2a1412;
+  --color-danger-soft: #3b2220;
+  --color-success: #6fcf97;
+  --color-success-soft: #1f3328;
+  --color-warning: #f0b45a;
+  --color-warning-soft: #3a2d1a;
+
+  /* ── Timeline & overlays ────────────────────────────────────────────── */
+  --color-line: #3d3d42;
+  --color-overlay: rgba(6, 6, 7, 0.62);
+  --color-hub-badge-bg: #202022;
+  --color-tooltip-bg: #ededee;
+  --color-tooltip-text: #1c1c1e;
+  --header-bg: color-mix(in srgb, var(--color-bg-elevated) 80%, transparent);
+
+  /* ── Elevation ──────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.36), 0 1px 3px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 8px 20px -8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 32px 64px -20px rgba(0, 0, 0, 0.75), 0 12px 24px -12px rgba(0, 0, 0, 0.45);
+
+  /* ── Glows (the layers of --background-glow) ────────────────────────── */
+  --glow-gold: rgba(143, 163, 217, 0.05);
+  --glow-rose: rgba(77, 91, 124, 0.06);
+  --glow-coral: rgba(107, 123, 163, 0.04);
+
+  /* ── Background pattern (soft dots + sparkles; use with --pattern-size) ─── */
+  --pattern-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='176' height='176' viewBox='0 0 176 176'%3E%3Cg fill='%23b8c3e6' fill-opacity='0.09'%3E%3Ccircle cx='14' cy='18' r='2.4'/%3E%3Ccircle cx='118' cy='92' r='1.8'/%3E%3Ccircle cx='66' cy='160' r='1.5'/%3E%3C/g%3E%3Cg fill='%239aa3b8' fill-opacity='0.08'%3E%3Ccircle cx='152' cy='28' r='2'/%3E%3Ccircle cx='40' cy='98' r='1.6'/%3E%3Ccircle cx='160' cy='152' r='2.2'/%3E%3C/g%3E%3Cg fill='%23aeb9df' fill-opacity='0.08'%3E%3Cpath d='M88 28q0 8 8 8q-8 0-8 8q0-8-8-8q8 0 8-8z'/%3E%3Cpath d='M22 126q0 6 6 6q-6 0-6 6q0-6-6-6q6 0 6-6z'/%3E%3Cpath d='M136 112q0 5 5 5q-5 0-5 5q0-5-5-5q5 0 5-5z'/%3E%3C/g%3E%3C/svg%3E");
+}

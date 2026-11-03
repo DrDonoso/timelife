@@ -1,0 +1,31 @@
+.controls {
+  position: absolute;
+  z-index: 5;
+  right: max(var(--space-5), env(safe-area-inset-right));
+  bottom: max(var(--space-5), env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 5px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-bg-elevated) 82%, transparent);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  /* Slides out of the way of the desktop filter panel. */
+  translate: calc(var(--controls-inset, 0px) * -1) 0;
+  transition: translate var(--duration-slow) var(--ease-out);
+}
+
+.levels {
+  border-color: transparent;
+}
+
+@media (max-width: 767px) {
+  .controls {
+    right: 50%;
+    bottom: max(var(--space-4), calc(env(safe-area-inset-bottom) + var(--space-2)));
+    translate: 50% 0;
+  }
+}

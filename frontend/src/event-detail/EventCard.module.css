@@ -1,0 +1,236 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* Zero-height sticky row: the buttons stay at the card's top-right corner while it scrolls. */
+.toolbar {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  display: flex;
+  justify-content: flex-end;
+  height: 0;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  height: max-content;
+  padding: var(--space-3);
+}
+
+/* No outlines on the floating buttons: dark glass over photos, a tinted surface over the text. */
+.actions .toolButton,
+.actions .toolButton[data-hovered] {
+  border-color: transparent;
+}
+
+.actions .toolButtonSolid {
+  background: var(--color-surface-2);
+  box-shadow: var(--shadow-md);
+}
+
+.actions .toolButtonSolid[data-hovered] {
+  background: var(--color-surface-3);
+}
+
+@media (max-width: 767px) {
+  .actions {
+    padding-top: max(var(--space-3), env(safe-area-inset-top));
+    padding-right: max(var(--space-3), env(safe-area-inset-right));
+  }
+}
+
+.media {
+  position: relative;
+  flex: none;
+}
+
+.pills {
+  position: absolute;
+  z-index: 1;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: flex;
+  flex-wrap: wrap-reverse;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  max-width: calc(100% - 2 * var(--space-4));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.pills > li {
+  display: flex;
+  pointer-events: auto;
+}
+
+@media (max-width: 767px) {
+  .pills {
+    right: var(--space-3);
+    bottom: var(--space-3);
+    max-width: calc(100% - 2 * var(--space-3));
+  }
+}
+
+/* ── Colour header (event without photos) ───────────────────────────── */
+
+.fallback {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: clamp(220px, 36vh, 340px);
+  overflow: hidden;
+  background:
+    /* Lighter corner behind the category pills, so a pill of the same colour still stands out. */
+    radial-gradient(46% 76% at 100% 100%, rgba(255, 255, 255, 0.34) 0%, transparent 72%),
+    radial-gradient(85% 120% at 14% 0%, var(--fallback-light) 0%, transparent 62%),
+    radial-gradient(70% 95% at 70% 110%, var(--fallback-deep) 0%, transparent 72%),
+    var(--fallback-base);
+  color: #ffffff;
+}
+
+/* Soft bokeh circles for depth. */
+.fallback::before,
+.fallback::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.fallback::before {
+  top: -22%;
+  right: 8%;
+  width: 44%;
+  aspect-ratio: 1;
+}
+
+.fallback::after {
+  bottom: -38%;
+  left: -6%;
+  width: 36%;
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.fallbackIcon {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+    0 20px 44px -18px rgba(0, 0, 0, 0.45);
+}
+
+@media (max-width: 767px) {
+  .fallback {
+    height: clamp(220px, 34dvh, 300px);
+  }
+
+  .fallbackIcon {
+    width: 112px;
+    height: 112px;
+  }
+
+  .fallbackIcon svg {
+    width: 58px;
+    height: 58px;
+  }
+}
+
+/* ── Data ─────────────────────────────────────────────────────────────── */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6) var(--space-6);
+}
+
+@media (max-width: 767px) {
+  .content {
+    padding: var(--space-5) var(--space-5) max(var(--space-6), env(safe-area-inset-bottom));
+  }
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.metaIcon {
+  flex: none;
+  color: var(--color-primary);
+}
+
+.location {
+  overflow-wrap: anywhere;
+}
+
+.title {
+  font-size: clamp(1.625rem, 1.2rem + 1.4vw, 2.25rem);
+  font-weight: 850;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.notes {
+  max-width: 70ch;
+  color: var(--color-text);
+  font-size: var(--text-md);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.children {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.child {
+  display: inline-flex;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--color-surface);
+  cursor: default;
+  outline: none;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.child:hover {
+  transform: translateY(-1px);
+}
+
+.child:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

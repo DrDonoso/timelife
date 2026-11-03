@@ -1,0 +1,83 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.help {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+/* The square the thumbnail shows; the circle the timeline shows is drawn on top. */
+.stage {
+  position: relative;
+  width: min(320px, 100%);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 0 0 1px var(--color-border),
+    var(--shadow-md);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.stage[data-dragging] {
+  cursor: grabbing;
+}
+
+.photo {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Darkens the corners the circle leaves out, with a white outline on the circle. */
+.mask {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle closest-side, transparent calc(100% - 1px), rgb(20 14 12 / 0.48) 100%);
+  pointer-events: none;
+}
+
+.mask::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.9);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+}
+
+.zoom {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.nudges {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.spacer {
+  flex: 1;
+}

@@ -1,0 +1,178 @@
+/* Interactive timeline: native scroll container + absolutely positioned, virtualised nodes. */
+
+.root {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+}
+
+.viewport {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+}
+
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+
+[data-orientation='horizontal'] .viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  touch-action: pan-x;
+  /* Nodes melt into the edges instead of being cut off. */
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 32px, #000 calc(100% - 32px), transparent);
+}
+
+[data-orientation='vertical'] .viewport {
+  overflow-x: hidden;
+  overflow-y: auto;
+  touch-action: pan-y;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 20px, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 20px, #000 calc(100% - 48px), transparent);
+}
+
+.viewport[data-dragging] {
+  cursor: grabbing;
+}
+
+.viewport[data-dragging] .list {
+  pointer-events: none;
+}
+
+.track {
+  position: relative;
+}
+
+[data-orientation='horizontal'] .track {
+  height: 100%;
+}
+
+[data-orientation='vertical'] .track {
+  width: 100%;
+}
+
+.list {
+  position: absolute;
+  inset: 0;
+}
+
+/* Axis line and chips. During the opening sweep only the part behind the front shows. */
+.axisLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.root[data-sweeping] .axisLayer {
+  clip-path: var(--sweep-clip);
+}
+
+/* The sweep's front: a glowing dot running along the line towards the newest milestone (one per
+   lane on the family timeline). */
+.sweepFronts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sweepFront {
+  --front: var(--front-color, var(--color-primary));
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+[data-orientation='horizontal'] .sweepFront {
+  top: 50%;
+}
+
+[data-orientation='vertical'] .sweepFront {
+  left: 50%;
+}
+
+.sweepFront::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--front);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--front) 24%, transparent),
+    0 0 26px 8px color-mix(in srgb, var(--front) 42%, transparent);
+}
+
+/* Zero-size anchor at the node centre (on the axis); `.center` centres the node's circle on it. */
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+
+[data-orientation='horizontal'] .slot {
+  top: 50%;
+}
+
+[data-orientation='vertical'] .slot {
+  left: 50%;
+}
+
+.slot:hover {
+  z-index: 2;
+}
+
+.slot:focus-within {
+  z-index: 3;
+}
+
+.anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+
+.center {
+  position: absolute;
+  top: 0;
+  left: 0;
+  translate: -50% -50%;
+}
+
+/* Previous level animating out (screen coordinates, under the track: new nodes emerge on top). */
+.ghosts {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.shockwave {
+  position: absolute;
+  top: calc(var(--wave-size) / -2);
+  left: calc(var(--wave-size) / -2);
+  width: var(--wave-size);
+  height: var(--wave-size);
+  border: 3px solid var(--wave-color);
+  border-radius: 50%;
+}

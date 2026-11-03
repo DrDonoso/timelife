@@ -1,0 +1,138 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.swatchButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.swatchButton[data-hovered] {
+  border-color: var(--color-text-subtle);
+}
+
+.swatchButton[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.swatchButton[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.swatch {
+  width: 100%;
+  height: 100%;
+  border-radius: 7px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.hexField {
+  flex: 1;
+  max-width: 160px;
+}
+
+.hexInput {
+  font-family: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, monospace;
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+
+.popover {
+  min-width: 0;
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 248px;
+  padding: var(--space-3);
+  outline: none;
+}
+
+.area {
+  width: 100%;
+  height: 160px;
+  border-radius: var(--radius-md);
+}
+
+.thumb {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.thumb[data-focus-visible] {
+  width: 26px;
+  height: 26px;
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.slider {
+  width: 100%;
+}
+
+.sliderTrack {
+  height: 18px;
+  border-radius: var(--radius-pill);
+}
+
+.sliderThumb {
+  top: 50%;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+.preset {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  cursor: pointer;
+  outline: none;
+}
+
+.preset[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.presetSwatch {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.preset[data-hovered] .presetSwatch {
+  transform: scale(1.1);
+}
+
+.preset[data-selected] .presetSwatch {
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 4px var(--color-text);
+}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Timelife</title>
+  <defs>
+    <linearGradient id="tl-line" x1="3" y1="50" x2="61" y2="14" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f5b450"/>
+      <stop offset="0.5" stop-color="#ee8763"/>
+      <stop offset="1" stop-color="#df7096"/>
+    </linearGradient>
+    <radialGradient id="tl-dot-1" cx="0.36" cy="0.32" r="0.75">
+      <stop offset="0" stop-color="#ffe1a1"/>
+      <stop offset="1" stop-color="#f3a637"/>
+    </radialGradient>
+    <radialGradient id="tl-dot-2" cx="0.36" cy="0.32" r="0.75">
+      <stop offset="0" stop-color="#ffc4ab"/>
+      <stop offset="1" stop-color="#ec7a59"/>
+    </radialGradient>
+    <radialGradient id="tl-dot-3" cx="0.36" cy="0.32" r="0.75">
+      <stop offset="0" stop-color="#fcbcd0"/>
+      <stop offset="1" stop-color="#d9628b"/>
+    </radialGradient>
+  </defs>
+  <path d="M3 50C26 54 34 14 61 14" fill="none" stroke="url(#tl-line)" stroke-width="4.5" stroke-linecap="round"/>
+  <circle cx="13" cy="48.9" r="6" fill="url(#tl-dot-1)"/>
+  <circle cx="30.5" cy="33.5" r="8.5" fill="url(#tl-dot-2)"/>
+  <circle cx="46.8" cy="18.1" r="10.5" fill="url(#tl-dot-3)"/>
+</svg>

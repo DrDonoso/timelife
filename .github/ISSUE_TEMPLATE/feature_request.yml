@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest an idea or an improvement for Timelife.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Timelife is a private, invitation-only family app: proposals that keep the family's
+        photos and data private fit best.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve?
+      description: Who would use it and when (an administrator adding milestones, a grandparent browsing on a phone, …).
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Describe the behaviour you have in mind. Sketches or screenshots of the demo are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to work on this myself (see CONTRIBUTING.md).

@@ -1,0 +1,207 @@
+.overlay {
+  position: fixed;
+  z-index: var(--z-modal);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  background: var(--color-overlay);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  overflow: hidden;
+}
+
+.overlayFull {
+  padding: 0;
+}
+
+.modal {
+  /* Corner radius, which the body's scrollbar stops short of (below). */
+  --modal-radius: var(--radius-xl);
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: min(92dvh, 100%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--modal-radius);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  outline: none;
+}
+
+.sm {
+  max-width: 420px;
+}
+
+.md {
+  max-width: 560px;
+}
+
+.lg {
+  max-width: 760px;
+}
+
+.xl {
+  max-width: min(1040px, 92vw);
+}
+
+.fullScreen {
+  --modal-radius: 0px;
+
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  border: 0;
+}
+
+/* Media-first panels (the event detail card): no outline, the shadow alone lifts them. */
+.borderless {
+  border: 0;
+}
+
+/* Full screen with `swipeToClose`: a finger pulling the panel down from the top of its content
+   drags it (useSwipeToClose sets data-swipe, --swipe-y and --swipe: 0 → 1 here) while the dimmed
+   page behind clears; released short, it glides back. */
+.swipeable > .modal {
+  translate: 0 var(--swipe-y, 0px);
+  transition: translate var(--duration-normal) var(--ease-out);
+}
+
+.swipeable[data-swipe='drag'] > .modal {
+  transition: none;
+}
+
+.swipeable[data-swipe] {
+  background: color-mix(in srgb, var(--color-overlay) calc(100% - 100% * var(--swipe, 0)), transparent);
+}
+
+/* At the top, the pull moves the panel rather than bouncing the content (iOS). */
+.swipeable .body {
+  overscroll-behavior-y: none;
+}
+
+@media (max-width: 767px) {
+  .overlay:not(.overlayFull) {
+    padding: var(--space-3);
+  }
+
+  .modal:not(.fullScreen) {
+    --modal-radius: var(--radius-lg);
+  }
+}
+
+.dialog {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  outline: none;
+}
+
+.header {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-5) var(--space-3);
+}
+
+/* Without a title the close button floats over the content (e.g. over a photo). */
+.headerFloating {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  padding: var(--space-3);
+}
+
+.title {
+  min-width: 0;
+  padding-top: 6px;
+  font-size: var(--text-xl);
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.close {
+  margin: -2px -6px 0 0;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: 0 var(--space-5) var(--space-5);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.header + .body {
+  padding-top: var(--space-1);
+}
+
+.headerFloating + .body {
+  padding-top: var(--space-5);
+}
+
+.bleed,
+.header + .bleed,
+.headerFloating + .bleed {
+  padding: 0;
+}
+
+/* With a mouse the scrollbar takes room and has arrows, which the rounded corners would cut off
+   where the body reaches them (at the top without a header, at the bottom without a footer): its
+   track stops short of them. Only WebKit scrollbars can do that, and Chromium draws them only
+   where scrollbar-color is auto (base.css sets it for the whole page); same look as base.css's. */
+@media (hover: hover) and (pointer: fine) {
+  @supports selector(::-webkit-scrollbar) {
+    .body {
+      scrollbar-color: auto;
+    }
+
+    .body::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .body::-webkit-scrollbar-track:vertical {
+      margin: var(--modal-radius) 0;
+    }
+
+    .header:not(.headerFloating) + .body::-webkit-scrollbar-track:vertical {
+      margin-top: 0;
+    }
+
+    .body:not(:last-child)::-webkit-scrollbar-track:vertical {
+      margin-bottom: 0;
+    }
+
+    .body::-webkit-scrollbar-thumb {
+      border: 3px solid transparent;
+      border-radius: var(--radius-pill);
+      background-color: var(--color-border-strong);
+      background-clip: padding-box;
+    }
+  }
+}
+
+.footer {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+}

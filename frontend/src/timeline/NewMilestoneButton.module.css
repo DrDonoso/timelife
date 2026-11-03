@@ -1,0 +1,33 @@
+/* Floats over the timeline, clear of the period title (top-left) and the zoom control. */
+.create {
+  position: absolute;
+  z-index: 5;
+  bottom: max(var(--space-5), env(safe-area-inset-bottom));
+  left: max(var(--space-5), env(safe-area-inset-left));
+  box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 767px) {
+  /* Round icon button above the bottom-centred zoom control. No gap: the label is only read out,
+     but its empty box beside the icon would still push the icon off centre. */
+  .create {
+    right: max(var(--space-4), env(safe-area-inset-right));
+    bottom: calc(max(var(--space-4), calc(env(safe-area-inset-bottom) + var(--space-2))) + 60px);
+    left: auto;
+    gap: 0;
+    width: 52px;
+    height: 52px;
+    min-height: 0;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

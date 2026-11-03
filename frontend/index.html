@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fbf7f2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c1816" media="(prefers-color-scheme: dark)" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content="Los hitos de nuestra familia" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <!-- Home-screen app (iOS "Add to Home Screen", Android "Install app"). On iOS this link wins
+         over the manifest's icons and transparency turns black, hence an opaque 180 px PNG; Android
+         uses the manifest's PNGs (the maskable one for its launcher shapes). scripts/gen-icons.mjs
+         renders them all from favicon.svg. The title meta keeps "Timelife" as the home-screen name
+         whichever page is open. -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content="Timelife" />
+    <script src="/theme-init.js"></script>
+    <title>Timelife</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

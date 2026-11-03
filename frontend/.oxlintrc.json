@@ -1,0 +1,101 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "react", "jsx-a11y", "import"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "options": {
+    "reportUnusedDisableDirectives": "error"
+  },
+  "ignorePatterns": ["src/api/schema.gen.ts"],
+  "rules": {
+    "eqeqeq": ["error", "always", { "null": "ignore" }],
+    "no-console": ["error", { "allow": ["warn", "error"] }],
+    "no-shadow": "off",
+    "no-throw-literal": "error",
+    "no-underscore-dangle": "off",
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "no-var": "error",
+    "prefer-const": "error",
+
+    "typescript/ban-ts-comment": ["error", { "ts-expect-error": "allow-with-description" }],
+    "typescript/no-explicit-any": "error",
+    "typescript/no-import-type-side-effects": "error",
+    "typescript/no-unsafe-function-type": "error",
+
+    "react/exhaustive-deps": "error",
+    "react/exhaustive-effect-dependencies": "off",
+    "react/jsx-no-target-blank": "error",
+    "react/react-in-jsx-scope": "off",
+    "react/rules-of-hooks": "error",
+
+    "jsx-a11y/control-has-associated-label": "off",
+    "jsx-a11y/no-autofocus": ["error", { "ignoreNonDOM": true }],
+    "jsx-a11y/no-noninteractive-element-interactions": [
+      "error",
+      {
+        "handlers": ["onClick", "onError", "onLoad", "onMouseDown", "onMouseUp", "onKeyPress", "onKeyDown", "onKeyUp"],
+        "alert": ["onKeyUp", "onKeyDown"],
+        "body": ["onError", "onLoad"],
+        "dialog": ["onKeyDown", "onKeyUp"],
+        "iframe": ["onError", "onLoad"],
+        "img": ["onError", "onLoad"]
+      }
+    ],
+    "jsx-a11y/no-noninteractive-tabindex": ["error", { "roles": ["tabpanel", "region"], "allowExpressionValues": true }],
+    "jsx-a11y/no-redundant-roles": ["error", { "nav": ["navigation"], "ol": ["list"], "ul": ["list"] }],
+    "jsx-a11y/no-static-element-interactions": [
+      "error",
+      {
+        "allowExpressionValues": true,
+        "handlers": ["onClick", "onMouseDown", "onMouseUp", "onKeyPress", "onKeyDown", "onKeyUp"]
+      }
+    ],
+    "jsx-a11y/prefer-tag-over-role": "off",
+
+    "import/no-duplicates": "error",
+    "import/no-named-as-default": "off",
+    "import/no-unassigned-import": "off",
+
+    "unicorn/consistent-function-scoping": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/event-detail/MediaSlides.tsx"],
+      "rules": {
+        "jsx-a11y/media-has-caption": "off"
+      }
+    },
+    {
+      "files": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/test-setup.ts"],
+      "plugins": ["vitest"],
+      "rules": {
+        "vitest/require-mock-type-parameters": "off"
+      }
+    },
+    {
+      "files": ["e2e/**"],
+      "env": {
+        "browser": false,
+        "node": true
+      },
+      "rules": {
+        "react/rules-of-hooks": "off"
+      }
+    }
+  ]
+}

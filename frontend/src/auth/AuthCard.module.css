@@ -1,0 +1,309 @@
+.page {
+  position: relative;
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 100dvh;
+  padding: var(--space-8) var(--space-4) var(--space-6);
+  background-color: var(--color-bg);
+  background-image: var(--background-glow), var(--pattern-image);
+  background-size:
+    auto,
+    auto,
+    auto,
+    var(--pattern-size);
+  overflow: hidden;
+}
+
+.corner {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(420px, 100%);
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  text-align: center;
+}
+
+.logo {
+  width: 88px;
+  height: 88px;
+  filter: drop-shadow(0 6px 14px rgba(217, 98, 139, 0.22));
+}
+
+.title {
+  margin-top: var(--space-3);
+  font-size: var(--text-3xl);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  background: var(--gradient-brand-text);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tagline {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  font-weight: 650;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  margin-top: var(--space-6);
+  text-align: start;
+}
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 25%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: var(--text-sm);
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.alertIcon {
+  flex: none;
+  margin-top: 1px;
+}
+
+/* Google sign-in button: white surface, neutral outline and the official G (brand guidelines). */
+.google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+  height: 50px;
+  padding: 0 var(--space-5);
+  border: 1px solid #747775;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  color: #1f1f1f;
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(60, 64, 67, 0.12);
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.google[data-hovered] {
+  background: #f8f9fa;
+  box-shadow:
+    0 1px 3px rgba(60, 64, 67, 0.22),
+    0 4px 10px -4px rgba(60, 64, 67, 0.25);
+}
+
+.google[data-pressed] {
+  background: #f1f3f4;
+  transform: scale(0.985);
+}
+
+.google[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.google[data-pending] {
+  cursor: progress;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.divider::before,
+.divider::after {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+  content: '';
+}
+
+.devForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-surface-2) 60%, transparent);
+}
+
+.devHeader {
+  text-align: center;
+}
+
+.devTitle {
+  font-size: var(--text-md);
+  font-weight: 850;
+}
+
+.devDescription {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.configSpinner {
+  align-self: center;
+  color: var(--color-primary);
+}
+
+.configError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* E-mail and password forms (sign in, first password, forgot password, setup). */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.formTitle {
+  font-size: var(--text-lg);
+  font-weight: 850;
+}
+
+.formDescription {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+/* Text-looking button or link: "Forgot your password?", "Back". */
+.textLink {
+  align-self: center;
+  padding: 2px var(--space-1);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-primary);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 750;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  outline: none;
+}
+
+.textLink[data-hovered] {
+  text-decoration-color: currentColor;
+}
+
+.textLink[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.account {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.accountLabel {
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: 750;
+}
+
+.success {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--color-success-soft);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.successIcon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--color-success);
+}
+
+.footnote {
+  margin-top: var(--space-5);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+  .page {
+    align-items: start;
+    padding-top: calc(var(--space-8) + var(--space-3));
+  }
+
+  .card {
+    padding: var(--space-5) var(--space-4) var(--space-4);
+  }
+
+  .corner {
+    top: var(--space-3);
+    right: var(--space-3);
+  }
+}

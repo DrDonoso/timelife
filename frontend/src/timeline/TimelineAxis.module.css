@@ -1,0 +1,126 @@
+/* Axis line + boundary chips. Everything is positioned in track coordinates by the parent. */
+
+.axis {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.line {
+  --fade: 48px;
+
+  position: absolute;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-line);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+}
+
+[data-orientation='horizontal'] .line {
+  top: 50%;
+  height: 3px;
+  translate: 0 -50%;
+}
+
+[data-orientation='vertical'] .line {
+  left: 50%;
+  width: 3px;
+  translate: -50% 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent);
+}
+
+.tint {
+  position: absolute;
+  inset: 0;
+  animation: tintIn 520ms var(--ease-out) 120ms both;
+}
+
+@keyframes tintIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Zero-size anchor at the marker position; chips centre themselves on it. */
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+
+[data-orientation='horizontal'] .slot {
+  top: 50%;
+}
+
+[data-orientation='vertical'] .slot {
+  left: 50%;
+}
+
+.yearChip,
+.monthChip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  translate: -50% -50%;
+}
+
+.yearChip {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--chip-fill);
+  /* Thin ring in the background colour, like the year and month circles. */
+  box-shadow:
+    0 0 0 1px var(--color-bg),
+    0 8px 18px -8px color-mix(in srgb, var(--chip-color) 80%, transparent);
+  color: var(--chip-text);
+  font-size: 0.9375rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+}
+
+.monthChip {
+  gap: 7px;
+  height: 26px;
+  padding: 0 11px 0 9px;
+  border: 1px solid color-mix(in srgb, var(--chip-color) 30%, var(--color-border));
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-bg-elevated) 92%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--color-bg) 70%, transparent),
+    var(--shadow-sm);
+  color: var(--color-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--chip-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--chip-color) 22%, transparent);
+}
+
+.slot[data-reveal] > * {
+  animation: chipIn 460ms var(--ease-out) var(--reveal-delay, 0ms) both;
+}
+
+@keyframes chipIn {
+  from {
+    opacity: 0;
+    scale: 0.7;
+  }
+}

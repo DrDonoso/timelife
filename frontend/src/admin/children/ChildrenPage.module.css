@@ -1,0 +1,177 @@
+.listHeader {
+  position: relative;
+  margin-bottom: var(--space-4);
+}
+
+.listTitle {
+  font-size: var(--text-md);
+  font-weight: 800;
+}
+
+.listHint {
+  margin-top: 2px;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+}
+
+/* Order status sits on the title line so an idle (empty) status takes no room. */
+.listStatus {
+  position: absolute;
+  top: 0;
+  right: 0;
+  line-height: 1.5;
+}
+
+/* Three cards per row on wide screens, two on tablets, one (horizontal) on phones. */
+.item {
+  flex: 0 0 calc((100% - 2 * var(--sortable-gap)) / 3 - 0.5px);
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--duration-normal) var(--ease-out),
+    border-color var(--duration-normal) var(--ease-out);
+}
+
+.item[data-hovered] {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+}
+
+.card {
+  display: grid;
+  grid-template-areas:
+    'handle . actions'
+    'avatar avatar avatar'
+    'info info info'
+    'move move move';
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  height: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-4);
+  text-align: center;
+}
+
+.cardHandle {
+  grid-area: handle;
+}
+
+.cardActions {
+  display: inline-flex;
+  grid-area: actions;
+  gap: 2px;
+}
+
+.avatar {
+  grid-area: avatar;
+  justify-self: center;
+  box-shadow:
+    0 0 0 4px var(--color-surface),
+    0 0 0 5px var(--color-border),
+    var(--shadow-md);
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  grid-area: info;
+  align-items: center;
+  min-width: 0;
+  padding: 0 var(--space-2);
+}
+
+.name {
+  max-width: 100%;
+  margin-top: var(--space-3);
+  overflow: hidden;
+  font-size: var(--text-lg);
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.birth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.birthIcon {
+  flex: none;
+  color: var(--brand-coral);
+}
+
+.age {
+  color: var(--color-text-muted);
+}
+
+.move {
+  grid-area: move;
+  justify-self: center;
+  margin-top: var(--space-3);
+}
+
+@media (max-width: 1023px) {
+  .item {
+    flex-basis: calc((100% - var(--sortable-gap)) / 2 - 0.5px);
+  }
+}
+
+@media (max-width: 767px) {
+  .item {
+    flex-basis: 100%;
+    border-radius: var(--radius-lg);
+  }
+
+  .card {
+    grid-template-areas:
+      'handle avatar info actions'
+      'handle avatar info move';
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    gap: 0 var(--space-3);
+    padding: var(--space-3) var(--space-2) var(--space-3) 0;
+    text-align: left;
+  }
+
+  .cardHandle {
+    align-self: center;
+  }
+
+  .cardActions,
+  .move {
+    justify-self: end;
+  }
+
+  .cardActions {
+    align-self: start;
+  }
+
+  .move {
+    align-self: end;
+    margin-top: 0;
+  }
+
+  .info {
+    align-items: flex-start;
+    padding: 0;
+  }
+
+  .name {
+    margin-top: 0;
+    font-size: var(--text-md);
+  }
+
+  .birth {
+    justify-content: flex-start;
+    font-size: var(--text-xs);
+  }
+}

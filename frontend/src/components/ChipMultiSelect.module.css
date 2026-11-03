@@ -1,0 +1,234 @@
+.root {
+  gap: var(--space-2);
+}
+
+.hint {
+  margin-top: -2px;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.selectedList,
+.availableList,
+.toggleList {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.selectedList {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-height: 48px;
+  padding: 6px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
+}
+
+.root[data-invalid] .selectedList {
+  border-color: var(--color-danger);
+}
+
+.empty {
+  padding: var(--space-2);
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  max-width: 100%;
+  padding: 4px 12px 4px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.2;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chipLabel {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectedChip {
+  width: 100%;
+  min-height: 40px;
+  padding: 4px 4px 4px 8px;
+  border-radius: var(--radius-md);
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.primary {
+  border-color: var(--color-primary);
+}
+
+.position {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.primary .position {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+
+.primaryTag {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: auto;
+}
+
+.mini {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  outline: none;
+}
+
+.mini[data-hovered] {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.mini[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+}
+
+.mini[data-disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.addChip,
+.toggleChip {
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.addChip {
+  border-style: dashed;
+  border-color: var(--color-border-strong);
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.addChip[data-hovered],
+.toggleChip[data-hovered] {
+  border-color: var(--color-text-subtle);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.addChip[data-pressed],
+.toggleChip[data-pressed] {
+  transform: scale(0.96);
+}
+
+.addChip[data-focus-visible],
+.toggleChip[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.addChip[data-disabled],
+.toggleChip[data-disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.plus {
+  flex: none;
+  margin-left: 2px;
+}
+
+.toggleChip[data-selected] {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+}
+
+.check {
+  flex: none;
+  margin-right: -4px;
+}
+
+.dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  margin: 0 4px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+/* Ranked rows: the name may wrap (at word boundaries) and "Principal" sits under it. */
+.labelStack {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.selectedChip .chipLabel {
+  max-width: 100%;
+  overflow: visible;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.selectedChip .primaryTag {
+  padding: 1px 7px;
+  font-size: 10px;
+}

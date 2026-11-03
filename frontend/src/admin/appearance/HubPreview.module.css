@@ -1,0 +1,85 @@
+.hub {
+  --hub-size: 104px;
+
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--hub-size);
+  height: var(--hub-size);
+  border-radius: 50%;
+  background: var(--hub-fill);
+  box-shadow:
+    0 0 0 1px var(--color-bg),
+    var(--shadow-md);
+  color: var(--hub-text);
+  transition: background var(--duration-normal) var(--ease-out);
+}
+
+.sm {
+  --hub-size: 76px;
+}
+
+.year {
+  font-size: calc(var(--hub-size) * 0.25);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.badge {
+  position: absolute;
+  top: 2%;
+  right: 2%;
+  display: grid;
+  place-items: center;
+  min-width: calc(var(--hub-size) * 0.3);
+  height: calc(var(--hub-size) * 0.3);
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-hub-badge-bg);
+  box-shadow: var(--shadow-sm);
+  color: var(--hub-badge-text);
+  font-size: calc(var(--hub-size) * 0.125);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.months {
+  display: grid;
+  grid-template-columns: repeat(12, 28px);
+  gap: 6px;
+}
+
+.month {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--month-fill);
+  box-shadow: var(--shadow-sm);
+  color: var(--month-text);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  cursor: default;
+  transition: background var(--duration-normal) var(--ease-out);
+}
+
+@media (max-width: 767px) {
+  .hub {
+    --hub-size: 80px;
+  }
+
+  .sm {
+    --hub-size: 64px;
+  }
+
+  .months {
+    grid-template-columns: repeat(6, 28px);
+  }
+}

@@ -1,0 +1,64 @@
+name: Bug report
+description: Something in Timelife does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem! Security issues must **not** be reported here: use
+        [private vulnerability reporting](https://github.com/DrDonoso/timelife/security/advisories/new) instead.
+        Please leave out personal data — real names, e-mail addresses, photos — from everything below.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What went wrong, and what you expected to happen instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the timeline at the days level
+        2. Click on a milestone with a video
+        3. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown at `/api/version` and in the administration footer (for example `20261102`).
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where does it happen?
+      options:
+        - My own installation (Docker image)
+        - The public demo
+        - A development setup (from source)
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Safari on an iPhone, Chrome 140 on Windows 11, …
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: The relevant part of `docker compose logs --tail=200 app`, or the browser console. Remove personal data first.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the existing issues and this one is new.
+          required: true
+        - label: This report contains no personal data (names, e-mail addresses, photos, links to a private instance).
+          required: true

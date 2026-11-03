@@ -1,0 +1,122 @@
+/** One message per backend error code (spec 20-api), plus `unknown` and `network`. */
+export const errors = {
+  // Client-side
+  unknown: 'No se ha podido completar la operación. Inténtalo de nuevo.',
+  network: 'No hay conexión con el servidor. Comprueba tu conexión e inténtalo de nuevo.',
+  not_implemented: 'Esta función todavía no está disponible.',
+  // Generic
+  internal_error: 'Ha ocurrido un error en el servidor. Inténtalo de nuevo en unos minutos.',
+  invalid_request: 'Revisa los datos del formulario.',
+  not_found: 'No se ha encontrado lo que buscabas.',
+  invalid_origin: 'La solicitud no procede de un origen autorizado. Recarga la página.',
+  invalid_host: 'El nombre del servidor no está autorizado.',
+  request_too_large: 'La solicitud es demasiado grande.',
+  request_busy: 'El servidor está ocupado. Espera unos segundos y vuelve a intentarlo.',
+  request_timeout: 'La solicitud ha tardado demasiado. Comprueba tu conexión y vuelve a intentarlo.',
+  frontend_not_built: 'La aplicación web no está compilada en este servidor.',
+  // Authentication
+  authentication_required: 'Tu sesión ha caducado. Inicia sesión de nuevo.',
+  admin_required: 'Necesitas permisos de administración para hacer esto.',
+  login_throttled: 'Demasiados intentos de acceso. Espera unos minutos y vuelve a intentarlo.',
+  request_throttled: 'Demasiadas solicitudes seguidas. Espera un momento y vuelve a intentarlo.',
+  invalid_credentials: 'El correo (o el usuario) o la contraseña no son correctos.',
+  password_change_required: 'Tienes que elegir una contraseña nueva para entrar.',
+  password_unchanged: 'Elige una contraseña distinta de la actual.',
+  current_password_invalid: 'La contraseña actual no es correcta.',
+  password_not_set: 'Tu cuenta no tiene contraseña: entras con Google.',
+  password_reset_invalid: 'El enlace ha caducado o ya se ha usado. Pide otro.',
+  setup_closed: 'Timelife ya tiene administración, o el enlace de recuperación ha caducado o ya se ha usado.',
+  google_disabled: 'El acceso con Google no está configurado en este servidor.',
+  google_invalid_flow:
+    'La solicitud de acceso ha caducado o se inició en otro navegador. Vuelve a intentarlo.',
+  google_invalid_identity: 'No se ha podido verificar tu cuenta de Google. Vuelve a intentarlo.',
+  google_not_invited:
+    'Esta cuenta de Google no tiene acceso. Pide a un administrador que te invite con este correo.',
+  account_disabled: 'Tu cuenta está desactivada. Habla con un administrador.',
+  google_cancelled: 'Has cancelado el acceso con Google.',
+  google_unavailable: 'Google no responde en este momento. Inténtalo de nuevo más tarde.',
+  // Users
+  user_exists: 'Ya existe un usuario con ese correo.',
+  user_not_found: 'El usuario ya no existe. Actualiza la lista.',
+  last_admin: 'Debe quedar al menos un administrador activo.',
+  cannot_modify_self: 'No puedes cambiar tu propio rol, desactivarte ni eliminarte.',
+  // Children
+  child_not_found: 'Este niño ya no existe.',
+  slug_taken: 'Se ha añadido otro niño con el mismo nombre a la vez. Vuelve a intentarlo.',
+  child_in_use: 'No se puede eliminar porque tiene hitos asociados (la papelera también cuenta).',
+  // Categories
+  category_not_found: 'Esta categoría ya no existe.',
+  category_in_use: 'No se puede eliminar porque hay hitos que usan esta categoría (la papelera también cuenta).',
+  invalid_order: 'El orden ha cambiado mientras editabas. Actualiza la lista e inténtalo de nuevo.',
+  // Media
+  upload_too_large: 'El archivo es demasiado grande.',
+  unsupported_image: 'Formato de imagen no admitido. Usa JPEG, PNG, WebP o HEIC.',
+  unsupported_media: 'Este archivo no es una foto ni un vídeo compatible. Usa JPEG, PNG, WebP, HEIC, MP4, MOV o WebM.',
+  unsupported_video: 'No se ha podido leer este vídeo: puede estar dañado o en un formato no compatible.',
+  video_too_long: 'El vídeo es demasiado largo.',
+  invalid_live_photo: 'La foto Live no es válida: su vídeo debe durar como mucho 10 segundos.',
+  video_processing_failed: 'No se ha podido procesar el vídeo. Quítalo y prueba con otro archivo.',
+  video_unavailable: 'El servidor no puede procesar vídeos ahora mismo (falta ffmpeg).',
+  image_dimensions_too_large: 'La imagen tiene demasiados píxeles.',
+  image_not_found: 'La imagen ya no existe.',
+  invalid_image: 'Alguna imagen ya no está disponible. Vuelve a subirla.',
+  invalid_cover: 'La portada debe ser una de las imágenes del hito.',
+  invalid_purpose: 'Tipo de subida no válido.',
+  // Events
+  event_not_found: 'Este hito no existe o se ha eliminado.',
+  event_stale: 'Otra persona ha modificado este hito mientras lo editabas. Recarga para ver los cambios.',
+  event_not_deleted: 'Este hito no está en la papelera.',
+  invalid_child: 'Alguno de los niños seleccionados ya no existe.',
+  invalid_category: 'Alguna de las categorías seleccionadas ya no existe.',
+  // Appearance
+  invalid_year: 'El año no es válido.',
+  // Import & export
+  backup_busy: 'Ya hay una exportación o una importación en marcha. Espera a que termine.',
+  import_busy: 'Ya hay otra importación en curso. Termínala o descártala antes de empezar otra.',
+  import_not_found: 'Esa importación ya no existe. Recarga la página.',
+  import_not_uploading: 'El archivo ya se ha subido entero.',
+  import_offset_mismatch: 'La subida se ha desincronizado. Vuelve a elegir el archivo para continuar.',
+  import_size_mismatch: 'El archivo no tiene el tamaño anunciado. Vuelve a elegirlo.',
+  import_no_space: 'No hay espacio libre suficiente en el servidor para esta copia.',
+  import_not_ready: 'La copia todavía no está lista para importarse.',
+  import_not_running: 'La importación ya no está en marcha.',
+  import_running: 'La importación está en marcha: cancélala antes de descartarla.',
+  import_chunk_too_large:
+    'El servidor (o su proxy) rechaza las partes de 32 MB de la subida: sube su límite de tamaño de petición.',
+  invalid_import: 'El archivo no es una copia de Timelife o está dañado.',
+  import_version_unsupported:
+    'La copia se hizo con una versión más nueva de Timelife. Actualiza este servidor antes de importarla.',
+  import_file_missing: 'Falta su archivo en la copia.',
+  import_file_unreadable: 'Su archivo en la copia está dañado.',
+  import_interrupted: 'El servidor se reinició mientras importaba.',
+  import_cancelled: 'Se canceló.',
+  import_failed: 'Falló al guardar los cambios.',
+  demo_unavailable: 'No disponible en la demo: aquí nada se guarda en un servidor.',
+  /** `*_in_use` with the number of milestones (`detail.events`): used instead of the message above. */
+  inUse: {
+    child_in_use: {
+      one: 'No se puede eliminar porque tiene {count} hito asociado (la papelera también cuenta).',
+      other: 'No se puede eliminar porque tiene {count} hitos asociados (la papelera también cuenta).',
+    },
+    category_in_use: {
+      one: 'No se puede eliminar porque {count} hito usa esta categoría (la papelera también cuenta).',
+      other: 'No se puede eliminar porque {count} hitos usan esta categoría (la papelera también cuenta).',
+    },
+  },
+  /** Pydantic error types of `invalid_request.fields`. */
+  validation: {
+    missing: 'Este campo es obligatorio.',
+    string_too_short: 'Es demasiado corto.',
+    string_too_long: 'Es demasiado largo.',
+    string_pattern_mismatch: 'El formato no es válido.',
+    too_short: 'Selecciona al menos uno.',
+    too_long: 'Has seleccionado demasiados.',
+    date_parsing: 'La fecha no es válida.',
+    date_from_datetime_parsing: 'La fecha no es válida.',
+    literal_error: 'Elige una de las opciones.',
+    greater_than_equal: 'El valor está fuera del rango permitido.',
+    less_than_equal: 'El valor está fuera del rango permitido.',
+    value_error: 'El valor no es válido.',
+    default: 'Revisa este campo.',
+  },
+} as const

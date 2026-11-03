@@ -1,0 +1,27 @@
+@media (min-width: 768px) {
+  /* Height glides between the card and the (taller) editor where `interpolate-size` exists. */
+  .modal {
+    interpolate-size: allow-keywords;
+    transition: height var(--duration-slow) var(--ease-out);
+  }
+
+  /* The editor gets the full height (capped by the modal's 92vh), scrolling inside. */
+  .editing {
+    height: 92dvh;
+  }
+}
+
+/* The editor (variant="modal") brings its own header and sticky actions. In edit mode the modal
+   body keeps its padding (no `bleed`), which also lifts the sticky actions off the bottom edge. */
+.editor {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-top: var(--space-5);
+}
+
+@media (max-width: 767px) {
+  .editor {
+    padding-top: max(var(--space-4), env(safe-area-inset-top));
+  }
+}

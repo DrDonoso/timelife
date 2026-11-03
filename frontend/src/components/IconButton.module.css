@@ -1,0 +1,121 @@
+.button {
+  --icon-button-size: 40px;
+
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.button[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.button[data-pressed] {
+  transform: scale(0.92);
+}
+
+.button[data-disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sm {
+  --icon-button-size: 32px;
+}
+
+.md {
+  --icon-button-size: 40px;
+}
+
+.lg {
+  --icon-button-size: 48px;
+}
+
+.ghost[data-hovered],
+.ghost[data-pressed],
+.ghost[aria-expanded='true'] {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.secondary {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+}
+
+.secondary[data-hovered] {
+  border-color: var(--color-border-strong);
+  background: var(--color-bg-elevated);
+}
+
+.primary {
+  background: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-primary-contrast);
+}
+
+.primary[data-hovered] {
+  background: var(--color-primary-hover);
+}
+
+.danger {
+  color: var(--color-danger);
+}
+
+.danger[data-hovered] {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+/* Floating over photos: always dark glass with white icon, in both themes. */
+.overlay {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(24, 18, 15, 0.42);
+  color: #ffffff;
+  backdrop-filter: blur(10px) saturate(1.4);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+}
+
+.overlay[data-hovered] {
+  background: rgba(24, 18, 15, 0.62);
+}
+
+.badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 2px solid var(--color-bg-elevated);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  box-sizing: content-box;
+  transform: translate(25%, -15%);
+  pointer-events: none;
+}

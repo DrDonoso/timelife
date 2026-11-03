@@ -1,0 +1,22 @@
+.toggle {
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+/* Some filter is applied: tint the icon so the state is visible even without reading the badge. */
+.active {
+  color: var(--color-primary);
+}
+
+.active[data-hovered],
+.active[aria-expanded='true'] {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+}
+
+.count {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}

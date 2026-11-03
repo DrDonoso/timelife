@@ -1,0 +1,30 @@
+// Cloudflare Workers config of the public demo (https://demo.timelife.lauvid.com).
+//
+// The demo is a static bundle: no Worker script, no `main` entry. Cloudflare serves the files of
+// `assets.directory` as they are; the API is answered in the visitor's browser by the MSW service
+// worker (src/demo/), so nothing here runs server-side and there are no secrets.
+//
+// Workers Builds settings (dashboard → the Worker → Settings → Build):
+//   Root directory   /frontend            ← this file and package.json live here
+//   Build command    npm run build:demo
+//   Deploy command   npx wrangler@4 deploy
+//   Variable         NODE_VERSION = 24    ← Vite 8 needs Node ^20.19 || >=22.12
+// wrangler is deliberately not a devDependency (it would bloat every `npm ci`), so the deploy
+// command pins its major instead.
+//
+// From a terminal instead: `npm run build:demo && npx wrangler@4 deploy` (after `npx wrangler@4 login`).
+//
+// Custom domain: add it under Settings → Domains & Routes, or declare it here once the zone is on
+// the same Cloudflare account:
+//   "routes": [{ "pattern": "demo.timelife.lauvid.com", "custom_domain": true }]
+{
+  "$schema": "https://unpkg.com/wrangler@4/config-schema.json",
+  "name": "timelife-demo",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist-demo",
+    // The app uses client-side routes (/c/<child>, /admin/...): navigations that match no file
+    // get index.html with HTTP 200, while a missing asset still answers a real 404.
+    "not_found_handling": "single-page-application"
+  }
+}

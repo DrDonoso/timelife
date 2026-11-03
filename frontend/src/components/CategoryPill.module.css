@@ -1,0 +1,59 @@
+.pill {
+  display: inline-flex;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.pill[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* No border: the colour itself is the shape. Width is animated by Motion (circle ↔ pill). */
+.body {
+  display: inline-flex;
+  align-items: center;
+  width: var(--pill-size);
+  height: var(--pill-size);
+  border-radius: var(--radius-pill);
+  background: var(--pill-bg);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 4px 12px -4px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--pill-size);
+  height: var(--pill-size);
+}
+
+/* The icon cell is square, so the label's right padding mirrors the icon's side gap. */
+.label {
+  padding-right: calc(var(--pill-size) * 0.4);
+  font-size: var(--text-sm);
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: 0.01em;
+}
+
+.sm .label {
+  font-size: var(--text-xs);
+}
+
+.lg .label {
+  font-size: var(--text-md);
+}

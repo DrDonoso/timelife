@@ -1,0 +1,182 @@
+.trigger {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.trigger[data-hovered],
+.trigger[aria-expanded='true'] {
+  box-shadow: 0 0 0 3px var(--color-surface-3);
+}
+
+.trigger[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.popover {
+  width: 300px;
+  max-width: calc(100vw - 16px);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--gradient-brand-soft);
+}
+
+.who {
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  font-size: var(--text-md);
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.preferences {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.preference {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.preferenceLabel {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 750;
+}
+
+/* The current choice, opposite its label (the theme's name above its swatches). */
+.preferenceValue {
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A preference chosen from a list (theme swatches, languages): the label above, then the options. */
+.preferenceList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* The swatches' circles line up with the label (each sits 6 px inside its 44 px button). */
+.paletteOptions {
+  margin: -4px -6px -6px;
+}
+
+/* The rows line up with the links below (6 px from the panel's edges). */
+.preferenceOptions {
+  margin: 0 calc(6px - var(--space-4));
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 42px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 750;
+  text-decoration: none;
+  outline: none;
+}
+
+.link svg {
+  color: var(--color-text-muted);
+}
+
+.link[data-hovered] {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.link[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+/* A menu action that is a button (not a link): same look. */
+.linkButton {
+  width: 100%;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.signOut {
+  justify-content: flex-start;
+  gap: var(--space-3);
+  height: 42px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.signOut svg {
+  color: var(--color-text-muted);
+}

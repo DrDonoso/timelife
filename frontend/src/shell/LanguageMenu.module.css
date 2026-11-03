@@ -1,0 +1,98 @@
+/* Header and sign-in corner: the language icon and the current code ("ES") in a ghost pill that
+   looks and reacts like the icon buttons next to it (IconButton, `ghost`, 40 px). */
+.trigger {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 var(--space-3) 0 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.trigger[data-hovered],
+.trigger[data-pressed],
+.trigger[aria-expanded='true'] {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.trigger[data-pressed] {
+  transform: scale(0.95);
+}
+
+.trigger[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Account panel on phones: one row per language, the current one highlighted and checked. */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 42px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: 750;
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.option[data-hovered],
+.option[data-pressed] {
+  background: var(--color-surface-2);
+}
+
+.option[data-selected] {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-soft-text);
+}
+
+.option[data-focus-visible] {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+}
+
+.check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+}
