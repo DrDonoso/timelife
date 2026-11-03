@@ -46,7 +46,7 @@ flowchart LR
 | Backend | Python 3.14, FastAPI, SQLAlchemy 2 (async), Alembic, Pydantic v2, asyncpg, Pillow + pillow-heif, FFmpeg, PyJWT |
 | Frontend | React 19, TypeScript 7, Vite 8, React Router 8, TanStack Query, React Aria Components, Motion, Tabler Icons |
 | Database | PostgreSQL 18 (SQLite for development and tests) |
-| Packaging | uv 0.11.32, npm, multi-stage Docker build (`node:24-alpine` → `python:3.14-slim`), non-root user `app` (uid 1000) |
+| Packaging | uv 0.13.7, npm, multi-stage Docker build (`node:24-alpine` → `python:3.14-slim`), non-root user `app` (uid 1000) |
 
 ## Repository layout
 
