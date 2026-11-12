@@ -20,10 +20,6 @@ invite. Self-hosted with Docker.
 
 ![A child's timeline at the days level: a photo circle for each milestone, with its title, categories and date](docs/images/timeline.png)
 
-> **En español:** Timelife es una aplicación web privada, solo por invitación, para guardar y revivir los hitos de cada
-> hijo en una línea de tiempo interactiva con zoom (años → meses → días), con fotos, vídeos, notas y categorías. La
-> interfaz está en español por defecto, y también en inglés y en portugués de Portugal; esta documentación está en
-> inglés.
 
 ## Why Timelife
 
