@@ -32,6 +32,7 @@ from . import (
     timeline,
     users,
     video,
+    whats_new,
 )
 from .config import Settings
 from .contracts import HealthOut, VersionOut
@@ -169,6 +170,7 @@ def create_app(config: Settings | None = None) -> FastAPI:
         appearance.router,
         appearance.admin_router,
         backup.admin_router,
+        whats_new.router,
     ):
         application.include_router(router)
 

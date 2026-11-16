@@ -20,6 +20,7 @@ export const shell: Messages<typeof source> = {
     label: 'Menu do utilizador',
     admin: 'Administração',
     timeline: 'Linha do tempo',
+    whatsNew: 'Novidades',
     signOut: 'Terminar sessão',
   },
   notifications: 'Notificações',

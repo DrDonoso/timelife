@@ -174,6 +174,20 @@ export class Body {
     return raw as number[]
   }
 
+  /** List of strings (stripped): `min`..`max` items of up to `length` characters, matching `pattern`. */
+  strings(key: string, pattern: RegExp, { min = 0, max = Infinity, length = Infinity }: { min?: number; max?: number; length?: number } = {}): string[] {
+    const raw = this.read(key)
+    if (raw === undefined) return this.fail(key, 'missing') ?? []
+    if (!Array.isArray(raw)) return this.fail(key, 'list_type') ?? []
+    if (raw.length < min) return this.fail(key, 'too_short') ?? []
+    if (raw.length > max) return this.fail(key, 'too_long') ?? []
+    if (raw.some((item) => typeof item !== 'string')) return this.fail(key, 'string_type') ?? []
+    const values = (raw as string[]).map((item) => item.trim())
+    if (values.some((value) => value.length > length)) return this.fail(key, 'string_too_long') ?? []
+    if (values.some((value) => !pattern.test(value))) return this.fail(key, 'string_pattern_mismatch') ?? []
+    return values
+  }
+
   uuid(key: string, { optional = false }: { optional?: boolean } = {}): string | null {
     const raw = this.read(key)
     if (raw === null || (raw === undefined && optional)) return null
@@ -278,3 +292,5 @@ export function parseBody<T>(body: unknown, read: (body: Body) => T): T {
 
 export const HEX_COLOR = /^#[0-9a-fA-F]{6}$/
 export const ICON_PATTERN = /^[a-z0-9-]{1,64}$/
+/** A "what's new" note's id: `YYYY-MM-DD-slug` (`NoteId` of the API, up to 80 characters). */
+export const NOTE_ID = /^\d{4}-\d{2}-\d{2}-[a-z0-9]+(-[a-z0-9]+)*$/

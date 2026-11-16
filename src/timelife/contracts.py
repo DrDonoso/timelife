@@ -491,6 +491,21 @@ class SettingsIn(Contract):
     direction_mobile: Direction
 
 
+# What's new
+# A note's id is its file name in frontend/src/whatsNew/notes/: ``YYYY-MM-DD-slug``.
+NOTE_ID_PATTERN = r"^\d{4}-\d{2}-\d{2}-[a-z0-9]+(-[a-z0-9]+)*$"
+NoteId = Annotated[str, Field(max_length=80, pattern=NOTE_ID_PATTERN)]
+
+
+class WhatsNewOut(Contract):
+    # Notes the user has read (sorted); null until the interface records them for the first time.
+    seen: list[str] | None
+
+
+class WhatsNewSeenIn(Contract):
+    ids: Annotated[list[NoteId], Field(min_length=1, max_length=500)]
+
+
 # Backup (export and import)
 # "uploading" → (every byte received) "ready", or "invalid" when the file is no Timelife backup;
 # "ready" → (start) "running" → "finished", or back to "ready" with ``error`` when the run fails,

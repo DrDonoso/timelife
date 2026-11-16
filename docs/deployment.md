@@ -127,7 +127,8 @@ settings — and imports it back on this or another server (*Reemplazar todo* re
 what is missing). Copies made by older versions of Timelife still import (their categories take the Spanish name as
 the Portuguese one until it is edited); an older Timelife refuses a copy made by a newer one. It is handy for moving
 to a new server, keeping an extra copy you can browse, or bringing back something deleted. It leaves out what only makes sense on one server: sessions (everyone signs in again), the link
-between an account and its Google identity (made again, by e-mail, at the next sign-in) and the passwords — after
+between an account and its Google identity (made again, by e-mail, at the next sign-in), which **Novedades** each
+person has already read (imported accounts start with nothing to catch up on) and the passwords — after
 *Reemplazar todo* on another server, only the importing administrator keeps theirs: give the others new temporary
 passwords from **Usuarios** (or they use *¿Has olvidado tu contraseña?* or Google). The thumbnails and the
 browser-ready videos are made again after an import (videos show *Procesando…* for a while). An import needs free

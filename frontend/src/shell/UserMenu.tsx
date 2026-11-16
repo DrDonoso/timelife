@@ -1,4 +1,4 @@
-import { IconKey, IconLogout, IconRefresh, IconSettings, IconTimeline } from '@tabler/icons-react'
+import { IconKey, IconLogout, IconRefresh, IconSettings, IconSparkles, IconTimeline } from '@tabler/icons-react'
 import { useId, useState } from 'react'
 import { Button as AriaButton, Dialog, DialogTrigger, Link, Popover } from 'react-aria-components'
 import { useNavigate } from 'react-router'
@@ -13,6 +13,7 @@ import { useToast } from '../contexts/ToastContext'
 import { IS_DEMO } from '../demo/config'
 import { useErrorMessage, useI18n } from '../i18n'
 import { browserNavigation } from '../utils/navigation'
+import { useWhatsNewMenu } from '../whatsNew/WhatsNewLayout'
 import { LanguageList } from './LanguageMenu'
 import { ModeSegmented, PalettePicker } from './ThemeMenu'
 import styles from './UserMenu.module.css'
@@ -58,13 +59,14 @@ function Preferences() {
   )
 }
 
-/** Avatar button opening the account panel: identity, admin/timeline link, preferences, password, sign out (demo: reset). */
+/** Avatar button opening the account panel: identity, admin/timeline link, preferences, what's new, password, sign out (demo: reset). */
 export function UserMenu({ context = 'app', showPreferences = false }: UserMenuProps) {
   const { t } = useI18n()
   const auth = useAuth()
   const toast = useToast()
   const errorMessage = useErrorMessage()
   const navigate = useNavigate()
+  const whatsNew = useWhatsNewMenu()
   const [signingOut, setSigningOut] = useState(false)
   const [changingPassword, setChangingPassword] = useState(false)
   if (!auth.user) return null
@@ -117,6 +119,18 @@ export function UserMenu({ context = 'app', showPreferences = false }: UserMenuP
                       <IconTimeline size={18} aria-hidden="true" />
                       {t('shell.userMenu.timeline')}
                     </Link>
+                  )}
+                  {whatsNew && (
+                    <AriaButton
+                      className={cx(styles.link, styles.linkButton)}
+                      onPress={() => {
+                        close()
+                        whatsNew.openAll()
+                      }}
+                    >
+                      <IconSparkles size={18} aria-hidden="true" />
+                      {t('shell.userMenu.whatsNew')}
+                    </AriaButton>
                   )}
                   {canChangePassword && (
                     <AriaButton

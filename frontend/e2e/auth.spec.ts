@@ -1,6 +1,9 @@
-import type { ChildOut, SessionOut } from '../src/api/schema.gen'
+import type { ChildOut, SessionOut, WhatsNewOut } from '../src/api/schema.gen'
 import { BASE_URL } from './server'
 import { ANONYMOUS, DEV_PASSWORD, expect, expectInstallable, getJson, openUserMenu, storageStateOf, test, timelineRegion } from './support'
+
+/** The first "what's new" note (src/whatsNew/notes/). */
+const LAUNCH_NOTE = '2026-11-16-novedades'
 
 test.describe('signed out', () => {
   test.use({ storageState: ANONYMOUS })
@@ -107,5 +110,23 @@ test.describe('viewer', () => {
     await dialog.getByRole('button', { name: 'Cerrar' }).click()
     await expect(dialog).toBeHidden()
     await expect(page).toHaveURL(`/c/${first.slug}?zoom=events`)
+  })
+
+  test("has nothing new to catch up on at first, and reads what's new from the account menu", async ({ page }) => {
+    const answered = page.waitForResponse((response) => response.url().endsWith('/api/whats-new') && response.request().method() === 'GET')
+    await page.goto('/')
+    await answered
+    // A new user's first visit marks every note as read, without showing them.
+    await expect.poll(async () => (await getJson<WhatsNewOut>(page.request, '/api/whats-new')).seen).toContain(LAUNCH_NOTE)
+    const account = page.getByRole('button', { name: /^Menú de usuario: / })
+    // Nothing covers the page: the account menu opens.
+    const menu = await openUserMenu(page)
+    await menu.getByRole('button', { name: 'Novedades' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Novedades' })
+    await expect(dialog.getByRole('heading', { name: 'Noviembre de 2026', level: 4 })).toBeVisible()
+    await expect(dialog.getByRole('heading', { name: 'Ahora te contamos las novedades', level: 5 })).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+    await expect(account).toBeFocused()
   })
 })

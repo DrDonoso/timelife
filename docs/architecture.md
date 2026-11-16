@@ -38,6 +38,9 @@ flowchart LR
 - **Startup** (`docker-entrypoint.sh`): `alembic upgrade head` → `python -m timelife.seed` (idempotent: default
   categories) → Uvicorn with proxy-header support. `/health` checks database access and drives the Docker
   healthcheck; `/api/version` reports the image version and build date.
+- **What's new**: the notes about changes people will notice ship with the interface (`frontend/src/whatsNew/notes/`,
+  loaded after the page) and the database only keeps which ones each user has read (`/api/whats-new`), so every
+  version tells each person, once, what changed since their last visit, without contacting anyone.
 
 ## Technology
 
@@ -55,6 +58,7 @@ src/timelife/              FastAPI backend: settings, models, routers, media pro
 alembic/                   database migrations (run automatically when the container starts)
 tests/                     backend tests (pytest)
 scripts/export_openapi.py  exports the API contract to frontend/src/api/openapi.json
+scripts/release_notes.py   the "What's new" section of each GitHub release, from the notes added since the previous one
 frontend/                  React + Vite single-page app (src/), its static public demo (src/demo/), Playwright tests (e2e/)
 docs/                      these guides and the screenshots (docs/images/, made by `npm run gen:screenshots`)
 Dockerfile, docker-entrypoint.sh, docker-compose.yml, docker-compose.local.yml, .github/workflows/

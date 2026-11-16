@@ -133,7 +133,7 @@ under `.tmp/e2e-server/`, the default categories, 40 deterministic demo mileston
 
 - `auth` — login redirect (the e-mail form, no Google or "forgot password" without their settings), development
   sign-in and sign-out, viewers kept out of `/admin` and the edit button, the home-screen manifest and icons available
-  without a session;
+  without a session, nothing new to read at a first visit and every note in the user menu's **Novedades**;
 - `timeline` (desktop and phone) — newest-first line, the opening sweep, keyboard navigation, zoom with the controls,
   keys and hubs, search, full-screen photos on phones, *Todos juntos* (a line per child, shared milestones between
   them), category and date filters, mode (light/dark), colour theme and language (Spanish, English and Portuguese);
@@ -162,6 +162,52 @@ The frontend's API types are generated from the backend's OpenAPI contract. Afte
 run `uv run python scripts/export_openapi.py` and `npm --prefix frontend run gen:api`, and commit both
 `frontend/src/api/openapi.json` and `frontend/src/api/schema.gen.ts`. Every endpoint the app calls also needs a
 handler in the [static demo](demo.md#keeping-the-demo-in-step-with-the-app).
+
+## What's new notes
+
+A change people will notice comes with a note in the same pull request: the next time each person opens Timelife,
+a window (**Novedades**) tells them what is new since they last looked, once, and the user menu keeps every note.
+People opening it for the first time start with nothing to catch up on. A note is a JSON file in
+`frontend/src/whatsNew/notes/` named `YYYY-MM-DD-short-name.json` (the day it is written; lower-case letters, digits
+and hyphens):
+
+```json
+{
+  "kind": "new",
+  "audience": "everyone",
+  "icon": "search",
+  "link": "/all",
+  "es": {
+    "title": "Busca un recuerdo escribiendo lo que pasó",
+    "body": "Escribe en el buscador, por ejemplo «primeros pasos», y verás solo los hitos que lo cuentan."
+  },
+  "en": {
+    "title": "Find a memory by typing what happened",
+    "body": "Type in the search box, for example \"first steps\", to see only the milestones about it."
+  },
+  "pt": {
+    "title": "Encontra uma memória escrevendo o que aconteceu",
+    "body": "Escreve na pesquisa, por exemplo «primeiros passos», para veres só os marcos sobre isso."
+  }
+}
+```
+
+- `kind`: `new` (something people can do now), `improved` (something works better) or `fixed` (a problem people
+  noticed is gone). The window shows new things first, then improvements, then fixes.
+- `audience`: `everyone`, or `admins` for the administration pages (viewers never see those notes).
+- `icon` (optional): a key of `NOTE_ICONS` in `frontend/src/whatsNew/icons.ts`; without it, the icon of its kind.
+- `link` (optional): a page of the app where it can be tried, the same for every family (`/all`, `/admin/backup`;
+  administration pages only in `admins` notes). The note then gets a **Llévame allí** button.
+- `es`, `en`, `pt`: a `title` (70 characters at most) saying what people can do now, and a `body` (300 at most) with
+  one or two short sentences on what it means for them and where to find it.
+
+Write for a grandparent, not a developer: everyday words, no technical ones (server, version, cache, browser, API,
+upload limits…), "tú" in Spanish and "tu" in European Portuguese like the rest of the interface, one change per note.
+Fixes only deserve a note when people noticed the problem. Dependency updates, refactoring, CI, documentation and
+invisible fixes need none. The file name is the note's id: once released, never rename or delete a note (people
+would see it again, or lose it from the list); correct its texts instead. `src/whatsNew/notes.test.ts` checks every
+note (name, date, fields, icon, link and the three languages), and the release on GitHub lists, in English, the notes
+added since the previous release (below).
 
 ## Home-screen icons
 
@@ -204,7 +250,9 @@ proposes grouped updates of the actions, the Python and npm packages and the bas
   for further releases the same day, skipping any version that already has a git tag or a published image, so images
   are never overwritten), builds and pushes `drdonoso/timelife:latest` and `drdonoso/timelife:<version>` (with
   `IMAGE_TAG`/`BUILD_DATE` baked in and the GitHub Actions build cache), and creates a GitHub release with generated
-  notes. Releases are serialized (`timelife-release` concurrency group). Only `DrDonoso/timelife` publishes: in forks
+  notes, headed by a *What's new* section in English with the [notes](#whats-new-notes) added since the previous
+  release (`scripts/release_notes.py`; none when there are none). Releases are serialized (`timelife-release`
+  concurrency group). Only `DrDonoso/timelife` publishes: in forks
   the workflow stops after CI. It never connects to your server: update it with
   `docker compose pull && docker compose up -d`.
 

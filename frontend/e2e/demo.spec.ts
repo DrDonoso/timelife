@@ -76,6 +76,23 @@ test('can be installed as an app, with its icons @mobile', async ({ page }) => {
   await expectInstallable(page)
 })
 
+test("keeps what's new in the account menu, without interrupting the visit @mobile", async ({ page }, testInfo) => {
+  // The demo starts with nothing to catch up on: every note is marked as read, none is shown.
+  const saved = page.waitForRequest((request) => request.url().endsWith('/api/whats-new/seen') && request.method() === 'POST')
+  await page.goto('/c/emma')
+  await saved
+  await expect(timeline(page, 'Emma').getByRole('link').first()).toBeVisible()
+  const account = page.getByRole('button', { name: /^User menu: / })
+  await account.click()
+  await page.getByRole('dialog', { name: 'User menu' }).getByRole('button', { name: "What's new" }).click()
+  const dialog = page.getByRole('dialog', { name: "What's new" })
+  await expect(dialog.getByRole('heading', { name: "Now we tell you what's new", level: 5 })).toBeVisible()
+  await expectAccessible(page, testInfo)
+  await page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+  await expect(account).toBeFocused()
+})
+
 test('a milestone opens with its photos, also from a deep link @mobile', async ({ page }) => {
   await page.goto('/c/leo?q=first+steps')
   await eventLink(page, 'Leo', 'First steps').click()

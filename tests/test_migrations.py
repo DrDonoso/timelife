@@ -347,3 +347,29 @@ def test_sqlite_portuguese_migration_names_categories_and_keeps_ids(tmp_path: Pa
     assert "CONSTRAINT uq_children_slug UNIQUE" in ddl
     assert rows[:-1] == children and rows[-1][:3] == (5, "eva", "eva")
     assert sqlite_links(path) == links
+
+
+def test_sqlite_whats_new_migration_marks_existing_users_and_keeps_ids(tmp_path: Path) -> None:
+    # 0007 adds users.whats_new_seen in place: an empty list for existing users (they read the
+    # notes of this version once), NULL for new ones. Its rollback rebuilds users keeping
+    # AUTOINCREMENT and the counter (no id is reused).
+    path = tmp_path / "whats_new.db"
+    migrate(sqlite_url(path), "0006")
+    sqlite_run(
+        path,
+        *(INSERT_USER.format(email) for email in ("ana@x.es", "luis@x.es", "eva@x.es")),
+        "DELETE FROM users WHERE id = 3",
+    )
+
+    migrate(sqlite_url(path))
+    sqlite_run(path, INSERT_USER.format("sol@x.es"))
+    ddl, rows = sqlite_table(path, "users", ("id", "email", "whats_new_seen"))
+    assert "AUTOINCREMENT" in ddl and "whats_new_seen JSON" in ddl
+    assert rows == [(1, "ana@x.es", "[]"), (2, "luis@x.es", "[]"), (4, "sol@x.es", None)]
+
+    sqlite_run(path, "DELETE FROM users WHERE id = 4")
+    migrate(sqlite_url(path), "0006", command="downgrade")
+    sqlite_run(path, INSERT_USER.format("noa@x.es"))
+    ddl, rows = sqlite_table(path, "users", ("id", "email", "whats_new_seen"))
+    assert "AUTOINCREMENT" in ddl and "whats_new_seen" not in ddl
+    assert rows == [(1, "ana@x.es"), (2, "luis@x.es"), (5, "noa@x.es")]

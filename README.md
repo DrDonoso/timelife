@@ -52,6 +52,8 @@ and try every administration page. Nothing is stored or sent anywhere — reload
 - **Import and export**: one ZIP with everything, original photos included, to move to another server or keep a copy.
 - **Spanish, English and Portuguese**, five colour themes with light and dark modes, and installable on a phone's home
   screen.
+- **What's new, in plain words**: after an update, everyone is told once what changed for them since their last visit;
+  the account menu keeps the list.
 - **Private and secure**: invitation-only sign-in with e-mail and password (Google optional), no public pages, metadata
   removed from photos and videos, strict security headers and a non-root container.
 

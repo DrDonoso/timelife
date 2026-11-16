@@ -1,0 +1,17 @@
+{
+  "kind": "new",
+  "audience": "everyone",
+  "icon": "sparkles",
+  "es": {
+    "title": "Ahora te contamos las novedades",
+    "body": "Cuando Timelife traiga algo nuevo, te lo enseñaremos aquí al entrar. Para volver a leerlo, toca el círculo con tus iniciales, arriba a la derecha, y elige «Novedades»."
+  },
+  "en": {
+    "title": "Now we tell you what's new",
+    "body": "When Timelife gets something new, we'll show it to you here when you come in. To read it again, tap the circle with your initials at the top right and choose \"What's new\"."
+  },
+  "pt": {
+    "title": "Agora contamos-te as novidades",
+    "body": "Quando o Timelife trouxer algo novo, vais vê-lo aqui ao entrar. Para o voltares a ler, toca no círculo com as tuas iniciais, no canto superior direito, e escolhe «Novidades»."
+  }
+}

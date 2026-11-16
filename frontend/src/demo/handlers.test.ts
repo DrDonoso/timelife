@@ -14,6 +14,7 @@ import type {
   TimelineOut,
   UploadOut,
   UserOut,
+  WhatsNewOut,
 } from '../api/schema.gen'
 import { UNHANDLED_PREFIX, handlers, resetDemo } from './handlers'
 import { DemoApiError } from './validation'
@@ -127,6 +128,33 @@ describe('demo API', () => {
     })
     expect(await api.put<UserOut>('/api/admin/users/3/password', { password: 'otra-temporal' })).toMatchObject({ must_change_password: true })
     expect(await apiError(api.put('/api/admin/users/1/password', { password: 'otra-temporal' }))).toEqual({ status: 409, code: 'cannot_modify_self' })
+  })
+
+  it("keeps the what's new notes the visitor has read, checked like the API", async () => {
+    // None recorded at first: the app then marks every note as read (nothing to catch up on).
+    expect(await api.get<WhatsNewOut>('/api/whats-new')).toEqual({ seen: null })
+    const read = ['2026-11-16-novedades', '2026-12-01-zoom']
+    expect(await api.post<WhatsNewOut>('/api/whats-new/seen', { ids: ['2026-12-01-zoom', ' 2026-11-16-novedades '] })).toEqual({ seen: read })
+    expect(await api.post<WhatsNewOut>('/api/whats-new/seen', { ids: ['2026-11-16-novedades'] })).toEqual({ seen: read })
+    const invalid: Array<[unknown, string]> = [
+      [[], 'too_short'],
+      [Array.from({ length: 501 }, (_, index) => `2026-01-01-n${index}`), 'too_long'],
+      ['2026-11-16-novedades', 'list_type'],
+      [[7], 'string_type'],
+      [['novedades'], 'string_pattern_mismatch'],
+      [['2026-11-16-Novedades'], 'string_pattern_mismatch'],
+      [[`2026-11-16-${'a'.repeat(70)}`], 'string_too_long'],
+      [undefined, 'missing'],
+    ]
+    for (const [ids, type] of invalid) {
+      expect(await apiError(api.post('/api/whats-new/seen', { ids }))).toEqual({ status: 422, code: 'invalid_request', fields: { ids: type } })
+    }
+    expect(await apiError(api.post('/api/whats-new/seen', { ids: read, all: true }))).toEqual({
+      status: 422,
+      code: 'invalid_request',
+      fields: { all: 'extra_forbidden' },
+    })
+    expect(await api.get<WhatsNewOut>('/api/whats-new')).toEqual({ seen: read })
   })
 
   it('serves the timeline with filters from the query string', async () => {

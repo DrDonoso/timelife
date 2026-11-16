@@ -9,6 +9,7 @@ import type {
   SessionOut,
   TimelineOut,
   VersionOut,
+  WhatsNewOut,
 } from './schema.gen'
 
 /** Timeline filters (URL `q`, `from`, `to`, `cat`). Dates are `YYYY-MM-DD`. */
@@ -48,6 +49,7 @@ export const qk = {
   locations: ['admin', 'locations'] as const,
   trash: ['admin', 'trash'] as const,
   users: ['admin', 'users'] as const,
+  whatsNew: ['whatsNew'] as const,
 }
 
 /** Query keys that stay cached when the user signs out (public, not personal data). */
@@ -112,6 +114,15 @@ export function useVersion() {
   return useQuery({
     queryKey: qk.version,
     queryFn: ({ signal }) => api.get<VersionOut>('/api/version', { signal }),
+    staleTime: Infinity,
+  })
+}
+
+/** The "what's new" notes the signed-in user has read (read once per visit). */
+export function useWhatsNew() {
+  return useQuery({
+    queryKey: qk.whatsNew,
+    queryFn: ({ signal }) => api.get<WhatsNewOut>('/api/whats-new', { signal }),
     staleTime: Infinity,
   })
 }

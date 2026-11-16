@@ -170,6 +170,17 @@ for (const theme of ['light', 'dark'] as const) {
           await expectTheme(page)
           await expectAccessible(page, testInfo)
         })
+
+        test("what's new", async ({ page }, testInfo) => {
+          await page.goto(`/c/${subject.child.slug}?zoom=events`)
+          await expect(timelineRegion(page, subject.child.name).getByRole('link').first()).toBeVisible()
+          const panel = await openUserMenu(page)
+          await panel.getByRole('button', { name: 'Novedades' }).click()
+          const dialog = page.getByRole('dialog', { name: 'Novedades' })
+          await expect(dialog.getByRole('heading', { name: 'Ahora te contamos las novedades' })).toBeVisible()
+          await expectTheme(page)
+          await expectAccessible(page, testInfo)
+        })
       })
     }
 
