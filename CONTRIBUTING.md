@@ -60,6 +60,9 @@ npm run e2e:demo     # Playwright against the static demo
 - **Translations.** The interface is Spanish first. Strings live in `frontend/src/i18n/locales/{es,en,pt}`: `es` is
   the source and every key needs its English and European Portuguese (`pt-PT`) version too, with the same
   placeholders — `src/i18n/i18n.test.tsx` fails otherwise. Every backend error code needs a message in each language.
+- **What's new.** A change people will notice comes with a note for the in-app **Novedades**, in plain words and in
+  the three languages: a JSON file in `frontend/src/whatsNew/notes/`, see
+  [docs/development.md](docs/development.md#whats-new-notes).
 - **Design system and colours.** Reuse the components in `frontend/src/components/` (documented in their
   [README](frontend/src/components/README.md)). Colours are CSS tokens per theme (`styles/tokens.css` for the default
   palette, `styles/themes.css` for the others); colours painted from JavaScript (categories, years, family lanes) go

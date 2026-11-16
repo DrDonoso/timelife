@@ -1,0 +1,76 @@
+import {
+  IconAccessible,
+  IconBell,
+  IconBolt,
+  IconCalendarEvent,
+  IconCamera,
+  IconCategory,
+  IconDatabaseExport,
+  IconDeviceMobile,
+  IconFilter,
+  IconGift,
+  IconHeart,
+  IconKey,
+  IconLanguage,
+  IconLock,
+  IconMapPin,
+  IconMoodKid,
+  IconPalette,
+  IconPhoto,
+  IconRocket,
+  IconSearch,
+  IconShieldCheck,
+  IconSparkles,
+  IconTimeline,
+  IconTool,
+  IconTrash,
+  IconTrendingUp,
+  IconUsers,
+  IconVideo,
+  IconZoomIn,
+  type TablerIcon,
+} from '@tabler/icons-react'
+import type { Note, NoteKind } from './notes'
+
+/** Icons a note can name in its `icon` field. */
+export const NOTE_ICONS: Readonly<Record<string, TablerIcon>> = {
+  accessible: IconAccessible,
+  bell: IconBell,
+  bolt: IconBolt,
+  calendar: IconCalendarEvent,
+  camera: IconCamera,
+  category: IconCategory,
+  'database-export': IconDatabaseExport,
+  'device-mobile': IconDeviceMobile,
+  filter: IconFilter,
+  gift: IconGift,
+  heart: IconHeart,
+  key: IconKey,
+  language: IconLanguage,
+  lock: IconLock,
+  'map-pin': IconMapPin,
+  'mood-kid': IconMoodKid,
+  palette: IconPalette,
+  photo: IconPhoto,
+  rocket: IconRocket,
+  search: IconSearch,
+  'shield-check': IconShieldCheck,
+  sparkles: IconSparkles,
+  timeline: IconTimeline,
+  tool: IconTool,
+  trash: IconTrash,
+  'trending-up': IconTrendingUp,
+  users: IconUsers,
+  video: IconVideo,
+  'zoom-in': IconZoomIn,
+}
+
+const KIND_ICONS: Readonly<Record<NoteKind, TablerIcon>> = {
+  new: IconSparkles,
+  improved: IconTrendingUp,
+  fixed: IconTool,
+}
+
+export function noteIcon(note: Pick<Note, 'icon' | 'kind'>): TablerIcon {
+  return note.icon && Object.hasOwn(NOTE_ICONS, note.icon) ? NOTE_ICONS[note.icon] : KIND_ICONS[note.kind]
+}

@@ -115,6 +115,11 @@ Under `/admin`, for administrators only.
   Each theme brings its own automatic colours for years and for the *Todos juntos* lines, and adjusts the categories'
   colours so rings, badges and lines stay easy to see.
 - **Cambiar contraseña** in the user menu (it asks for the current one and signs you out on your other devices).
+- **Novedades** (*What's new*): when someone opens Timelife after an update brought something they will notice, a
+  window tells them in a couple of plain sentences, in their language: everything new since they last looked (several
+  updates together), new things first, each with a button to go and try it when it has a place in the app. Closing it
+  counts them as read, on every device. People who have just joined start with nothing to catch up on, and viewers
+  never see the notes about the administration pages. **Novedades** in the user menu lists every note again, by month.
 - Installable on a phone's home screen with the Timelife icon: Safari's **Share → Add to Home Screen** on iOS/iPadOS,
   Chrome's **Add to Home screen** (or **Install app**) on Android. It then opens as an app, without the browser's
   address bar; add it while signed in and it starts signed in (iOS copies the session since 17.2).

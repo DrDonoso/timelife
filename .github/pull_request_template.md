@@ -15,6 +15,7 @@ never real family photos. -->
 
 - [ ] Tests cover the change and the checks in CONTRIBUTING.md pass.
 - [ ] New interface texts exist in Spanish, English and Portuguese.
+- [ ] Changes people will notice come with a What's new note (`frontend/src/whatsNew/notes/`).
 - [ ] API changes: `openapi.json` and `schema.gen.ts` are regenerated and the demo handlers updated.
 - [ ] Database changes come with an Alembic migration.
 - [ ] The README or the guides in `docs/` are updated where needed.

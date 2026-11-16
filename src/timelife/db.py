@@ -104,6 +104,9 @@ class User(Base):
     )
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     last_login_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
+    # Ids of the "what's new" notes the user has read (see ``whats_new``); NULL until the
+    # interface records them for the first time.
+    whats_new_seen: Mapped[list[str] | None] = mapped_column(JSON(none_as_null=True))
 
     @property
     def google_linked(self) -> bool:

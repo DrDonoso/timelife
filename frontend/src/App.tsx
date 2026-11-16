@@ -17,6 +17,7 @@ import { TimelinePage } from './pages/TimelinePage'
 import { AppShell } from './shell/AppShell'
 import { RequireAdmin, RequireAuth, RequireChild, RequireFamily, RootRedirect } from './shell/guards'
 import { RootLayout } from './shell/RootLayout'
+import { WhatsNewLayout } from './whatsNew/WhatsNewLayout'
 
 // Code-split routes: the timeline loads without the admin panel or the event detail (which loads
 // the editor only when an admin edits).
@@ -58,7 +59,8 @@ function timelineChildren(): RouteObject[] {
  * Route tree (spec 30):
  * /login · /setup (administrator recovery link) · /reset-password (e-mailed link) · / (→
  * remembered/first child, or the family) · /c/:childSlug (timeline) · /all (every child together)
- * · …/e/:eventId (detail) · …/new (new milestone, admins) · /admin/* (admins, lazy) · * (404)
+ * · …/e/:eventId (detail) · …/new (new milestone, admins) · /admin/* (admins, lazy) · * (404).
+ * Every signed-in page can show what is new in Timelife (WhatsNewLayout).
  */
 export const routes: RouteObject[] = [
   {
@@ -69,7 +71,11 @@ export const routes: RouteObject[] = [
       { path: 'setup', element: <SetupPage /> },
       { path: 'reset-password', element: <ResetPasswordPage /> },
       {
-        element: <RequireAuth />,
+        element: (
+          <RequireAuth>
+            <WhatsNewLayout />
+          </RequireAuth>
+        ),
         children: [
           {
             element: <AppShell />,

@@ -14,7 +14,7 @@ SCHEMA_NAMES = {
     "CategoryIn", "EventImageIn", "EventIn", "EventUpdateIn", "EventOut", "EventSummaryOut",
     "EventPageOut", "DayOrderIn", "TrashItemOut", "TimelineCoverOut", "TimelineEventOut",
     "TimelineOut", "YearColorOut", "AppearanceOut", "YearColorIn", "SettingsIn", "ImageCrop",
-    "LocationOut",
+    "LocationOut", "WhatsNewOut", "WhatsNewSeenIn",
 }
 
 # (method, path) → (success status, request schema, response schema); "[X]" means a list of X.
@@ -68,6 +68,8 @@ ENDPOINTS: dict[tuple[str, str], tuple[str, str | None, str | None]] = {
     ("put", "/api/admin/year-colors/{year}"): ("200", "YearColorIn", "AppearanceOut"),
     ("delete", "/api/admin/year-colors/{year}"): ("200", None, "AppearanceOut"),
     ("put", "/api/admin/settings"): ("200", "SettingsIn", "AppearanceOut"),
+    ("get", "/api/whats-new"): ("200", None, "WhatsNewOut"),
+    ("post", "/api/whats-new/seen"): ("200", "WhatsNewSeenIn", "WhatsNewOut"),
 }
 
 

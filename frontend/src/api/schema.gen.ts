@@ -421,6 +421,14 @@ export interface VersionOut {
   version: string
 }
 
+export interface WhatsNewOut {
+  seen: string[] | null
+}
+
+export interface WhatsNewSeenIn {
+  ids: string[]
+}
+
 export interface YearColorIn {
   color: string
 }

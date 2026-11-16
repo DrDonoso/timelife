@@ -11,7 +11,7 @@
 import { http, HttpResponse, type DefaultBodyType, type JsonBodyType, type PathParams, type StrictRequest } from 'msw'
 import { framedThumb, processUpload } from './images'
 import { DemoStore, DIRECTIONS, PURPOSES, type EventInput, type Purpose, type TimelineQuery, type UserUpdate, type Zoom } from './store'
-import { DemoApiError, HEX_COLOR, ICON_PATTERN, isISODateString, parseBody, type Body } from './validation'
+import { DemoApiError, HEX_COLOR, ICON_PATTERN, NOTE_ID, isISODateString, parseBody, type Body } from './validation'
 
 // Replaced at build time by vite.config.ts (`define`).
 declare const __DEMO_BUILD_DATE__: string
@@ -192,6 +192,16 @@ const auth = [
 
 const platform = [
   http.get('/api/version', () => HttpResponse.json({ version: 'demo', build_date: __DEMO_BUILD_DATE__ })),
+]
+
+const whatsNew = [
+  http.get('/api/whats-new', answer(() => store.whatsNew())),
+  http.post(
+    '/api/whats-new/seen',
+    answer(async ({ request }) =>
+      store.markWhatsNewSeen(parseBody(await json(request), (body) => body.strings('ids', NOTE_ID, { min: 1, max: 500, length: 80 }))),
+    ),
+  ),
 ]
 
 const reading = [
@@ -522,6 +532,7 @@ const unhandled = http.all('/api/*', ({ request }) => {
 export const handlers = [
   ...auth,
   ...platform,
+  ...whatsNew,
   ...reading,
   ...events,
   ...uploads,

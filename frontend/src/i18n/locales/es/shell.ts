@@ -17,6 +17,7 @@ export const shell = {
     label: 'Menú de usuario',
     admin: 'Administración',
     timeline: 'Línea de tiempo',
+    whatsNew: 'Novedades',
     signOut: 'Cerrar sesión',
   },
   notifications: 'Notificaciones',

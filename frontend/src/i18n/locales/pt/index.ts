@@ -17,6 +17,7 @@ import { errors } from './errors'
 import { search } from './search'
 import { shell } from './shell'
 import { timeline } from './timeline'
+import { whatsNew } from './whatsNew'
 
 export const pt: Messages<Dictionary> = {
   common,
@@ -36,4 +37,5 @@ export const pt: Messages<Dictionary> = {
   adminUsers,
   adminBackup,
   demo,
+  whatsNew,
 }

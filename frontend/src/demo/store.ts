@@ -21,6 +21,7 @@ import type {
   TrashItemOut,
   UploadOut,
   UserOut,
+  WhatsNewOut,
 } from '../api/schema.gen'
 import { normalizeCrop, type PictureSize } from '../utils/crop'
 import { dominantColor, photoArt, renderArt, type Art, type Variant } from './artwork'
@@ -263,6 +264,9 @@ export class DemoStore {
     mobile: 'bottom_to_top',
   }
   private next = { event: 1, child: 1, category: 1, user: 1 }
+  // "What's new" notes the visitor has read: none recorded yet, so the demo opens with nothing to
+  // catch up on (like a new user), and the account menu still shows every note.
+  private whatsNewSeen: string[] | null = null
   private readonly clock: () => Date
   readonly scenario: Scenario
 
@@ -376,6 +380,16 @@ export class DemoStore {
   sessionUser(): SessionUserOut {
     const user = this.users.get(1) as UserOut
     return { id: user.id, email: user.email, name: user.name, role: user.role, has_password: user.has_password }
+  }
+
+  whatsNew(): WhatsNewOut {
+    return { seen: this.whatsNewSeen && [...this.whatsNewSeen] }
+  }
+
+  /** Adds notes to the read ones (sorted, the newest 1000 kept), as the API does. */
+  markWhatsNewSeen(ids: readonly string[]): WhatsNewOut {
+    this.whatsNewSeen = [...new Set([...(this.whatsNewSeen ?? []), ...ids])].toSorted().slice(-1000)
+    return this.whatsNew()
   }
 
   // Responses ---------------------------------------------------------------------------------
