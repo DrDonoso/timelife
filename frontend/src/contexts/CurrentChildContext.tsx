@@ -9,6 +9,8 @@ import { useAuth } from './AuthContext'
 export const FAMILY_PATH = '/all'
 /** Remembered choice of the family timeline (never a slug: slugs are `[a-z0-9-]`). */
 export const FAMILY_CHOICE = '@all'
+/** A milestone open over a timeline: its detail (`…/e/<id>`) or a new one (`…/new`). */
+export const MILESTONE_PATH = /^\/(c\/[^/]+|all)\/(e\/[^/]+|new)\/?$/
 
 /** Which timeline is open: a child's (by id) or the family one. */
 export type TimelineScope = number | 'all'

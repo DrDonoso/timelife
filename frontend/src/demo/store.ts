@@ -15,6 +15,7 @@ import type {
   ImageCrop,
   ImageOut,
   LocationOut,
+  MemoriesOut,
   SessionUserOut,
   SettingsIn,
   TimelineOut,
@@ -267,6 +268,9 @@ export class DemoStore {
   // "What's new" notes the visitor has read: none recorded yet, so the demo opens with nothing to
   // catch up on (like a new user), and the account menu still shows every note.
   private whatsNewSeen: string[] | null = null
+  // The last days the visitor was told about their memories and looked at them: none yet, so each
+  // visit tells about the day's memories (a reload starts again).
+  private memoriesSeen: MemoriesOut = { announced_on: null, opened_on: null }
   private readonly clock: () => Date
   readonly scenario: Scenario
 
@@ -390,6 +394,25 @@ export class DemoStore {
   markWhatsNewSeen(ids: readonly string[]): WhatsNewOut {
     this.whatsNewSeen = [...new Set([...(this.whatsNewSeen ?? []), ...ids])].toSorted().slice(-1000)
     return this.whatsNew()
+  }
+
+  memories(): MemoriesOut {
+    return { ...this.memoriesSeen }
+  }
+
+  /** Records the days the visitor was told about their memories and looked at them; an earlier day than the one recorded changes nothing, as in the API. */
+  markMemoriesSeen(change: MemoriesOut): MemoriesOut {
+    const later = (stored: string | null, given: string | null) => (given !== null && (stored === null || given > stored) ? given : stored)
+    this.memoriesSeen = {
+      announced_on: later(this.memoriesSeen.announced_on, change.announced_on),
+      opened_on: later(this.memoriesSeen.opened_on, change.opened_on),
+    }
+    return this.memories()
+  }
+
+  /** Today in UTC by the demo's clock (the days of the memories are checked against it). */
+  utcToday(): string {
+    return this.clock().toISOString().slice(0, 10)
   }
 
   // Responses ---------------------------------------------------------------------------------

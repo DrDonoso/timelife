@@ -107,6 +107,10 @@ class User(Base):
     # Ids of the "what's new" notes the user has read (see ``whats_new``); NULL until the
     # interface records them for the first time.
     whats_new_seen: Mapped[list[str] | None] = mapped_column(JSON(none_as_null=True))
+    # Memories ("on this day", see ``memories``): the last day the user was told about them and
+    # the last day they looked at them, on their device's calendar; NULL: never.
+    memories_announced_on: Mapped[dt.date | None] = mapped_column(Date)
+    memories_opened_on: Mapped[dt.date | None] = mapped_column(Date)
 
     @property
     def google_linked(self) -> bool:

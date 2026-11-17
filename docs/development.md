@@ -149,7 +149,9 @@ under `.tmp/e2e-server/`, the default categories, 40 deterministic demo mileston
   framing;
 - `a11y` — axe-core (WCAG 2.2 A/AA and best practices) on every screen, desktop and phone, in light and dark modes,
   the first-password, recovery and new-password pages included, plus the key screens in every colour theme: no
-  serious or critical violations.
+  serious or critical violations;
+- `memories` — the notice of today's memories and the header's list, with a milestone of a year ago made for it
+  (the development users' memories of the day count as seen everywhere else, so their notice never covers a page).
 
 Specs that sign in or change data run one at a time, the rest in parallel. Handy commands:
 `npx playwright test e2e/timeline.spec.ts --project=mobile`, `npx playwright test --ui` and `npx playwright show-report`.

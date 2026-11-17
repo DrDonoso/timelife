@@ -10,6 +10,7 @@ import { createQueryClient } from '../api/queries'
 import type { AuthConfigOut, CategoryOut, ChildOut, SessionOut } from '../api/schema.gen'
 import { RootLayout } from '../shell/RootLayout'
 import { NOTES } from '../whatsNew/notes'
+import { todayISO } from './dates'
 
 // Motion animations complete instantly in tests (exit animations included).
 MotionGlobalConfig.skipAnimations = true
@@ -106,13 +107,17 @@ export function mockApi(handlers: Record<string, MockHandler>) {
   return fetchMock
 }
 
-/** Session + auth config + reference data (every "what's new" note already read), plus any extra handlers. */
+/**
+ * Session + auth config + reference data (every "what's new" note already read, today's memories
+ * already looked at), plus any extra handlers.
+ */
 export function mockSignedIn(session: SessionOut = ADMIN_SESSION, extra: Record<string, MockHandler> = {}) {
   return mockApi({
     'GET /api/auth/session': session,
     'GET /api/auth/config': AUTH_CONFIG,
     'GET /api/version': { version: 'test', build_date: '' },
     'GET /api/whats-new': { seen: NOTES.map((note) => note.id) },
+    'GET /api/memories': () => ({ announced_on: todayISO(), opened_on: todayISO() }),
     'GET /api/children': TEST_CHILDREN,
     'GET /api/categories': TEST_CATEGORIES,
     'GET /api/appearance': {

@@ -1481,6 +1481,72 @@
         "title": "LocationOut",
         "type": "object"
       },
+      "MemoriesOut": {
+        "additionalProperties": false,
+        "properties": {
+          "announced_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Announced On"
+          },
+          "opened_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened On"
+          }
+        },
+        "required": [
+          "announced_on",
+          "opened_on"
+        ],
+        "title": "MemoriesOut",
+        "type": "object"
+      },
+      "MemoriesSeenIn": {
+        "additionalProperties": false,
+        "properties": {
+          "announced_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Announced On"
+          },
+          "opened_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened On"
+          }
+        },
+        "title": "MemoriesSeenIn",
+        "type": "object"
+      },
       "OrderIn": {
         "additionalProperties": false,
         "properties": {
@@ -4833,6 +4899,69 @@
         "summary": "Get Media",
         "tags": [
           "Media"
+        ]
+      }
+    },
+    "/api/memories": {
+      "get": {
+        "operationId": "memories_api_memories_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Memories",
+        "tags": [
+          "Memories"
+        ]
+      }
+    },
+    "/api/memories/seen": {
+      "post": {
+        "description": "Record the day the user was told about their memories (``announced_on``) and the day they\nlooked at them (``opened_on``). A day before the one recorded changes nothing (another device\nmay be behind, in another time zone).",
+        "operationId": "mark_seen_api_memories_seen_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemoriesSeenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemoriesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Mark Seen",
+        "tags": [
+          "Memories"
         ]
       }
     },

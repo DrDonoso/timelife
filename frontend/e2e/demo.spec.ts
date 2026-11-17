@@ -106,6 +106,27 @@ test('a milestone opens with its photos, also from a deep link @mobile', async (
   await expect(page.getByRole('dialog', { name: 'First steps' })).toBeVisible()
 })
 
+test("tells about the day's memories, and lists them by age @mobile", async ({ page }, testInfo) => {
+  // A day with two memories in the sample data: a month after Emma's "Rides her trike" (17 October)
+  // and ten months after Leo's "Rolls over" (17 January).
+  await page.clock.setFixedTime(new Date('2026-11-17T10:00:00Z'))
+  await page.goto('/c/emma')
+  const notice = notifications(page).getByRole('status').filter({ hasText: 'On this day, 1 month ago: “Rides her trike” and 1 more memory.' })
+  await expect(notice).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Memories (2 new today)' })).toBeVisible()
+  await notice.getByRole('button', { name: 'See' }).click()
+  const panel = page.getByRole('dialog', { name: 'Today’s memories' })
+  await expect(panel.getByRole('heading', { level: 3 })).toHaveText(['1 month ago', '10 months ago'])
+  await expectLoaded(panel.getByRole('link', { name: /^Rides her trike/ }).locator('img').first())
+  await expectAccessible(page, testInfo)
+
+  // Leo's opens over his timeline.
+  await panel.getByRole('link', { name: /^Rolls over/ }).click()
+  await expect(page).toHaveURL(/\/c\/leo\/e\/\d+\?zoom=events&focus=e\d+$/)
+  await expect(page.getByRole('dialog', { name: 'Rolls over' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Memories', exact: true, includeHidden: true })).toHaveCount(1)
+})
+
 test('shows everyone together, each child on their own line @mobile', async ({ page }, testInfo) => {
   await page.goto('/c/emma')
   await page.getByRole('button', { name: 'Switch child: Emma' }).click()

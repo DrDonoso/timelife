@@ -373,3 +373,37 @@ def test_sqlite_whats_new_migration_marks_existing_users_and_keeps_ids(tmp_path:
     ddl, rows = sqlite_table(path, "users", ("id", "email", "whats_new_seen"))
     assert "AUTOINCREMENT" in ddl and "whats_new_seen" not in ddl
     assert rows == [(1, "ana@x.es"), (2, "luis@x.es"), (5, "noa@x.es")]
+
+
+def test_sqlite_memories_migration_keeps_users_and_ids(tmp_path: Path) -> None:
+    # 0008 adds the memories' days in place (NULL: never told), and its rollback rebuilds users
+    # keeping AUTOINCREMENT and the counter (no id is reused).
+    path = tmp_path / "memories.db"
+    columns = ("id", "email", "whats_new_seen", "memories_announced_on", "memories_opened_on")
+    migrate(sqlite_url(path), "0007")
+    sqlite_run(
+        path,
+        *(INSERT_USER.format(email) for email in ("ana@x.es", "luis@x.es", "eva@x.es")),
+        "DELETE FROM users WHERE id = 3",
+    )
+
+    migrate(sqlite_url(path))
+    sqlite_run(
+        path,
+        "UPDATE users SET memories_announced_on = '2026-11-17' WHERE id = 2",
+        INSERT_USER.format("sol@x.es"),
+    )
+    ddl, rows = sqlite_table(path, "users", columns)
+    assert "memories_announced_on DATE" in ddl and "memories_opened_on DATE" in ddl
+    assert rows == [
+        (1, "ana@x.es", None, None, None),
+        (2, "luis@x.es", None, "2026-11-17", None),
+        (4, "sol@x.es", None, None, None),
+    ]
+
+    sqlite_run(path, "DELETE FROM users WHERE id = 4")
+    migrate(sqlite_url(path), "0007", command="downgrade")
+    sqlite_run(path, INSERT_USER.format("noa@x.es"))
+    ddl, rows = sqlite_table(path, "users", columns)
+    assert "AUTOINCREMENT" in ddl and "memories_" not in ddl
+    assert rows == [(1, "ana@x.es", None), (2, "luis@x.es", None), (5, "noa@x.es", None)]

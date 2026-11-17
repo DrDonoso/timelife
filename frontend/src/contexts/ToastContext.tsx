@@ -19,6 +19,8 @@ export interface ToastAction {
 export interface ToastOptions {
   tone?: ToastTone
   message: string
+  /** Decorative picture shown instead of the tone's icon (e.g. a milestone's photo). */
+  media?: ReactNode
   action?: ToastAction
   /** Milliseconds before auto-dismiss (default 5 s, errors 8 s). */
   duration?: number
@@ -68,7 +70,13 @@ function ToastView({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: num
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <Icon className={styles.icon} size={20} stroke={2} aria-hidden="true" />
+      {toast.media ? (
+        <span className={styles.media} aria-hidden="true">
+          {toast.media}
+        </span>
+      ) : (
+        <Icon className={styles.icon} size={20} stroke={2} aria-hidden="true" />
+      )}
       <p className={styles.message}>{toast.message}</p>
       {action &&
         (action.to ? (

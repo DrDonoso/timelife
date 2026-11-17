@@ -1,6 +1,6 @@
 import { expect, test as setup } from '@playwright/test'
 import type { SessionOut } from '../src/api/schema.gen'
-import { DEV_PASSWORD, MUTATION_HEADERS, storageStateOf, type Role } from './support'
+import { browserToday, DEV_PASSWORD, MUTATION_HEADERS, storageStateOf, type Role } from './support'
 
 // The development sign-in (enabled by scripts/e2e_server.py) for both roles; the other projects
 // start from these saved sessions. Tests that sign out use their own session instead.
@@ -13,6 +13,14 @@ for (const role of ['admin', 'viewer'] satisfies Role[]) {
     expect(response.status()).toBe(200)
     const session = (await response.json()) as SessionOut
     expect(session.user?.role).toBe(role)
+    // Today's memories count as told and looked at, whatever the date: their notice never covers
+    // the pages under test (memories.spec.ts shows it on purpose).
+    const today = browserToday()
+    const seen = await request.post('/api/memories/seen', {
+      data: { announced_on: today, opened_on: today },
+      headers: MUTATION_HEADERS,
+    })
+    expect(seen.status()).toBe(200)
     await request.storageState({ path: storageStateOf(role) })
   })
 }

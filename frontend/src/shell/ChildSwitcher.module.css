@@ -65,3 +65,10 @@
     font-size: var(--text-sm);
   }
 }
+
+/* The narrowest phones show the avatar only: the header also holds memories, search, filters and the account. */
+@media (max-width: 359px) {
+  .name {
+    display: none;
+  }
+}

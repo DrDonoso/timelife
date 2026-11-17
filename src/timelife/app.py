@@ -27,6 +27,7 @@ from . import (
     google_auth,
     mail,
     media,
+    memories,
     password_auth,
     setup,
     timeline,
@@ -171,6 +172,7 @@ def create_app(config: Settings | None = None) -> FastAPI:
         appearance.admin_router,
         backup.admin_router,
         whats_new.router,
+        memories.router,
     ):
         application.include_router(router)
 

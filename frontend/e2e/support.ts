@@ -48,6 +48,11 @@ export function uniqueSuffix(testInfo: TestInfo): string {
   return `${Date.now().toString(36).slice(-5)}${testInfo.workerIndex}${testInfo.retry}`
 }
 
+/** Today on the browser's calendar (`timezoneId` of playwright.config.ts): `YYYY-MM-DD`. */
+export function browserToday(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Madrid' }).format(new Date())
+}
+
 /** "1 hito" / "29 hitos" (es `{count} hito(s)` messages). */
 export function hitos(count: number): string {
   return `${count} ${count === 1 ? 'hito' : 'hitos'}`

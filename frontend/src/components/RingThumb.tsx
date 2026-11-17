@@ -1,10 +1,10 @@
 import { useState, type CSSProperties } from 'react'
-import { cx } from '../../components/utils'
-import { CategoryIcon } from '../../icons/CategoryIcon'
-import { useThemeColors } from '../../theme/useThemeColors'
-import type { CategoryLike } from '../../utils/categories'
-import { NEUTRAL_COLOR, ensureContrast, segmentedRing, shiftLightness } from '../../utils/color'
+import { CategoryIcon } from '../icons/CategoryIcon'
+import { useThemeColors } from '../theme/useThemeColors'
+import type { CategoryLike } from '../utils/categories'
+import { NEUTRAL_COLOR, ensureContrast, segmentedRing, shiftLightness } from '../utils/color'
 import styles from './RingThumb.module.css'
+import { cx } from './utils'
 
 export interface RingThumbProps {
   /** Photo URL (cover `thumb_url` or a `blob:` preview); null → category fallback. */

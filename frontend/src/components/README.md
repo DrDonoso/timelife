@@ -65,6 +65,7 @@ Categories: `categoryName(category, lang)`, `categoriesById`, `pickCategories(id
 | `Avatar` / `AvatarGroup` | `name`, `image` (ImageOut → `thumb_url`), `size` xs·sm·md·lg·xl·px, `decorative`, `ring` / `people`, `max` | Initials on a deterministic warm colour when there is no photo. |
 | `CategoryBadge` / `CategoryBadgeGroup` | `category`, `size` (26), `decorative`, `ring` / `categories`, `max` (3) | White icon on `ensureContrast(adapt(color))` (palette-adapted); group shows "+N". |
 | `CategoryPill` | `category`, `size` sm·md·lg, `expanded?` | Circle → pill (icon + name) on hover / keyboard focus / tap (tap again or outside to close); colour adapted to the palette, then `ensureContrast`, white text, no border; accessible name = category name. |
+| `RingThumb` | `src` (cover `thumb_url`), `placeholder`, `categories`, `size` (56), `ringWidth`, `imageStyle` | A milestone's circle in miniature (decorative): photo or category gradient + icon inside the categories' ring. `--ring-gap-color` (default surface) is the gap between ring and photo. |
 | `TextField` / `TextAreaField` | `label`, `value`, `onChange`, `description`, `errorMessage`, `isRequired`, `type`, `icon`, `size` / `rows`, `maxLength`, `showCount` | `errorMessage` marks the field invalid. |
 | `PasswordField` | `label`, `value`, `onChange`, **`autoComplete`** current-password·new-password, `description`, `errorMessage`, `isRevealed` + `onRevealChange` | Lock icon and an eye button that shows/hides the text (uncontrolled unless `isRevealed` is given). |
 | `DateField` | `label`, `value: 'YYYY-MM-DD' \| null`, `onChange`, `minValue`, `maxValue`, `isRequired`, `errorMessage` | Locale segment order, calendar popover with "Hoy" / "Borrar fecha". |
@@ -84,8 +85,9 @@ Icons (`src/icons`): `CATEGORY_ICONS`, `CATEGORY_ICON_KEYS`, `categoryIcon(key)`
 ## App contracts used with the components
 
 `useI18n()` (`t`, `lang`, `setLang`, `formatDate(value, style)`, `formatNumber`, `hasMessage`, `locale`),
-`useErrorMessage()` / `useFieldErrors()` (translate `ApiError`s), `useToast().show({ tone, message, action? })`
-(`action: { label, to? | onPress? }`), `useAuth()`, `useTheme()` (`preference`, `resolved`, `palette`,
+`useErrorMessage()` / `useFieldErrors()` (translate `ApiError`s), `useToast().show({ tone, message, media?, action? })`
+(`action: { label, to? | onPress? }`; `media`: a decorative picture instead of the tone's icon), `useAuth()`,
+`useTheme()` (`preference`, `resolved`, `palette`,
 `setPreference`, `setPalette`), `useThemeColors()`, `useCurrentChild()`, `useIsMobile()`,
 `useDocumentTitle(...parts)`.
 
