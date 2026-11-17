@@ -2,6 +2,7 @@ import { IconCrop } from '@tabler/icons-react'
 import type { CSSProperties } from 'react'
 import { Button } from '../../components/Button'
 import { CategoryBadgeGroup } from '../../components/CategoryBadge'
+import { RingThumb } from '../../components/RingThumb'
 import { cx } from '../../components/utils'
 import { useI18n } from '../../i18n'
 import { useThemeColors } from '../../theme/useThemeColors'
@@ -9,7 +10,6 @@ import type { CategoryLike } from '../../utils/categories'
 import { NEUTRAL_COLOR, segmentedBorder } from '../../utils/color'
 import { isISODate } from '../../utils/dates'
 import styles from './EventPreview.module.css'
-import { RingThumb } from './RingThumb'
 
 export interface EventPreviewProps {
   title: string

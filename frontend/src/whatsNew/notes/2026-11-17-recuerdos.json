@@ -1,0 +1,17 @@
+{
+  "kind": "new",
+  "audience": "everyone",
+  "icon": "history",
+  "es": {
+    "title": "Recuerda lo que pasó tal día como hoy",
+    "body": "Cuando un hito cumpla meses o años, como «hace 1 año», te avisaremos al entrar. Para volver a verlos, toca el reloj de arriba."
+  },
+  "en": {
+    "title": "Look back at what happened on this day",
+    "body": "When a milestone turns months or years old, like \"1 year ago\", we'll tell you when you come in. To see them again, tap the clock at the top."
+  },
+  "pt": {
+    "title": "Recorda o que aconteceu neste dia",
+    "body": "Quando um marco fizer meses ou anos, como «há 1 ano», avisamos-te ao entrar. Para os voltares a ver, toca no relógio lá em cima."
+  }
+}

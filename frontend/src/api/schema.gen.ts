@@ -271,6 +271,16 @@ export interface LocationOut {
   name: string
 }
 
+export interface MemoriesOut {
+  announced_on: string | null
+  opened_on: string | null
+}
+
+export interface MemoriesSeenIn {
+  announced_on?: string | null
+  opened_on?: string | null
+}
+
 export interface OrderIn {
   ids: number[]
 }

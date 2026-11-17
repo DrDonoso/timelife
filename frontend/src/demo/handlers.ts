@@ -204,6 +204,30 @@ const whatsNew = [
   ),
 ]
 
+/** Optional day that is today somewhere in the world (`CalendarToday` of the API): at most a day away from today in UTC. */
+function calendarToday(body: Body, key: string): string | null {
+  const day = body.date(key, { optional: true })
+  if (day === null) return null
+  const distance = Math.abs(Date.parse(`${day}T00:00:00Z`) - Date.parse(`${store.utcToday()}T00:00:00Z`))
+  body.check(distance <= 86_400_000, key, 'value_error')
+  return day
+}
+
+const memories = [
+  http.get('/api/memories', answer(() => store.memories())),
+  http.post(
+    '/api/memories/seen',
+    answer(async ({ request }) =>
+      store.markMemoriesSeen(
+        parseBody(await json(request), (body) => ({
+          announced_on: calendarToday(body, 'announced_on'),
+          opened_on: calendarToday(body, 'opened_on'),
+        })),
+      ),
+    ),
+  ),
+]
+
 const reading = [
   http.get('/api/children', answer(() => store.listChildren())),
   http.get('/api/categories', answer(() => store.listCategories())),
@@ -533,6 +557,7 @@ export const handlers = [
   ...auth,
   ...platform,
   ...whatsNew,
+  ...memories,
   ...reading,
   ...events,
   ...uploads,

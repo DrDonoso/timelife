@@ -5,6 +5,7 @@ Everything Timelife does, in detail. The [README](../README.md#features) has the
 
 - [Timeline](#timeline)
 - [Search and filters](#search-and-filters)
+- [Memories](#memories)
 - [Event details](#event-details)
 - [Administration](#administration)
 - [Everywhere](#everywhere)
@@ -44,6 +45,19 @@ Everything Timelife does, in detail. The [README](../README.md#features) has the
   to the event.
 - Filter panel: date range (with presets such as *this year* or *last 12 months*) and categories. Hub counts follow
   the filters.
+
+## Memories
+
+- **Recuerdos** (*Memories*, "on this day"): every day, the milestones of the whole family that turn a whole number of
+  months (1 to 11) or of years old that day: the same day of the month, or the last day of shorter months for those of
+  the 29th to the 31st (29 February: the 28th in other years).
+- The first time someone opens a timeline that day, on any of their devices, a notice tells them, with the first
+  one's photo: *Tal día como hoy, hace 1 año: «Primeros pasos»*. **Ver** opens that milestone over its timeline (or the
+  list, when there are several). It waits until *Novedades* has been read and no milestone is open.
+- The clock button in the header shows how many of today's memories have not been looked at yet and opens their
+  list, by age (*Hace 1 mes*, *Hace 1 año*…), each with its photo, date and children: choosing one opens it over the
+  timeline on screen when it is there, or over its child's, and the line moves to it. Looking at them counts them as
+  seen, on every device. On a day without memories it says which day brings the next ones.
 
 ## Event details
 

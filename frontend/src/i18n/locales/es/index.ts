@@ -14,6 +14,7 @@ import { components } from './components'
 import { demo } from './demo'
 import { detail } from './detail'
 import { errors } from './errors'
+import { memories } from './memories'
 import { search } from './search'
 import { shell } from './shell'
 import { timeline } from './timeline'
@@ -38,4 +39,5 @@ export const es = {
   adminBackup,
   demo,
   whatsNew,
+  memories,
 }

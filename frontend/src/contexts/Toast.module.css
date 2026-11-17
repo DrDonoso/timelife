@@ -35,6 +35,13 @@
   color: var(--color-primary);
 }
 
+.media {
+  display: grid;
+  flex: none;
+  place-items: center;
+  margin-left: calc(-1 * var(--space-1));
+}
+
 .toast[data-tone='success'] .icon {
   color: var(--color-success);
 }

@@ -506,6 +506,34 @@ class WhatsNewSeenIn(Contract):
     ids: Annotated[list[NoteId], Field(min_length=1, max_length=500)]
 
 
+# Memories ("on this day")
+def utc_today() -> dt.date:
+    return dt.datetime.now(dt.UTC).date()
+
+
+def _a_calendar_today(value: dt.date) -> dt.date:
+    """Today on some calendar of the world (time zones run from UTC-12 to UTC+14): at most a day
+    away from today in UTC, so a device with a wrong clock cannot silence the memories for long."""
+    if abs((value - utc_today()).days) > 1:
+        raise ValueError("Expected today's date")
+    return value
+
+
+CalendarToday = Annotated[dt.date, AfterValidator(_a_calendar_today)]
+
+
+class MemoriesOut(Contract):
+    # The last day (on the user's own calendar) they were told about their memories and the last
+    # day they looked at them; null: never.
+    announced_on: dt.date | None
+    opened_on: dt.date | None
+
+
+class MemoriesSeenIn(Contract):
+    announced_on: CalendarToday | None = None
+    opened_on: CalendarToday | None = None
+
+
 # Backup (export and import)
 # "uploading" → (every byte received) "ready", or "invalid" when the file is no Timelife backup;
 # "ready" → (start) "running" → "finished", or back to "ready" with ``error`` when the run fails,

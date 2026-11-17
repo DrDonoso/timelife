@@ -41,6 +41,10 @@ flowchart LR
 - **What's new**: the notes about changes people will notice ship with the interface (`frontend/src/whatsNew/notes/`,
   loaded after the page) and the database only keeps which ones each user has read (`/api/whats-new`), so every
   version tells each person, once, what changed since their last visit, without contacting anyone.
+- **Memories**: the interface finds the day's memories (milestones that turn 1 to 11 months or whole years old) in the
+  family timeline, on the device's calendar; the database only keeps, per user, the last day they were told about
+  them and the last day they looked at them (`/api/memories`), so each person hears about them once a day on any
+  device. The family timeline is only fetched for them until they have been looked at that day.
 
 ## Technology
 

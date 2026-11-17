@@ -5,6 +5,9 @@ import { Link, Outlet, useLocation } from 'react-router'
 import { IconButton } from '../components/IconButton'
 import { FAMILY_PATH } from '../contexts/CurrentChildContext'
 import { useI18n } from '../i18n'
+import { MemoriesAnnouncer } from '../memories/MemoriesAnnouncer'
+import { MemoriesButton } from '../memories/MemoriesButton'
+import { MemoriesProvider } from '../memories/MemoriesContext'
 import { FilterPanelProvider } from '../search/FilterPanelContext'
 import { FilterToggleButton } from '../search/FilterToggleButton'
 import { SearchBar } from '../search/SearchBar'
@@ -18,8 +21,9 @@ import { UserMenu } from './UserMenu'
 
 /**
  * Signed-in app frame: sticky translucent header (brand, child switcher, search + filters on
- * timeline routes, theme, language, account) and the routed page. Mobile: compact header, search
- * expands from an icon, theme/language move into the account panel.
+ * timeline routes, memories, theme, language, account) and the routed page. Mobile: compact
+ * header, search expands from an icon, theme/language move into the account panel. Today's
+ * memories are told once a day on the timelines (see MemoriesAnnouncer).
  */
 export function AppShell() {
   const { t } = useI18n()
@@ -55,65 +59,69 @@ export function AppShell() {
 
   return (
     <FilterPanelProvider>
-      <div className={styles.shell}>
-        <a href="#main" className={styles.skip}>
-          {t('shell.skipToContent')}
-        </a>
-        <header className={styles.header}>
-          <div className={styles.bar}>
-            <div className={styles.start}>
-              <Link to="/" className={styles.brand} aria-label={t('shell.home')}>
-                <Logo size={isMobile ? 30 : 34} withName={!isMobile} />
-              </Link>
-              <ChildSwitcher compact={isMobile} />
-            </div>
-            {onTimeline && !isMobile && (
-              <div className={styles.center}>
-                <SearchBar />
+      <MemoriesProvider>
+        <div className={styles.shell}>
+          <a href="#main" className={styles.skip}>
+            {t('shell.skipToContent')}
+          </a>
+          <header className={styles.header}>
+            <div className={styles.bar}>
+              <div className={styles.start}>
+                <Link to="/" className={styles.brand} aria-label={t('shell.home')}>
+                  <Logo size={isMobile ? 30 : 34} withName={!isMobile} />
+                </Link>
+                <ChildSwitcher compact={isMobile} />
               </div>
-            )}
-            <div className={styles.end}>
-              {onTimeline && isMobile && (
-                <IconButton
-                  ref={searchButtonRef}
-                  label={t('shell.search.open')}
-                  icon={IconSearch}
-                  aria-expanded={searchOpen}
-                  onPress={() => setSearchOpen(true)}
-                />
-              )}
-              {onTimeline && <FilterToggleButton />}
-              {!isMobile && (
-                <>
-                  <ThemeMenu />
-                  <LanguageMenu />
-                </>
-              )}
-              <UserMenu showPreferences={isMobile} />
-            </div>
-          </div>
-          <AnimatePresence>
-            {mobileSearch && (
-              <motion.div
-                ref={searchRef}
-                className={styles.mobileSearch}
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.18 }}
-              >
-                <div className={styles.mobileSearchField}>
+              {onTimeline && !isMobile && (
+                <div className={styles.center}>
                   <SearchBar />
                 </div>
-                <IconButton label={t('shell.search.close')} icon={IconX} onPress={closeSearch} tooltip={false} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </header>
-        <main id="main" className={styles.main} tabIndex={-1}>
-          <Outlet />
-        </main>
-      </div>
+              )}
+              <div className={styles.end}>
+                {onTimeline && <MemoriesButton />}
+                {onTimeline && isMobile && (
+                  <IconButton
+                    ref={searchButtonRef}
+                    label={t('shell.search.open')}
+                    icon={IconSearch}
+                    aria-expanded={searchOpen}
+                    onPress={() => setSearchOpen(true)}
+                  />
+                )}
+                {onTimeline && <FilterToggleButton />}
+                {!isMobile && (
+                  <>
+                    <ThemeMenu />
+                    <LanguageMenu />
+                  </>
+                )}
+                <UserMenu showPreferences={isMobile} />
+              </div>
+            </div>
+            <AnimatePresence>
+              {mobileSearch && (
+                <motion.div
+                  ref={searchRef}
+                  className={styles.mobileSearch}
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  <div className={styles.mobileSearchField}>
+                    <SearchBar />
+                  </div>
+                  <IconButton label={t('shell.search.close')} icon={IconX} onPress={closeSearch} tooltip={false} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </header>
+          <main id="main" className={styles.main} tabIndex={-1}>
+            <Outlet />
+          </main>
+          {onTimeline && <MemoriesAnnouncer />}
+        </div>
+      </MemoriesProvider>
     </FilterPanelProvider>
   )
 }

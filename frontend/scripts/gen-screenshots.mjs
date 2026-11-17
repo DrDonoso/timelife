@@ -1,7 +1,8 @@
 // Renders the screenshots of README.md and docs/ from the static demo, so they only ever show its
 // made-up sample data: `npm run gen:screenshots` builds the demo, serves dist-demo/ with Vite's
 // preview server and captures each view with Playwright's Chromium into ../docs/images/ (plus
-// themes.png, the family timeline on a phone in every colour theme).
+// themes.png, the family timeline on a phone in every colour theme). The list of the day's
+// memories (memories.png) is shown on a fixed day, the others on today's.
 //
 // Run it after visible interface changes and commit the PNGs. Uses Playwright's Chromium
 // (`npx playwright install chromium` once).
@@ -35,11 +36,20 @@ async function openMilestone(page, timeline, title) {
   await page.getByRole('dialog', { name: title }).waitFor()
 }
 
+/** The list of the day's memories, on a day with two in the sample data (17 November 2026). */
+async function openMemories(page) {
+  await page.clock.setFixedTime(new Date('2026-11-17T10:00:00Z'))
+  await page.goto('/c/emma?zoom=events')
+  await page.getByRole('button', { name: /^Memories/ }).click()
+  await page.getByRole('dialog', { name: 'Today’s memories' }).getByRole('link').first().waitFor()
+}
+
 const SHOTS = [
   { file: 'timeline.png', device: DESKTOP, mode: 'light', show: (page) => page.goto('/c/emma?zoom=events') },
   { file: 'family.png', device: DESKTOP, mode: 'dark', show: (page) => page.goto('/all?zoom=events') },
   { file: 'months.png', device: DESKTOP, mode: 'light', show: (page) => page.goto('/all?zoom=months') },
   { file: 'event.png', device: DESKTOP, mode: 'light', show: (page) => openMilestone(page, '/all', 'Christmas together') },
+  { file: 'memories.png', device: DESKTOP, mode: 'light', show: openMemories },
   {
     file: 'editor.png',
     device: DESKTOP,
@@ -83,7 +93,10 @@ const server = await preview({ root: FRONTEND, mode: 'demo', logLevel: 'warn', p
 const baseURL = server.resolvedUrls.local[0]
 const browser = await chromium.launch()
 
-/** A page of the demo in a fresh browser context: English, `palette` in `mode`, no welcome toast and no opening sweep. */
+/**
+ * A page of the demo in a fresh browser context: English, `palette` in `mode`, no opening sweep and
+ * no notices (the welcome, today's memories: they come and go).
+ */
 async function demoPage(device, mode, palette = 'sunset') {
   const context = await browser.newContext({
     ...device,
@@ -101,6 +114,11 @@ async function demoPage(device, mode, palette = 'sunset') {
       localStorage.setItem('timelife.palette', chosenPalette)
       sessionStorage.setItem('timelife.demo.welcomed', '1')
       sessionStorage.setItem('timelife.intro', '1')
+      document.addEventListener('DOMContentLoaded', () => {
+        const style = document.createElement('style')
+        style.textContent = 'section[aria-label="Notifications"] { display: none !important; }'
+        document.head.append(style)
+      })
     },
     [mode, palette],
   )

@@ -5,13 +5,12 @@ import { api } from '../api/client'
 import { qk, useWhatsNew } from '../api/queries'
 import type { WhatsNewOut } from '../api/schema.gen'
 import { useAuth } from '../contexts/AuthContext'
+import { MILESTONE_PATH } from '../contexts/CurrentChildContext'
 import { NOTES, byKind, isVisibleTo, type Note } from './notes'
 import { AllNotesDialog, NewsDialog } from './WhatsNewDialog'
 
 /** Ids saved per request (the API takes up to 500). */
 const BATCH = 500
-/** A milestone open over the timeline (its detail, or a new one): the news wait until it closes. */
-const MILESTONE_PATH = /^\/(c\/[^/]+|all)\/(e\/[^/]+|new)\/?$/
 
 interface Plan {
   /** What to tell the user, in the order shown. */
@@ -35,15 +34,21 @@ export interface WhatsNewProps {
   /** The list of every note (the account menu's «Novedades»). */
   allOpen: boolean
   onAllOpenChange: (isOpen: boolean) => void
+  /**
+   * Nothing is, or will be, shown on its own any more: there was no news for the user, they
+   * closed it, or what they had read could not be known.
+   */
+  onSettled: () => void
 }
 
 /**
  * Tells the signed-in user what is new since they last looked. Once the notes they have read are
- * known, the unread ones meant for them open in a dialog; closing it (or the list of every note)
- * counts every unread note as read, as does having none meant for them (notes for
- * administrators, for a viewer). Failing to save that only means seeing them again next time.
+ * known, the unread ones meant for them open in a dialog (not over a milestone: they wait until it
+ * closes); closing it (or the list of every note) counts every unread note as read, as does
+ * having none meant for them (notes for administrators, for a viewer). Failing to save that only
+ * means seeing them again next time.
  */
-export function WhatsNew({ allOpen, onAllOpenChange }: WhatsNewProps) {
+export function WhatsNew({ allOpen, onAllOpenChange, onSettled }: WhatsNewProps) {
   const { isAdmin } = useAuth()
   const { pathname } = useLocation()
   const queryClient = useQueryClient()
@@ -75,6 +80,11 @@ export function WhatsNew({ allOpen, onAllOpenChange }: WhatsNewProps) {
   useEffect(() => {
     if (done && plan) markRead(plan.unread)
   }, [done, plan, markRead])
+
+  const settled = done || (plan === null && seen.isError)
+  useEffect(() => {
+    if (settled) onSettled()
+  }, [settled, onSettled])
 
   return (
     <>

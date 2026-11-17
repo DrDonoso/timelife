@@ -6,6 +6,7 @@ import type {
   CategoryOut,
   ChildOut,
   EventOut,
+  MemoriesOut,
   SessionOut,
   TimelineOut,
   VersionOut,
@@ -50,6 +51,7 @@ export const qk = {
   trash: ['admin', 'trash'] as const,
   users: ['admin', 'users'] as const,
   whatsNew: ['whatsNew'] as const,
+  memories: ['memories'] as const,
 }
 
 /** Query keys that stay cached when the user signs out (public, not personal data). */
@@ -127,6 +129,14 @@ export function useWhatsNew() {
   })
 }
 
+/** The last days the signed-in user was told about their memories and looked at them. */
+export function useMemoriesState() {
+  return useQuery({
+    queryKey: qk.memories,
+    queryFn: ({ signal }) => api.get<MemoriesOut>('/api/memories', { signal }),
+  })
+}
+
 export function useChildren({ enabled = true }: QueryToggle = {}) {
   return useQuery({
     queryKey: qk.children,
@@ -155,7 +165,7 @@ export function useAppearance({ enabled = true }: QueryToggle = {}) {
  * Timeline of a child (by id) or of every child together (`'all'`) with server-side filters;
  * keeps the previous result while refetching.
  */
-export function useTimeline(scope: number | 'all' | null | undefined, filters: TimelineFilters) {
+export function useTimeline(scope: number | 'all' | null | undefined, filters: TimelineFilters, { enabled = true }: QueryToggle = {}) {
   const childId = scope === 'all' ? null : (scope ?? null)
   return useQuery({
     queryKey: qk.timeline(scope ?? 0, filters),
@@ -169,7 +179,7 @@ export function useTimeline(scope: number | 'all' | null | undefined, filters: T
         },
         signal,
       }),
-    enabled: scope != null,
+    enabled: enabled && scope != null,
     // Filter changes keep the current events on screen; switching timeline must not show the old one's.
     placeholderData: (previous) => (previous && previous.child_id === childId ? previous : undefined),
   })

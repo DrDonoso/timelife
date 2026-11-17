@@ -10,6 +10,7 @@ import type {
   EventPageOut,
   EventSummaryOut,
   LocationOut,
+  MemoriesOut,
   SessionOut,
   TimelineOut,
   UploadOut,
@@ -155,6 +156,27 @@ describe('demo API', () => {
       fields: { all: 'extra_forbidden' },
     })
     expect(await api.get<WhatsNewOut>('/api/whats-new')).toEqual({ seen: read })
+  })
+
+  it('keeps the days the visitor was told about their memories and looked at them, checked like the API', async () => {
+    // Nothing recorded at first: every visit tells about the day's memories.
+    expect(await api.get<MemoriesOut>('/api/memories')).toEqual({ announced_on: null, opened_on: null })
+    expect(await api.post<MemoriesOut>('/api/memories/seen', { announced_on: '2026-10-21' })).toEqual({ announced_on: '2026-10-21', opened_on: null })
+    // Never back (yesterday in another time zone); tomorrow somewhere moves it on.
+    expect(await api.post<MemoriesOut>('/api/memories/seen', { announced_on: '2026-10-20', opened_on: '2026-10-22' })).toEqual({
+      announced_on: '2026-10-21',
+      opened_on: '2026-10-22',
+    })
+    const invalid: Array<[Record<string, unknown>, string, string]> = [
+      [{ opened_on: '2026-10-23' }, 'opened_on', 'value_error'],
+      [{ announced_on: '2026-10-19' }, 'announced_on', 'value_error'],
+      [{ opened_on: '2026-02-30' }, 'opened_on', 'date_from_datetime_parsing'],
+      [{ opened_on: '2026-10-21', seen: true }, 'seen', 'extra_forbidden'],
+    ]
+    for (const [body, field, type] of invalid) {
+      expect(await apiError(api.post('/api/memories/seen', body))).toEqual({ status: 422, code: 'invalid_request', fields: { [field]: type } })
+    }
+    expect(await api.get<MemoriesOut>('/api/memories')).toEqual({ announced_on: '2026-10-21', opened_on: '2026-10-22' })
   })
 
   it('serves the timeline with filters from the query string', async () => {
