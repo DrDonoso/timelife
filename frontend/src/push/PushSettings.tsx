@@ -9,9 +9,9 @@ import { usePush } from './PushContext'
 import styles from './PushSettings.module.css'
 
 /**
- * The account panel's section about notifications on this device: the switch of the memories'
- * notification and a test, or why they cannot be turned on here (an iPhone in Safari, blocked
- * notifications). Nothing where browsers have no notifications, nor in the demo.
+ * The account panel's section about notifications on this device: their switch (for now they tell
+ * the day's memories) and a test, or why they cannot be turned on here (an iPhone in Safari,
+ * blocked notifications). Nothing where browsers have no notifications, nor in the demo.
  */
 export function PushSettings() {
   const { t } = useI18n()

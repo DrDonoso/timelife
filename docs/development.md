@@ -232,7 +232,7 @@ not. The backend tests never contact a push service: `tests/conftest.py` stops t
 replaces the network (`webpush.TRANSPORT`), and the tests call `app.state.notifier.tick(now)` with the moment they want.
 
 To try them by hand, Chrome on `http://localhost` (the Vite dev server or the local stack) turns them on and receives
-them: **Enviar un aviso de prueba** in the account menu sends one at once. An iPhone needs an HTTPS address in
+them: **Enviar una notificación de prueba** in the account menu sends one at once. An iPhone needs an HTTPS address in
 `PUBLIC_ORIGIN` (a test deployment, or a tunnel to your machine) and the app added to its Home Screen.
 The memories' notification goes out at the first minute between 9:00 and 21:00 of the device's day while the
 person has memories that day not yet told nor looked at.

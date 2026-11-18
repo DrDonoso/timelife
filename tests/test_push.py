@@ -205,8 +205,8 @@ def test_a_test_notification(viewer: TestClient, service: PushService) -> None:
     assert message == {
         "web_push": 8030,
         "notification": {
-            "title": "Timelife",
-            "body": "All set! This is how we’ll tell you about the days with memories.",
+            "title": "Test notification",
+            "body": "It works! This is how notifications will reach you on this device.",
             "lang": "en-GB",
             "dir": "ltr",
             "navigate": "http://testserver/",

@@ -140,6 +140,11 @@
   overscroll-behavior: contain;
 }
 
+/* A body of text only takes keyboard focus (bodyLabel): its ring inside, the panel would clip it. */
+.body:focus-visible {
+  outline-offset: -2px;
+}
+
 .header + .body {
   padding-top: var(--space-1);
 }

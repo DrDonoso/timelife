@@ -19,10 +19,9 @@ const INVITE_DURATION_MS = 15_000
 
 /**
  * Once per device, the first time the installed app opens on a timeline without notifications
- * ever asked for: a notice offering to turn the memories' one on («Activar» asks for permission,
- * which Safari only does from a tap). It waits until what's new has nothing more to show and no
- * milestone is open, and gives way to today's memories: when they are being told, it comes another
- * time.
+ * ever asked for: a notice offering to turn them on («Activar» asks for permission, which Safari
+ * only does from a tap). It waits until what's new has nothing more to show and no milestone is
+ * open, and gives way to today's memories: when they are being told, it comes another time.
  */
 export function PushInvite() {
   const { t } = useI18n()

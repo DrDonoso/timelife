@@ -45,6 +45,11 @@ export interface ModalProps {
   hideCloseButton?: boolean
   /** Remove the body padding (media-first layouts). */
   bleed?: boolean
+  /**
+   * Text only, with nothing to focus inside: the body takes keyboard focus under this name, so
+   * that the keyboard can scroll it when it does not fit.
+   */
+  bodyLabel?: string
   /** No outline around the panel (media-first cards). */
   borderless?: boolean
   footer?: RenderChildren
@@ -91,6 +96,7 @@ export function Modal({
   isKeyboardDismissDisabled = false,
   hideCloseButton = false,
   bleed = false,
+  bodyLabel,
   borderless = false,
   footer,
   originRect,
@@ -160,7 +166,15 @@ export function Modal({
                   ) : (
                     heading
                   )}
-                  <div ref={bodyRef} className={cx(styles.body, bleed && styles.bleed)}>{render(children, close)}</div>
+                  <div
+                    ref={bodyRef}
+                    className={cx(styles.body, bleed && styles.bleed)}
+                    role={bodyLabel ? 'region' : undefined}
+                    aria-label={bodyLabel}
+                    tabIndex={bodyLabel ? 0 : undefined}
+                  >
+                    {render(children, close)}
+                  </div>
                   {footer && <footer className={styles.footer}>{render(footer, close)}</footer>}
                 </>
               )}

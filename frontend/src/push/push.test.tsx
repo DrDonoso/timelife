@@ -10,7 +10,7 @@ import { base64UrlBytes } from './support'
 const KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
 const OLD_KEY = 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8QcYP7DkM'
 const ENDPOINT = 'https://web.push.apple.com/QGuQyavXutnMH'
-const SWITCH = 'Avisarme de los recuerdos'
+const SWITCH = 'Activar notificaciones'
 const ACCOUNT = 'Menú de usuario: Vera Viewer'
 
 class FakeSubscription {
@@ -131,10 +131,10 @@ describe('notifications in the account panel', () => {
     let panel = await openAccount(user)
     const toggle = within(panel).getByRole('switch', { name: SWITCH })
     expect(toggle).not.toBeChecked()
-    expect(toggle).toHaveAccessibleDescription('Un aviso a las 9:00 los días con recuerdos, en este dispositivo.')
+    expect(toggle).toHaveAccessibleDescription('Recibirás en este dispositivo los recuerdos de cada día, a las 9:00.')
     await user.click(toggle)
 
-    expect(await screen.findByText('Listo: te avisaremos a las 9:00 los días con recuerdos.')).toBeInTheDocument()
+    expect(await screen.findByText('Listo: las notificaciones están activadas en este dispositivo.')).toBeInTheDocument()
     expect(browser.notification.requestPermission).toHaveBeenCalledOnce()
     expect(browser.register).toHaveBeenCalledWith('/sw.js')
     expect(browser.subscribe).toHaveBeenCalledWith({ userVisibleOnly: true, applicationServerKey: base64UrlBytes(KEY) })
@@ -145,8 +145,8 @@ describe('notifications in the account panel', () => {
     expect(localStorage.getItem('timelife.push')).toBe('2')
     expect(toggle).toBeChecked()
 
-    await user.click(within(panel).getByRole('button', { name: 'Enviar un aviso de prueba' }))
-    expect(await screen.findByText('Aviso enviado: llegará en unos segundos.')).toBeInTheDocument()
+    await user.click(within(panel).getByRole('button', { name: 'Enviar una notificación de prueba' }))
+    expect(await screen.findByText('Notificación enviada: llegará en unos segundos.')).toBeInTheDocument()
     expect(sent.tested).toEqual([{ endpoint }])
 
     panel = screen.getByRole('dialog', { name: 'Menú de usuario' })
@@ -166,7 +166,7 @@ describe('notifications in the account panel', () => {
     const panel = await openAccount(user)
     await user.click(within(panel).getByRole('switch', { name: SWITCH }))
     expect(
-      await within(panel).findByText(/^Los avisos de Timelife están bloqueados en este dispositivo/),
+      await within(panel).findByText(/^Las notificaciones de Timelife están bloqueadas en este dispositivo/),
     ).toBeInTheDocument()
     expect(within(panel).queryByRole('switch')).not.toBeInTheDocument()
     expect(sent.registered).toEqual([])
@@ -181,14 +181,14 @@ describe('notifications in the account panel', () => {
     const user = userEvent.setup()
     const { unmount } = renderApp('/c/ana')
     let panel = await openAccount(user)
-    expect(within(panel).getByText(/^Para recibir avisos en el iPhone o el iPad, añade Timelife a la pantalla de inicio/)).toBeInTheDocument()
+    expect(within(panel).getByText(/^Para recibir notificaciones en el iPhone o el iPad, añade Timelife a la pantalla de inicio/)).toBeInTheDocument()
     expect(within(panel).queryByRole('switch')).not.toBeInTheDocument()
     unmount()
 
     Reflect.deleteProperty(navigator, 'userAgent')
     renderApp('/c/ana')
     panel = await openAccount(user)
-    expect(within(panel).queryByRole('group', { name: 'Avisos de este dispositivo' })).not.toBeInTheDocument()
+    expect(within(panel).queryByRole('group', { name: 'Notificaciones de este dispositivo' })).not.toBeInTheDocument()
   })
 })
 
@@ -228,10 +228,10 @@ describe('the invite of the installed app', () => {
     const user = userEvent.setup()
     const { unmount } = renderApp('/c/ana')
 
-    const invite = await screen.findByText('¿Te avisamos los días con recuerdos? Llegan a las 9:00.', {}, { timeout: INVITE_DELAY_MS + 4000 })
+    const invite = await screen.findByText('¿Activamos las notificaciones? Te avisaremos de los recuerdos de cada día.', {}, { timeout: INVITE_DELAY_MS + 4000 })
     expect(localStorage.getItem('timelife.pushInvite')).toBe('1')
     await user.click(within(invite.closest('[role="status"]') as HTMLElement).getByRole('button', { name: 'Activar' }))
-    expect(await screen.findByText('Listo: te avisaremos a las 9:00 los días con recuerdos.')).toBeInTheDocument()
+    expect(await screen.findByText('Listo: las notificaciones están activadas en este dispositivo.')).toBeInTheDocument()
     expect(browser.notification.requestPermission).toHaveBeenCalledOnce()
     expect(sent.registered).toHaveLength(1)
     unmount()
@@ -241,7 +241,7 @@ describe('the invite of the installed app', () => {
     renderApp('/c/ana')
     await screen.findByRole('button', { name: ACCOUNT })
     await new Promise((resolve) => setTimeout(resolve, INVITE_DELAY_MS + 300))
-    expect(screen.queryByText(/^¿Te avisamos/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^¿Activamos las notificaciones/)).not.toBeInTheDocument()
   })
 
   it('is not offered in a browser tab', async () => {
@@ -250,6 +250,6 @@ describe('the invite of the installed app', () => {
     renderApp('/c/ana')
     await screen.findByRole('button', { name: ACCOUNT })
     await new Promise((resolve) => setTimeout(resolve, INVITE_DELAY_MS + 300))
-    expect(screen.queryByText(/^¿Te avisamos/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^¿Activamos las notificaciones/)).not.toBeInTheDocument()
   })
 })

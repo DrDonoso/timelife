@@ -76,6 +76,7 @@ export function NewsDialog({ isOpen, onClose, notes }: DialogProps) {
       isOpen={isOpen}
       onOpenChange={closeWith(onClose)}
       title={t('whatsNew.title')}
+      bodyLabel={t('whatsNew.title')}
       fullScreenOnMobile
       swipeToClose
       footer={
@@ -108,7 +109,14 @@ export function AllNotesDialog({ isOpen, onClose, notes }: DialogProps) {
   const { t, formatDate, locale } = useI18n()
   const months = byMonth(notes)
   return (
-    <Modal isOpen={isOpen} onOpenChange={closeWith(onClose)} title={t('whatsNew.title')} fullScreenOnMobile swipeToClose>
+    <Modal
+      isOpen={isOpen}
+      onOpenChange={closeWith(onClose)}
+      title={t('whatsNew.title')}
+      bodyLabel={t('whatsNew.title')}
+      fullScreenOnMobile
+      swipeToClose
+    >
       {(close) => (
         <>
           <p className={styles.intro}>{t(months.length > 0 ? 'whatsNew.allIntro' : 'whatsNew.empty')}</p>

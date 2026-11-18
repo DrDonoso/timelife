@@ -3,15 +3,15 @@
   "audience": "everyone",
   "icon": "bell",
   "es": {
-    "title": "Te avisamos de los recuerdos de cada día",
-    "body": "En el menú de tu cuenta, arriba a la derecha, activa «Avisarme de los recuerdos» y los días con recuerdos te llegará un aviso a las 9:00. En el iPhone, añade antes Timelife a la pantalla de inicio y ábrelo desde allí."
+    "title": "Ya hay notificaciones: te recomendamos activarlas",
+    "body": "Actívalas en el menú de tu cuenta, arriba a la derecha, con «Activar notificaciones» (en el iPhone, añade antes Timelife a la pantalla de inicio y ábrelo desde allí). Por ahora te avisamos de los recuerdos de cada día a las 9:00, y más adelante llegarán otras."
   },
   "en": {
-    "title": "Get notified of each day's memories",
-    "body": "In your account menu, at the top right, turn on \"Notify me of memories\" and on days with memories you'll get a notification at 9:00. On an iPhone, first add Timelife to the Home Screen and open it from there."
+    "title": "Notifications are here: we recommend turning them on",
+    "body": "Turn them on in your account menu, at the top right, with \"Turn on notifications\" (on an iPhone, first add Timelife to the Home Screen and open it from there). For now we tell you about each day's memories at 9:00, and more will come later."
   },
   "pt": {
-    "title": "Avisamos-te das memórias de cada dia",
-    "body": "No menu da tua conta, em cima à direita, ativa «Avisar-me das memórias» e nos dias com memórias recebes um aviso às 9:00. No iPhone, adiciona primeiro o Timelife ao ecrã principal e abre-o a partir daí."
+    "title": "Já há notificações: recomendamos que as atives",
+    "body": "Ativa-as no menu da tua conta, em cima à direita, com «Ativar notificações» (no iPhone, adiciona primeiro o Timelife ao ecrã principal e abre-o a partir daí). Para já avisamos-te das memórias de cada dia às 9:00, e mais tarde chegarão outras."
   }
 }

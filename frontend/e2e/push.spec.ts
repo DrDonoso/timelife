@@ -10,7 +10,7 @@ test.use({ storageState: storageStateOf('viewer') })
 // RFC 8291's example keys of a browser.
 const P256DH = 'BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4'
 const AUTH = 'BTBZMqHH6r4Tts7J_aSIgg'
-const SWITCH = 'Avisarme de los recuerdos'
+const SWITCH = 'Activar notificaciones'
 
 test('turns the notifications of this device on, keeps them registered and turns them off', async ({ page }, testInfo) => {
   const endpoint = `https://fcm.googleapis.com/fcm/send/e2e-${uniqueSuffix(testInfo)}`
@@ -66,7 +66,7 @@ test('turns the notifications of this device on, keeps them registered and turns
     locale: 'es',
     time_zone: 'Europe/Madrid',
   })
-  await expect(toasts(page).getByText('Listo: te avisaremos a las 9:00 los días con recuerdos.')).toBeVisible()
+  await expect(toasts(page).getByText('Listo: las notificaciones están activadas en este dispositivo.')).toBeVisible()
   await expect(panel.getByRole('switch', { name: SWITCH })).toBeChecked()
   const worker = await page.evaluate(async () => (await navigator.serviceWorker.ready).active?.scriptURL)
   expect(worker).toMatch(/\/sw\.js$/)
