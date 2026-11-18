@@ -157,6 +157,8 @@ describe("what's new", () => {
     await user.click(await screen.findByRole('button', { name: 'Menú de usuario: Ada Admin' }))
     await user.click(await screen.findByRole('button', { name: 'Novedades' }))
     const dialog = await screen.findByRole('dialog', { name: 'Novedades' })
+    // Only text, with nothing to focus: the keyboard scrolls it once it takes focus.
+    expect(within(dialog).getByRole('region', { name: 'Novedades' })).toHaveAttribute('tabindex', '0')
     expect(within(dialog).getAllByRole('heading', { level: 4 }).map((heading) => heading.textContent)).toEqual([
       'Diciembre de 2026',
       'Noviembre de 2026',

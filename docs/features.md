@@ -58,17 +58,18 @@ Everything Timelife does, in detail. The [README](../README.md#features) has the
   list, by age (*Hace 1 mes*, *Hace 1 año*…), each with its photo, date and children: choosing one opens it over the
   timeline on screen when it is there, or over its child's, and the line moves to it. Looking at them counts them as
   seen, on every device. On a day without memories it says which day brings the next ones.
-- **Avisarme de los recuerdos** (*Notify me of memories*, in the account menu) turns on, for that device, a
-  notification at 9:00 on the days with memories, in its own time zone and language: *Recuerdos de hoy — Tal día como
-  hoy, hace 1 año: «Primeros pasos».* Tapping it opens that milestone, or the list when there are several, and the
-  app's icon shows how many are left to see. It counts as the day's notice (the app does not tell them again), and it
-  is not sent when they were already looked at or told that day; every device of a person that is due at that time
-  gets it. A server that was down at nine sends it when it is back, until 21:00, never later.
+- **Activar notificaciones** (*Turn on notifications*, in the account menu) turns on that device's notifications. For
+  now they tell the day's memories: a notification at 9:00 on the days with memories, in the device's own time zone
+  and language: *Recuerdos de hoy — Tal día como hoy, hace 1 año: «Primeros pasos».* Tapping it opens that milestone,
+  or the list when there are several, and the app's icon shows how many are left to see. It counts as the day's
+  notice (the app does not tell them again), and it is not sent when they were already looked at or told that day;
+  every device of a person that is due at that time gets it. A server that was down at nine sends it when it is back,
+  until 21:00, never later.
   - **iPhone and iPad** (iOS/iPadOS 16.4 or later): only the app added to the Home Screen gets notifications; in
     Safari the account menu explains how to add it. The first time the installed app opens, it offers to turn them on.
   - **Android and computers**: Chrome, Edge, Firefox and Safari on the Mac, installed or not.
-  - **Enviar un aviso de prueba** sends one at once. Signing out stops them on that device; a new password, a new role
-    or a disabled account stops them on every device until it signs in again.
+  - **Enviar una notificación de prueba** sends one at once. Signing out stops them on that device; a new password, a
+    new role or a disabled account stops them on every device until it signs in again.
 
 ## Event details
 

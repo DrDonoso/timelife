@@ -1,5 +1,5 @@
-"""Push notifications: the devices that asked to be told about each day's memories, and the
-notification itself.
+"""Push notifications: the devices that turned them on, and what they are told (for now, each
+day's memories).
 
 A browser, or the app installed on a phone's Home Screen, registers from the account panel
 (``PUT /api/push/subscription``) with its push address and keys (``webpush``), the language of
@@ -78,7 +78,8 @@ class Texts:
     several: tuple[str, str]
     months: tuple[str, str]
     years: tuple[str, str]
-    test: str
+    test_title: str
+    test_body: str
 
 
 TEXTS: dict[Locale, Texts] = {
@@ -91,7 +92,8 @@ TEXTS: dict[Locale, Texts] = {
         ),
         months=("hace {count} mes", "hace {count} meses"),
         years=("hace {count} año", "hace {count} años"),
-        test="¡Listo! Así te avisaremos los días con recuerdos.",
+        test_title="Notificación de prueba",
+        test_body="¡Funciona! Así te llegarán las notificaciones en este dispositivo.",
     ),
     "en": Texts(
         title="Today’s memories",
@@ -102,7 +104,8 @@ TEXTS: dict[Locale, Texts] = {
         ),
         months=("{count} month ago", "{count} months ago"),
         years=("{count} year ago", "{count} years ago"),
-        test="All set! This is how we’ll tell you about the days with memories.",
+        test_title="Test notification",
+        test_body="It works! This is how notifications will reach you on this device.",
     ),
     "pt": Texts(
         title="Memórias de hoje",
@@ -113,7 +116,8 @@ TEXTS: dict[Locale, Texts] = {
         ),
         months=("há {count} mês", "há {count} meses"),
         years=("há {count} ano", "há {count} anos"),
-        test="Pronto! É assim que te avisamos dos dias com memórias.",
+        test_title="Notificação de teste",
+        test_body="Funciona! É assim que vais receber as notificações neste dispositivo.",
     ),
 }
 
@@ -161,8 +165,11 @@ def memories_message(memories: Sequence[Memory], origin: str, locale: Locale) ->
 
 
 def test_message(origin: str, locale: Locale) -> dict[str, Any]:
+    """The notification of the account panel's test. Like every notification, its title says what
+    it is about, not the app's name: iOS adds "from <the app's name>" under every title."""
+    texts = TEXTS[locale]
     return notification(
-        origin, locale, title="Timelife", body=TEXTS[locale].test, path="/", tag="test"
+        origin, locale, title=texts.test_title, body=texts.test_body, path="/", tag="test"
     )
 
 
