@@ -1,27 +1,39 @@
-"""Push notifications: the devices that turned them on, and what they are told (for now, each
-day's memories).
+"""Push notifications: the devices that turned them on, and what they are told (each day's
+memories and the milestones other people add, as each person chose).
 
 A browser, or the app installed on a phone's Home Screen, registers from the account panel
 (``PUT /api/push/subscription``) with its push address and keys (``webpush``), the language of
 the interface and its time zone; the interface registers it again each time it opens, so the
 address, the language and the time zone stay current. The registration belongs to the session of
 the device: signing out there stops the notifications, and a new password, a new role or a
-disabled account stops them until the device signs in again.
+disabled account stops them until the device signs in again. Each person chooses which
+notifications reach their devices (``/api/push/preferences``: all of them until they say
+otherwise).
 
-``Notifier`` checks every minute which devices have reached 9:00 of their own day (until 21:00,
-never at night: a server that was down at nine sends them when it is back) and, when that day has
-memories their person has neither looked at nor been told about, sends each of them one
-notification, as the notice of the interface: the first memory, and how many more. It counts as
-telling them (``users.memories_announced_on``), so the interface does not tell them again. Tapping
-it opens that milestone, or today's memories when there are several. The messages use the
-declarative format (``"web_push": 8030``) that Safari shows by itself since iOS 18.4; the
-service worker of the interface (``frontend/public/sw.js``) shows them everywhere else."""
+``Notifier`` does a round every minute:
+
+- **Memories**: the devices that have reached 9:00 of their own day (until 21:00, never at night:
+  a server that was down at nine sends them when it is back) are told, when that day has memories
+  their person has neither looked at nor been told about, with one notification each, as the
+  notice of the interface: the first memory, and how many more. It counts as telling them
+  (``users.memories_announced_on``), so the interface does not tell them again. Tapping it opens
+  that milestone, or today's memories when there are several.
+- **New milestones**: adding one (``events``) queues it for every device of everybody else
+  (``milestone_notifications``), and the next round tells each of them, at any time of day, with
+  one notification per milestone (for which children, who added it, its title) that opens it. It
+  is not sent to devices whose person does not want it or that are paused, nor once the milestone
+  is in the trash; a device unreachable for a day misses it.
+
+The messages use the declarative format (``"web_push": 8030``) that Safari shows by itself since
+iOS 18.4; the service worker of the interface (``frontend/public/sw.js``) shows them everywhere
+else."""
 
 import asyncio
 import datetime as dt
 import logging
 import time
-from collections.abc import Sequence
+import unicodedata
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -40,13 +52,28 @@ from .auth import (
     access_hash,
     request_origin,
     settings,
-    throttle,
 )
 from .config import Settings
-from .contracts import PushConfigOut, PushEndpointIn, PushSubscriptionIn
-from .db import Locale, PushSubscription, User, utcnow
+from .contracts import (
+    PushConfigOut,
+    PushEndpointIn,
+    PushPreferencesIn,
+    PushPreferencesOut,
+    PushSubscriptionIn,
+)
+from .db import (
+    Child,
+    Event,
+    EventChild,
+    Locale,
+    MilestoneNotification,
+    PushSubscription,
+    User,
+    aware,
+    utcnow,
+)
 from .errors import AppError
-from .memories import Memory, memories_on
+from .memories import Memory, event_path, memories_on
 
 log = logging.getLogger(__name__)
 
@@ -59,12 +86,15 @@ TICK_SECONDS = 60
 # Minutes to wait before trying again after a push service or the network failed (the last one
 # repeats until the end of the window).
 RETRY_MINUTES = (2, 5, 15, 30, 60)
-# Days in a row a push service may refuse a device's notifications before it is forgotten (the
+# Notifications in a row a push service may refuse for a device before it is forgotten (the
 # device registers again the next time the app opens there).
 MAX_FAILURES = 3
 # Devices kept per person: registering one more forgets the one unused for longest.
 MAX_DEVICES = 20
-TEST_TTL_SECONDS = 300
+# A new milestone is told until a day after it was added (to devices unreachable until then).
+MILESTONE_WINDOW = dt.timedelta(days=1)
+# The longest title of a notification (a milestone of many children would not fit otherwise).
+MAX_TITLE = 120
 LANGUAGE_TAGS: dict[Locale, str] = {"es": "es-ES", "en": "en-GB", "pt": "pt-PT"}
 
 
@@ -78,8 +108,14 @@ class Texts:
     several: tuple[str, str]
     months: tuple[str, str]
     years: tuple[str, str]
-    test_title: str
-    test_body: str
+    # A new milestone: its title (of whose children), and who added it (``added``: an account
+    # without a name, or gone).
+    milestone: str
+    milestone_of: str
+    added_by: str
+    added: str
+    # Between the last two names of a list.
+    conjunction: str
 
 
 TEXTS: dict[Locale, Texts] = {
@@ -92,8 +128,11 @@ TEXTS: dict[Locale, Texts] = {
         ),
         months=("hace {count} mes", "hace {count} meses"),
         years=("hace {count} año", "hace {count} años"),
-        test_title="Notificación de prueba",
-        test_body="¡Funciona! Así te llegarán las notificaciones en este dispositivo.",
+        milestone="Nuevo hito",
+        milestone_of="Nuevo hito de {children}",
+        added_by="{name} ha añadido «{title}».",
+        added="Se ha añadido «{title}».",
+        conjunction="y",
     ),
     "en": Texts(
         title="Today’s memories",
@@ -104,8 +143,11 @@ TEXTS: dict[Locale, Texts] = {
         ),
         months=("{count} month ago", "{count} months ago"),
         years=("{count} year ago", "{count} years ago"),
-        test_title="Test notification",
-        test_body="It works! This is how notifications will reach you on this device.",
+        milestone="New milestone",
+        milestone_of="New milestone for {children}",
+        added_by="{name} added “{title}”.",
+        added="“{title}” was added.",
+        conjunction="and",
     ),
     "pt": Texts(
         title="Memórias de hoje",
@@ -116,8 +158,11 @@ TEXTS: dict[Locale, Texts] = {
         ),
         months=("há {count} mês", "há {count} meses"),
         years=("há {count} ano", "há {count} anos"),
-        test_title="Notificação de teste",
-        test_body="Funciona! É assim que vais receber as notificações neste dispositivo.",
+        milestone="Novo marco",
+        milestone_of="Novo marco de {children}",
+        added_by="{name} adicionou «{title}».",
+        added="Foi adicionado «{title}».",
+        conjunction="e",
     ),
 }
 
@@ -126,10 +171,41 @@ def plural(forms: tuple[str, str], count: int) -> str:
     return forms[0] if count == 1 else forms[1]
 
 
+def sounds_like_i(word: str) -> bool:
+    """Whether Spanish «y» becomes «e» before ``word``: it starts with the sound /i/ (``i``,
+    ``hi``), as ``Intl.ListFormat`` checks, accented too («Íñigo»); not ``hie``/``hia``, a
+    diphthong («agua y hielo»)."""
+    letters = "".join(
+        character
+        for character in unicodedata.normalize("NFD", word.casefold())
+        if not unicodedata.combining(character)
+    )
+    return letters.startswith("i") or (
+        letters.startswith("hi") and not letters.startswith(("hia", "hie"))
+    )
+
+
+def listed(names: Sequence[str], locale: Locale) -> str:
+    """``names`` in running text: «Lucía, Leo y Emma» (in Spanish «e» before the sound /i/:
+    «Lucía e Inés»)."""
+    if len(names) < 2:
+        return "".join(names)
+    conjunction = TEXTS[locale].conjunction
+    if locale == "es" and sounds_like_i(names[-1]):
+        conjunction = "e"
+    return f"{', '.join(names[:-1])} {conjunction} {names[-1]}"
+
+
+def shortened(text: str, limit: int = MAX_TITLE) -> str:
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
+
+
 def notification(
     origin: str, locale: Locale, *, title: str, body: str, path: str, tag: str
 ) -> dict[str, Any]:
-    """A declarative push message: the notification, and the page of ``origin`` it opens."""
+    """A declarative push message: the notification, and the page of ``origin`` it opens. Its
+    title says what it is about, never the app's name: iOS adds "from <the app's name>" under the
+    title of every notification."""
     return {
         "web_push": 8030,
         "notification": {
@@ -164,12 +240,67 @@ def memories_message(memories: Sequence[Memory], origin: str, locale: Locale) ->
     return message
 
 
-def test_message(origin: str, locale: Locale) -> dict[str, Any]:
-    """The notification of the account panel's test. Like every notification, its title says what
-    it is about, not the app's name: iOS adds "from <the app's name>" under every title."""
+@dataclass(frozen=True)
+class Milestone:
+    """A milestone someone added, as its notification tells it."""
+
+    event_id: int
+    title: str
+    # The name of whoever added it; None: an account without a name, or gone.
+    author: str | None
+    # Its children, in the order of their timelines.
+    children: tuple[str, ...]
+    path: str
+
+
+async def new_milestones(db: AsyncSession, event_ids: Collection[int]) -> dict[int, Milestone]:
+    """The milestones ``event_ids``, as their notifications tell them, by id."""
+    children: dict[int, list[tuple[str, str]]] = {}
+    for event_id, name, slug in await db.execute(
+        select(EventChild.event_id, Child.name, Child.slug)
+        .join(Child, Child.id == EventChild.child_id)
+        .where(EventChild.event_id.in_(event_ids))
+        .order_by(Child.sort_order, Child.id)
+    ):
+        children.setdefault(event_id, []).append((name, slug))
+    found: dict[int, Milestone] = {}
+    for event_id, title, author in await db.execute(
+        select(Event.id, Event.title, User.name)
+        .outerjoin(User, User.id == Event.created_by_id)
+        .where(Event.id.in_(event_ids))
+    ):
+        owners = children.get(event_id, [])
+        found[event_id] = Milestone(
+            event_id=event_id,
+            title=title,
+            author=author,
+            children=tuple(name for name, _ in owners),
+            path=event_path(event_id, owners[0][1] if owners else None),
+        )
+    return found
+
+
+def milestone_message(milestone: Milestone, origin: str, locale: Locale) -> dict[str, Any]:
+    """The notification of a milestone someone else added: for which children, who added it and
+    its title; it opens that milestone."""
     texts = TEXTS[locale]
+    title = (
+        texts.milestone_of.format(children=listed(milestone.children, locale))
+        if milestone.children
+        else texts.milestone
+    )
+    body = (
+        texts.added_by.format(name=milestone.author, title=milestone.title)
+        if milestone.author
+        else texts.added.format(title=milestone.title)
+    )
     return notification(
-        origin, locale, title=texts.test_title, body=texts.test_body, path="/", tag="test"
+        origin,
+        locale,
+        title=shortened(title),
+        body=body,
+        path=milestone.path,
+        tag=f"milestone-{milestone.event_id}",
     )
 
 
@@ -271,31 +402,38 @@ async def unsubscribe(body: PushEndpointIn, user: CurrentUser, db: DB) -> None:
     await db.commit()
 
 
-@router.post("/test", status_code=204)
-async def send_test(body: PushEndpointIn, request: Request, user: CurrentUser, db: DB) -> None:
-    """Send a sample notification to this device now. 404 ``push_subscription_not_found`` unless
-    it is registered for the signed-in user (also once its push service has forgotten it); 502
-    ``push_failed`` when the push service refused it or could not be reached."""
-    await throttle(db, request, "push-test", f"user:{user.id}", limit=10, ip_limit=30)
-    row = await db.scalar(
-        select(PushSubscription).where(
-            PushSubscription.endpoint == body.endpoint, PushSubscription.user_id == user.id
-        )
+def preferences_out(user: User) -> PushPreferencesOut:
+    return PushPreferencesOut(memories=user.notify_memories, milestones=user.notify_milestones)
+
+
+@router.get("/preferences", response_model=PushPreferencesOut)
+async def preferences(user: CurrentUser, db: DB) -> PushPreferencesOut:
+    account = await db.get(User, user.id)
+    if account is None:
+        raise AppError("authentication_required", 401)
+    return preferences_out(account)
+
+
+@router.patch("/preferences", response_model=PushPreferencesOut)
+async def choose_preferences(
+    body: PushPreferencesIn, user: CurrentUser, db: DB
+) -> PushPreferencesOut:
+    """Choose which notifications reach the user's devices (every one that has them on)."""
+    # Locked (FOR NO KEY UPDATE on PostgreSQL), so that two devices saving at once keep both.
+    account = await db.scalar(
+        select(User)
+        .where(User.id == user.id)
+        .with_for_update(key_share=True)
+        .execution_options(populate_existing=True)
     )
-    if row is None:
-        raise AppError("push_subscription_not_found", 404)
-    result = await notifier(request).sender.send(
-        subscription_of(row),
-        test_message(row.origin, row.locale),
-        ttl=TEST_TTL_SECONDS,
-        urgency="high",
-    )
-    if result == "gone":
-        await db.delete(row)
-        await db.commit()
-        raise AppError("push_subscription_not_found", 404)
-    if result != "delivered":
-        raise AppError("push_failed", 502)
+    if account is None:
+        raise AppError("authentication_required", 401)
+    if body.memories is not None:
+        account.notify_memories = body.memories
+    if body.milestones is not None:
+        account.notify_milestones = body.milestones
+    await db.commit()
+    return preferences_out(account)
 
 
 @dataclass(frozen=True)
@@ -314,15 +452,43 @@ class Due:
 
 
 @dataclass(frozen=True)
+class MilestoneDue:
+    """A device to tell about a new milestone now."""
+
+    subscription_id: int
+    subscription: webpush.Subscription
+    origin: str
+    locale: Locale
+    milestone: Milestone
+    # Seconds left until the milestone is no longer told.
+    ttl: int
+
+    @property
+    def key(self) -> tuple[int, int]:
+        return self.subscription_id, self.milestone.event_id
+
+
+@dataclass(frozen=True)
 class Retry:
-    day: dt.date
+    """A notification its push service or the network failed: tried again from ``not_before``.
+    ``day``: of the memories it tells (None for a new milestone)."""
+
     attempts: int
     not_before: dt.datetime
+    day: dt.date | None = None
+
+
+def retry_after(previous: Retry | None, now: dt.datetime, day: dt.date | None = None) -> Retry:
+    """The next attempt after one more failure (counted from one again for another day)."""
+    attempts = previous.attempts + 1 if previous is not None and previous.day == day else 1
+    wait = RETRY_MINUTES[min(attempts, len(RETRY_MINUTES)) - 1]
+    return Retry(attempts, now + dt.timedelta(minutes=wait), day)
 
 
 class Notifier:
-    """Tells each registered device about its day's memories (see the module's description);
-    ``tick`` does one round, ``start``/``stop`` run one every minute in the app's process."""
+    """Tells the registered devices about their day's memories and the new milestones (see the
+    module's description); ``tick`` does one round, ``start``/``stop`` run one every minute in
+    the app's process."""
 
     def __init__(
         self,
@@ -333,7 +499,9 @@ class Notifier:
         self.sessions = sessions
         self.config = config
         self.sender = sender or webpush.WebPush(config)
+        # What to try again: memories by device, new milestones by (device, milestone).
         self.retries: dict[int, Retry] = {}
+        self.milestone_retries: dict[tuple[int, int], Retry] = {}
         self.task: asyncio.Task[None] | None = None
 
     async def start(self) -> None:
@@ -367,6 +535,12 @@ class Notifier:
     async def tick(self, now: dt.datetime | None = None) -> None:
         """Send the notifications that are due at ``now``, then record what was done."""
         now = now or utcnow()
+        await self.tell_memories(now)
+        await self.tell_milestones(now)
+
+    # Memories -----------------------------------------------------------------------------------
+
+    async def tell_memories(self, now: dt.datetime) -> None:
         handled: list[tuple[int, dt.date]] = []
         sends: list[tuple[Due, list[Memory]]] = []
         async with self.sessions() as db:
@@ -376,6 +550,7 @@ class Notifier:
                     .join(User, User.id == PushSubscription.user_id)
                     .where(
                         User.disabled.is_(False),
+                        User.notify_memories.is_(True),
                         PushSubscription.auth_version == User.auth_version,
                     )
                     .order_by(PushSubscription.id)
@@ -416,11 +591,11 @@ class Notifier:
                     ttl=max(60, int((midnight - now).total_seconds())),
                 )
                 sends.append((due, days[day]))
-        results = [(due, await self.deliver(due, memories)) for due, memories in sends]
+        results = [(due, await self.deliver_memories(due, memories)) for due, memories in sends]
         if handled or results:
-            await self.record(now, handled, results)
+            await self.record_memories(now, handled, results)
 
-    async def deliver(self, due: Due, memories: Sequence[Memory]) -> webpush.Outcome:
+    async def deliver_memories(self, due: Due, memories: Sequence[Memory]) -> webpush.Outcome:
         """Send the notification of ``memories`` to one device; never fails (a device that
         cannot be told now is tried again later, the others are told all the same)."""
         try:
@@ -434,7 +609,7 @@ class Notifier:
             log.error("Memories not sent to a device (%s)", type(error).__name__)
             return "retry"
 
-    async def record(
+    async def record_memories(
         self,
         now: dt.datetime,
         handled: Sequence[tuple[int, dt.date]],
@@ -445,10 +620,7 @@ class Notifier:
                 await self.mark(db, subscription_id, day)
             for due, result in results:
                 if result == "retry":
-                    previous = self.retries.get(due.id)
-                    attempts = previous.attempts + 1 if previous and previous.day == due.day else 1
-                    wait = RETRY_MINUTES[min(attempts, len(RETRY_MINUTES)) - 1]
-                    self.retries[due.id] = Retry(due.day, attempts, now + dt.timedelta(minutes=wait))
+                    self.retries[due.id] = retry_after(self.retries.get(due.id), now, due.day)
                     continue
                 self.retries.pop(due.id, None)
                 if result == "gone":
@@ -472,10 +644,7 @@ class Notifier:
                     )
                 else:
                     await self.mark(db, due.id, due.day, failures=PushSubscription.failures + 1)
-            await db.execute(
-                delete(PushSubscription).where(PushSubscription.failures >= MAX_FAILURES),
-                execution_options=UNSYNCHRONIZED,
-            )
+            await self.forget_refusing(db)
             await db.commit()
         told = sum(result == "delivered" for _, result in results)
         if told:
@@ -488,5 +657,151 @@ class Notifier:
             update(PushSubscription)
             .where(PushSubscription.id == subscription_id)
             .values(memories_notified_on=day, **values),
+            execution_options=UNSYNCHRONIZED,
+        )
+
+    # New milestones -----------------------------------------------------------------------------
+
+    async def tell_milestones(self, now: dt.datetime) -> None:
+        dropped: list[tuple[int, int]] = []
+        sends: list[MilestoneDue] = []
+        async with self.sessions() as db:
+            rows = (
+                await db.execute(
+                    select(
+                        PushSubscription,
+                        MilestoneNotification.event_id,
+                        MilestoneNotification.created_at,
+                        User.notify_milestones,
+                        User.disabled,
+                        User.auth_version,
+                        Event.created_by_id,
+                        Event.deleted_at,
+                    )
+                    .select_from(MilestoneNotification)
+                    .join(
+                        PushSubscription,
+                        PushSubscription.id == MilestoneNotification.subscription_id,
+                    )
+                    .join(User, User.id == PushSubscription.user_id)
+                    .join(Event, Event.id == MilestoneNotification.event_id)
+                    .order_by(MilestoneNotification.event_id, MilestoneNotification.subscription_id)
+                )
+            ).all()
+            queued = {(row.id, event_id) for row, event_id, *_ in rows}
+            self.milestone_retries = {
+                key: retry for key, retry in self.milestone_retries.items() if key in queued
+            }
+            if not rows:
+                return
+            waiting: list[tuple[PushSubscription, int, dt.datetime]] = []
+            for row, event_id, queued_at, wanted, disabled, version, author_id, deleted_at in rows:
+                until = aware(queued_at) + MILESTONE_WINDOW
+                if (
+                    until <= now
+                    or not wanted
+                    or disabled
+                    or row.auth_version != version
+                    or row.user_id == author_id
+                    or deleted_at is not None
+                ):
+                    dropped.append((row.id, event_id))
+                    continue
+                retry = self.milestone_retries.get((row.id, event_id))
+                if retry is None or retry.not_before <= now:
+                    waiting.append((row, event_id, until))
+            milestones = (
+                await new_milestones(db, {event_id for _, event_id, _ in waiting})
+                if waiting
+                else {}
+            )
+            for row, event_id, until in waiting:
+                milestone = milestones.get(event_id)
+                if milestone is None:
+                    dropped.append((row.id, event_id))
+                    continue
+                sends.append(
+                    MilestoneDue(
+                        subscription_id=row.id,
+                        subscription=subscription_of(row),
+                        origin=row.origin,
+                        locale=row.locale,
+                        milestone=milestone,
+                        ttl=max(60, int((until - now).total_seconds())),
+                    )
+                )
+        results: list[tuple[MilestoneDue, webpush.Outcome]] = []
+        gone: set[int] = set()
+        for due in sends:
+            # Its push service forgot it: what else was queued for it goes with it.
+            if due.subscription_id in gone:
+                continue
+            result = await self.deliver_milestone(due)
+            if result == "gone":
+                gone.add(due.subscription_id)
+            results.append((due, result))
+        if dropped or results:
+            await self.record_milestones(now, dropped, results)
+
+    async def deliver_milestone(self, due: MilestoneDue) -> webpush.Outcome:
+        """Send the notification of a new milestone to one device; never fails (as
+        ``deliver_memories``)."""
+        try:
+            return await self.sender.send(
+                due.subscription,
+                milestone_message(due.milestone, due.origin, due.locale),
+                ttl=due.ttl,
+            )
+        except Exception as error:
+            log.error("New milestone not sent to a device (%s)", type(error).__name__)
+            return "retry"
+
+    async def record_milestones(
+        self,
+        now: dt.datetime,
+        dropped: Sequence[tuple[int, int]],
+        results: Sequence[tuple[MilestoneDue, webpush.Outcome]],
+    ) -> None:
+        done = list(dropped)
+        async with self.sessions() as db:
+            for due, result in results:
+                if result == "retry":
+                    previous = self.milestone_retries.get(due.key)
+                    self.milestone_retries[due.key] = retry_after(previous, now)
+                    continue
+                if result == "gone":
+                    await db.execute(
+                        delete(PushSubscription).where(PushSubscription.id == due.subscription_id),
+                        execution_options=UNSYNCHRONIZED,
+                    )
+                    continue
+                done.append(due.key)
+                failures = 0 if result == "delivered" else PushSubscription.failures + 1
+                await db.execute(
+                    update(PushSubscription)
+                    .where(PushSubscription.id == due.subscription_id)
+                    .values(failures=failures),
+                    execution_options=UNSYNCHRONIZED,
+                )
+            for subscription_id, event_id in done:
+                self.milestone_retries.pop((subscription_id, event_id), None)
+                await db.execute(
+                    delete(MilestoneNotification).where(
+                        MilestoneNotification.subscription_id == subscription_id,
+                        MilestoneNotification.event_id == event_id,
+                    ),
+                    execution_options=UNSYNCHRONIZED,
+                )
+            await self.forget_refusing(db)
+            await db.commit()
+        told = sum(result == "delivered" for _, result in results)
+        if told:
+            log.info("New milestones told on %d device(s)", told)
+
+    @staticmethod
+    async def forget_refusing(db: AsyncSession) -> None:
+        """Forget the devices whose push service refused too many notifications in a row."""
+        await db.execute(
+            delete(PushSubscription).where(PushSubscription.failures >= MAX_FAILURES),
             execution_options=UNSYNCHRONIZED,
         )

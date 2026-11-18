@@ -17,6 +17,7 @@ from sqlalchemy import (
     Uuid,
     event,
     false,
+    true,
 )
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
@@ -112,6 +113,10 @@ class User(Base):
     # the last day they looked at them, on their device's calendar; NULL: never.
     memories_announced_on: Mapped[dt.date | None] = mapped_column(Date)
     memories_opened_on: Mapped[dt.date | None] = mapped_column(Date)
+    # The notifications the user wants on the devices that have them on (see ``push``): each
+    # day's memories, and the milestones other people add.
+    notify_memories: Mapped[bool] = mapped_column(default=True, server_default=true())
+    notify_milestones: Mapped[bool] = mapped_column(default=True, server_default=true())
 
     @property
     def google_linked(self) -> bool:
@@ -158,10 +163,25 @@ class PushSubscription(Base):
     # The last day (on the device's calendar) its memories were dealt with: told, or nothing to
     # tell. NULL: never.
     memories_notified_on: Mapped[dt.date | None] = mapped_column(Date)
-    # Days in a row its push service refused the notifications; forgotten after a few.
+    # Notifications in a row its push service refused; forgotten after a few.
     failures: Mapped[int] = mapped_column(default=0, server_default="0")
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class MilestoneNotification(Base):
+    """A new milestone a device is still to be told about (see ``push``): queued when someone
+    adds it, for the devices of everybody else; gone once told, or after a day."""
+
+    __tablename__ = "milestone_notifications"
+
+    subscription_id: Mapped[int] = mapped_column(
+        ForeignKey("push_subscriptions.id", ondelete="CASCADE"), primary_key=True
+    )
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey("events.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
 class GoogleAuthFlow(Base):

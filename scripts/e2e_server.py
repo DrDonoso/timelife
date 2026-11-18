@@ -109,11 +109,12 @@ def cleanup(pid: str, data_dir: str) -> None:
 
 def serve(port: int, events: int) -> None:
     # Imported once the environment is configured.
+    import httpx
     import uvicorn
     from alembic.config import Config
 
     from alembic import command
-    from timelife import demo
+    from timelife import demo, webpush
     from timelife.app import create_app
     from timelife.config import Settings
 
@@ -123,6 +124,9 @@ def serve(port: int, events: int) -> None:
     config = Settings(_env_file=None)
     # Seeds the default categories, then loads the demo children and milestones.
     print(asyncio.run(demo.run(config, count=events)), flush=True)
+    # Notifications never leave this machine: the specs register stand-in devices, and new
+    # milestones are told to them, so the push services' answer is made up here.
+    webpush.TRANSPORT = httpx.MockTransport(lambda request: httpx.Response(201))
     print(f"Timelife e2e server on http://{HOST}:{port}", flush=True)
     uvicorn.run(create_app(config), host=HOST, port=port, log_level="warning", access_log=False)
 

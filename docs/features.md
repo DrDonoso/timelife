@@ -6,6 +6,7 @@ Everything Timelife does, in detail. The [README](../README.md#features) has the
 - [Timeline](#timeline)
 - [Search and filters](#search-and-filters)
 - [Memories](#memories)
+- [Notifications](#notifications)
 - [Event details](#event-details)
 - [Administration](#administration)
 - [Everywhere](#everywhere)
@@ -58,18 +59,29 @@ Everything Timelife does, in detail. The [README](../README.md#features) has the
   list, by age (*Hace 1 mes*, *Hace 1 año*…), each with its photo, date and children: choosing one opens it over the
   timeline on screen when it is there, or over its child's, and the line moves to it. Looking at them counts them as
   seen, on every device. On a day without memories it says which day brings the next ones.
-- **Activar notificaciones** (*Turn on notifications*, in the account menu) turns on that device's notifications. For
-  now they tell the day's memories: a notification at 9:00 on the days with memories, in the device's own time zone
-  and language: *Recuerdos de hoy — Tal día como hoy, hace 1 año: «Primeros pasos».* Tapping it opens that milestone,
-  or the list when there are several, and the app's icon shows how many are left to see. It counts as the day's
-  notice (the app does not tell them again), and it is not sent when they were already looked at or told that day;
-  every device of a person that is due at that time gets it. A server that was down at nine sends it when it is back,
-  until 21:00, never later.
-  - **iPhone and iPad** (iOS/iPadOS 16.4 or later): only the app added to the Home Screen gets notifications; in
-    Safari the account menu explains how to add it. The first time the installed app opens, it offers to turn them on.
-  - **Android and computers**: Chrome, Edge, Firefox and Safari on the Mac, installed or not.
-  - **Enviar una notificación de prueba** sends one at once. Signing out stops them on that device; a new password, a
-    new role or a disabled account stops them on every device until it signs in again.
+- With [notifications](#notifications) on, they also arrive at 9:00.
+
+## Notifications
+
+- **Activar notificaciones** (*Turn on notifications*, in the account menu) turns on that device's notifications, in
+  its own language:
+  - **Recuerdos del día** (*Today's memories*): a notification at 9:00 of the device's time zone on the days with
+    memories: *Recuerdos de hoy — Tal día como hoy, hace 1 año: «Primeros pasos».* Tapping it opens that milestone, or
+    the list when there are several, and the app's icon shows how many are left to see. It counts as the day's notice
+    (the app does not tell them again), and it is not sent when they were already looked at or told that day; every
+    device of a person that is due at that time gets it. A server that was down at nine sends it when it is back,
+    until 21:00, never later.
+  - **Hitos nuevos** (*New milestones*): when someone adds a milestone, everybody else is told within a minute, at any
+    time of day: *Nuevo hito de Lucía y Leo — Ana ha añadido «Primeros pasos».* Tapping it opens the milestone. One
+    notification per milestone; editing one tells nobody, and neither does one moved to the trash before it went out
+    nor the milestones of an import. A device that cannot be reached gets it when it is back, within a day.
+- **Elegir notificaciones** (*Choose notifications*), under the switch once they are on, chooses which of them arrive.
+  It is each person's choice, for all their devices, and saved at once; everybody gets both until they choose.
+- **iPhone and iPad** (iOS/iPadOS 16.4 or later): only the app added to the Home Screen gets notifications; in Safari
+  the account menu explains how to add it. The first time the installed app opens, it offers to turn them on.
+- **Android and computers**: Chrome, Edge, Firefox and Safari on the Mac, installed or not.
+- Signing out stops them on that device; a new password, a new role or a disabled account stops them on every device
+  until it signs in again.
 
 ## Event details
 
@@ -148,7 +160,7 @@ Under `/admin`, for administrators only.
   never see the notes about the administration pages. **Novedades** in the user menu lists every note again, by month.
 - Installable on a phone's home screen with the Timelife icon: Safari's **Share → Add to Home Screen** on iOS/iPadOS,
   Chrome's **Add to Home screen** (or **Install app**) on Android. It then opens as an app, without the browser's
-  address bar, and can [notify the day's memories](#memories); add it while signed in and it starts signed in (iOS
+  address bar, and can [send notifications](#notifications); add it while signed in and it starts signed in (iOS
   copies the session since 17.2).
 
 ## Privacy and security
@@ -169,5 +181,6 @@ Under `/admin`, for administrators only.
   Content-Security-Policy; request size limits and throttling of sign-ins, password e-mails and links.
 - Notifications are encrypted for the device that asked for them (only it can read them) and travel through its
   browser's push service (Apple, Google, Mozilla or Microsoft), the only addresses the server sends them to; they
-  carry the title of a milestone, never its photos, notes or place.
+  carry the title of a milestone (a new one's also its children's names and who added it), never its photos, notes
+  or place.
 - Non-root container with `no-new-privileges`; PostgreSQL is not published to the host.

@@ -131,7 +131,8 @@ the Portuguese one until it is edited); an older Timelife refuses a copy made by
 to a new server, keeping an extra copy you can browse, or bringing back something deleted. It leaves out what only makes sense on one server: sessions (everyone signs in again), the link
 between an account and its Google identity (made again, by e-mail, at the next sign-in), which **Novedades** each
 person has already read (imported accounts start with nothing to catch up on), when they were last told about their
-memories, the devices that get notifications (they register again when Timelife opens there, once signed in) and the
+memories, the devices that get notifications (they register again when Timelife opens there, once signed in), which
+notifications each person chose (everyone gets them all again) and the
 passwords — after
 *Reemplazar todo* on another server, only the importing administrator keeps theirs: give the others new temporary
 passwords from **Usuarios** (or they use *¿Has olvidado tu contraseña?* or Google). The thumbnails and the

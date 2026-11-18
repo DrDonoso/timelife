@@ -153,8 +153,10 @@ under `.tmp/e2e-server/`, the default categories, 40 deterministic demo mileston
 - `memories` — the notice of today's memories and the header's list, with a milestone of a year ago made for it
   (the development users' memories of the day count as seen everywhere else, so their notice never covers a page);
 - `push` — notifications turned on from the account panel (the real service worker and server registration, with
-  stand-ins for the permission and the browser's subscription: Chromium has no push service in tests), registered
-  again at the next opening, and turned off.
+  stand-ins for the permission and the browser's subscription: Chromium has no push service in tests), the choice of
+  which ones arrive (kept after a reload), registered again at the next opening, and turned off. The e2e server
+  answers in place of the push services (`webpush.TRANSPORT`), so nothing leaves the machine when the other specs add
+  milestones.
 
 Specs that sign in or change data run one at a time, the rest in parallel. Handy commands:
 `npx playwright test e2e/timeline.spec.ts --project=mobile`, `npx playwright test --ui` and `npx playwright show-report`.
@@ -226,16 +228,18 @@ end-to-end suites (`auth`, `demo`) that Chromium parses the manifest and loads e
 
 ## Notifications
 
-The server sends them itself (`src/timelife/webpush.py` for the protocol, `src/timelife/push.py` for the devices and
-the daily round); `frontend/src/push/` turns them on and off, `frontend/public/sw.js` shows them where the browser does
-not. The backend tests never contact a push service: `tests/conftest.py` stops the round that runs every minute and
-replaces the network (`webpush.TRANSPORT`), and the tests call `app.state.notifier.tick(now)` with the moment they want.
+The server sends them itself (`src/timelife/webpush.py` for the protocol, `src/timelife/push.py` for the devices, the
+preferences and the round of every minute); `frontend/src/push/` turns them on and off and chooses which ones arrive,
+`frontend/public/sw.js` shows them where the browser does not. The backend tests never contact a push service:
+`tests/conftest.py` stops the round that runs every minute and replaces the network (`webpush.TRANSPORT`), and the
+tests call `app.state.notifier.tick(now)` with the moment they want.
 
 To try them by hand, Chrome on `http://localhost` (the Vite dev server or the local stack) turns them on and receives
-them: **Enviar una notificación de prueba** in the account menu sends one at once. An iPhone needs an HTTPS address in
-`PUBLIC_ORIGIN` (a test deployment, or a tunnel to your machine) and the app added to its Home Screen.
-The memories' notification goes out at the first minute between 9:00 and 21:00 of the device's day while the
-person has memories that day not yet told nor looked at.
+them: sign in as `viewer` there and add a milestone as `admin` in another browser (or a private window), and it
+arrives within a minute. An iPhone needs an HTTPS address in `PUBLIC_ORIGIN` (a test deployment, or a tunnel to your
+machine) and the app added to its Home Screen. The memories' notification goes out at the first minute between 9:00
+and 21:00 of the device's day while the person has memories that day not yet told nor looked at; a new milestone's,
+at the next minute, to every device of everybody but whoever added it.
 
 ## Documentation screenshots
 

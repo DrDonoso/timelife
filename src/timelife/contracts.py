@@ -607,6 +607,20 @@ class PushEndpointIn(Contract):
     endpoint: PushEndpoint
 
 
+class PushPreferencesOut(Contract):
+    # The notifications the user wants on every device that has them on: each day's memories,
+    # and the milestones other people add.
+    memories: bool
+    milestones: bool
+
+
+class PushPreferencesIn(Contract):
+    """PATCH: only the fields sent change (null changes nothing)."""
+
+    memories: bool | None = None
+    milestones: bool | None = None
+
+
 # Backup (export and import)
 # "uploading" → (every byte received) "ready", or "invalid" when the file is no Timelife backup;
 # "ready" → (start) "running" → "finished", or back to "ready" with ``error`` when the run fails,

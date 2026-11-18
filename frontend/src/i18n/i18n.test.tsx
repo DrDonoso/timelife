@@ -44,7 +44,6 @@ const BACKEND_ERROR_CODES = [
   'import_offset_mismatch', 'import_size_mismatch', 'import_no_space', 'import_not_ready', 'import_not_running',
   'import_running', 'invalid_import', 'import_version_unsupported', 'import_file_missing', 'import_file_unreadable',
   'import_interrupted', 'import_cancelled', 'import_failed', 'push_service_unsupported',
-  'push_subscription_not_found', 'push_failed',
 ]
 
 describe('dictionaries', () => {

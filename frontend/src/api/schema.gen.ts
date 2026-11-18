@@ -319,6 +319,16 @@ export interface PushKeysIn {
   p256dh: string
 }
 
+export interface PushPreferencesIn {
+  memories?: boolean | null
+  milestones?: boolean | null
+}
+
+export interface PushPreferencesOut {
+  memories: boolean
+  milestones: boolean
+}
+
 export interface PushSubscriptionIn {
   endpoint: string
   keys: PushKeysIn

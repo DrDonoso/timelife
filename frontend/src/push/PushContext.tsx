@@ -1,5 +1,5 @@
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { ApiError, api, isApiError } from '../api/client'
+import { api, isApiError } from '../api/client'
 import type { PushConfigOut, PushSubscriptionIn } from '../api/schema.gen'
 import { useAuth } from '../contexts/AuthContext'
 import { IS_DEMO } from '../demo/config'
@@ -18,13 +18,11 @@ export interface PushValue {
   status: PushStatus
   /** Never asked on this device: the app may invite its person to turn them on. */
   canAsk: boolean
-  /** Turning them on or off, or sending a test. */
+  /** Turning them on or off. */
   busy: boolean
   /** Asks for permission (call it from a tap: Safari only asks then) and registers this device; whether they are on. */
   enable: () => Promise<boolean>
   disable: () => Promise<void>
-  /** A sample notification to this device. */
-  test: () => Promise<void>
 }
 
 export const SERVICE_WORKER = '/sw.js'
@@ -91,18 +89,6 @@ async function unsubscribeDevice(): Promise<void> {
   if (!subscription) return
   await api.post('/api/push/unsubscribe', { endpoint: subscription.endpoint })
   await subscription.unsubscribe()
-}
-
-async function testDevice(): Promise<void> {
-  const subscription = await currentSubscription()
-  if (!subscription) throw new ApiError({ status: 404, code: 'push_subscription_not_found' })
-  try {
-    await api.post('/api/push/test', { endpoint: subscription.endpoint })
-  } catch (error) {
-    // Forgotten by its push service (or by the server): turning them on again makes a new one.
-    if (isApiError(error, 'push_subscription_not_found')) await subscription.unsubscribe().catch(() => false)
-    throw error
-  }
 }
 
 /**
@@ -203,24 +189,10 @@ export function PushProvider({ children }: { children: ReactNode }) {
       .finally(() => setBusy(false))
   }, [])
 
-  const test = useCallback((): Promise<void> => {
-    if (!pushSupported()) return Promise.resolve()
-    setBusy(true)
-    return testDevice()
-      .catch((error: unknown) => {
-        if (isApiError(error, 'push_subscription_not_found')) {
-          writeStorage(STORAGE_KEYS.push, null)
-          setStatus('off')
-        }
-        throw error
-      })
-      .finally(() => setBusy(false))
-  }, [])
-
   const canAsk = status === 'off' && pushSupported() && Notification.permission === 'default'
   const value = useMemo<PushValue>(
-    () => ({ status, canAsk, busy, enable, disable, test }),
-    [status, canAsk, busy, enable, disable, test],
+    () => ({ status, canAsk, busy, enable, disable }),
+    [status, canAsk, busy, enable, disable],
   )
   return <PushContext value={value}>{children}</PushContext>
 }

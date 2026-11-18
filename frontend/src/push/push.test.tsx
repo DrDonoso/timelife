@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { PushEndpointIn, PushSubscriptionIn } from '../api/schema.gen'
+import type { PushEndpointIn, PushPreferencesIn, PushPreferencesOut, PushSubscriptionIn } from '../api/schema.gen'
 import { VIEWER_SESSION, mockSignedIn, renderApp, reply, type MockRequest } from '../utils/test-utils'
 import { INVITE_DELAY_MS } from './PushInvite'
 import { base64UrlBytes } from './support'
@@ -11,6 +11,7 @@ const KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3
 const OLD_KEY = 'BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8QcYP7DkM'
 const ENDPOINT = 'https://web.push.apple.com/QGuQyavXutnMH'
 const SWITCH = 'Activar notificaciones'
+const CHOOSE = 'Elegir notificaciones'
 const ACCOUNT = 'Menú de usuario: Vera Viewer'
 
 class FakeSubscription {
@@ -90,11 +91,12 @@ afterEach(() => {
 
 /** Signed in as Vera (user 2); returns the requests to /api/push. */
 function signedIn(extra: Record<string, unknown> = {}) {
-  const sent: { registered: PushSubscriptionIn[]; removed: PushEndpointIn[]; tested: PushEndpointIn[] } = {
+  const sent: { registered: PushSubscriptionIn[]; removed: PushEndpointIn[]; chosen: PushPreferencesIn[] } = {
     registered: [],
     removed: [],
-    tested: [],
+    chosen: [],
   }
+  let preferences: PushPreferencesOut = { memories: true, milestones: true }
   mockSignedIn(VIEWER_SESSION, {
     'GET /api/push': { public_key: KEY },
     'PUT /api/push/subscription': ({ body }: MockRequest) => {
@@ -105,9 +107,12 @@ function signedIn(extra: Record<string, unknown> = {}) {
       sent.removed.push(body as PushEndpointIn)
       return reply(204)
     },
-    'POST /api/push/test': ({ body }: MockRequest) => {
-      sent.tested.push(body as PushEndpointIn)
-      return reply(204)
+    'GET /api/push/preferences': () => preferences,
+    'PATCH /api/push/preferences': ({ body }: MockRequest) => {
+      const change = body as PushPreferencesIn
+      sent.chosen.push(change)
+      preferences = { memories: change.memories ?? preferences.memories, milestones: change.milestones ?? preferences.milestones }
+      return preferences
     },
     'GET /api/timeline': { child_id: null, total: 0, events: [] },
     'GET /api/children/1/timeline': { child_id: 1, total: 0, events: [] },
@@ -122,16 +127,16 @@ async function openAccount(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe('notifications in the account panel', () => {
-  it('turns them on for this device, sends a test and turns them off', async () => {
+  it('turns them on for this device, then offers to choose which ones, and turns them off', async () => {
     const browser = fakeBrowser()
     const sent = signedIn()
     const user = userEvent.setup()
     renderApp('/c/ana')
 
-    let panel = await openAccount(user)
+    const panel = await openAccount(user)
     const toggle = within(panel).getByRole('switch', { name: SWITCH })
     expect(toggle).not.toBeChecked()
-    expect(toggle).toHaveAccessibleDescription('Recibirás en este dispositivo los recuerdos de cada día, a las 9:00.')
+    expect(within(panel).queryByRole('button', { name: CHOOSE })).not.toBeInTheDocument()
     await user.click(toggle)
 
     expect(await screen.findByText('Listo: las notificaciones están activadas en este dispositivo.')).toBeInTheDocument()
@@ -144,17 +149,14 @@ describe('notifications in the account panel', () => {
     ])
     expect(localStorage.getItem('timelife.push')).toBe('2')
     expect(toggle).toBeChecked()
+    expect(within(panel).getByRole('button', { name: CHOOSE })).toBeInTheDocument()
 
-    await user.click(within(panel).getByRole('button', { name: 'Enviar una notificación de prueba' }))
-    expect(await screen.findByText('Notificación enviada: llegará en unos segundos.')).toBeInTheDocument()
-    expect(sent.tested).toEqual([{ endpoint }])
-
-    panel = screen.getByRole('dialog', { name: 'Menú de usuario' })
-    await user.click(within(panel).getByRole('switch', { name: SWITCH }))
-    await waitFor(() => expect(within(panel).getByRole('switch', { name: SWITCH })).not.toBeChecked())
+    await user.click(toggle)
+    await waitFor(() => expect(toggle).not.toBeChecked())
     expect(sent.removed).toEqual([{ endpoint }])
     expect(browser.subscription).toBeNull()
     expect(localStorage.getItem('timelife.push')).toBeNull()
+    expect(within(panel).queryByRole('button', { name: CHOOSE })).not.toBeInTheDocument()
   })
 
   it('stays off when the permission is refused, and then says where to allow them', async () => {
@@ -221,6 +223,66 @@ describe('the registration of this device', () => {
   })
 })
 
+describe('the choice of notifications', () => {
+  /** Vera turned them on in this browser earlier. */
+  function turnedOn() {
+    localStorage.setItem('timelife.push', '2')
+    fakeBrowser({ permission: 'granted', subscribedWith: KEY })
+  }
+
+  async function openChoices(user: ReturnType<typeof userEvent.setup>) {
+    const panel = await openAccount(user)
+    await user.click(await within(panel).findByRole('button', { name: CHOOSE }))
+    return screen.findByRole('dialog', { name: CHOOSE })
+  }
+
+  it('saves each one for all of the person’s devices as soon as it is switched', async () => {
+    turnedOn()
+    const sent = signedIn()
+    const user = userEvent.setup()
+    renderApp('/c/ana')
+
+    const dialog = await openChoices(user)
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Menú de usuario' })).not.toBeInTheDocument())
+    expect(within(dialog).getByText(/^Elige las que quieres recibir\. Valen para todos tus dispositivos/)).toBeInTheDocument()
+    const memories = await within(dialog).findByRole('switch', { name: 'Recuerdos del día' })
+    const milestones = within(dialog).getByRole('switch', { name: 'Hitos nuevos' })
+    expect(memories).toBeChecked()
+    expect(memories).toHaveAccessibleDescription('A las 9:00, los días con recuerdos.')
+    expect(milestones).toBeChecked()
+    expect(milestones).toHaveAccessibleDescription('Cuando otra persona añade un hito.')
+
+    await user.click(milestones)
+    expect(milestones).not.toBeChecked()
+    await waitFor(() => expect(sent.chosen).toEqual([{ milestones: false }]))
+    expect(memories).toBeChecked()
+
+    await user.click(within(dialog).getByRole('button', { name: 'Listo' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: CHOOSE })).not.toBeInTheDocument())
+  })
+
+  it('loads them again after a failure, and puts back a choice that cannot be saved', async () => {
+    turnedOn()
+    let loads = 0
+    signedIn({
+      'GET /api/push/preferences': () => (++loads === 1 ? reply(500, { code: 'internal_error' }) : { memories: true, milestones: false }),
+      'PATCH /api/push/preferences': reply(500, { code: 'internal_error' }),
+    })
+    const user = userEvent.setup()
+    renderApp('/c/ana')
+
+    const dialog = await openChoices(user)
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('No se han podido cargar tus notificaciones.')
+    await user.click(within(dialog).getByRole('button', { name: 'Reintentar' }))
+    const memories = await within(dialog).findByRole('switch', { name: 'Recuerdos del día' })
+    expect(within(dialog).getByRole('switch', { name: 'Hitos nuevos' })).not.toBeChecked()
+
+    await user.click(memories)
+    expect(await screen.findByText('Ha ocurrido un error en el servidor. Inténtalo de nuevo en unos minutos.')).toBeInTheDocument()
+    expect(memories).toBeChecked()
+  })
+})
+
 describe('the invite of the installed app', () => {
   it('offers them once, the first time it opens on a timeline', async () => {
     const browser = fakeBrowser({ standalone: true })
@@ -228,7 +290,11 @@ describe('the invite of the installed app', () => {
     const user = userEvent.setup()
     const { unmount } = renderApp('/c/ana')
 
-    const invite = await screen.findByText('¿Activamos las notificaciones? Te avisaremos de los recuerdos de cada día.', {}, { timeout: INVITE_DELAY_MS + 4000 })
+    const invite = await screen.findByText(
+      '¿Activamos las notificaciones? Te avisaremos de los recuerdos de cada día y de los hitos nuevos.',
+      {},
+      { timeout: INVITE_DELAY_MS + 4000 },
+    )
     expect(localStorage.getItem('timelife.pushInvite')).toBe('1')
     await user.click(within(invite.closest('[role="status"]') as HTMLElement).getByRole('button', { name: 'Activar' }))
     expect(await screen.findByText('Listo: las notificaciones están activadas en este dispositivo.')).toBeInTheDocument()

@@ -1,0 +1,17 @@
+{
+  "kind": "new",
+  "audience": "everyone",
+  "icon": "bell",
+  "es": {
+    "title": "Entérate de cada hito nuevo y elige qué notificaciones recibir",
+    "body": "Con las notificaciones activadas, te llega una en cuanto otra persona añade un hito. Elige cuáles quieres (los recuerdos del día, los hitos nuevos o ambos) en el menú de tu cuenta, con «Elegir notificaciones»."
+  },
+  "en": {
+    "title": "Hear about every new milestone, and choose your notifications",
+    "body": "With notifications on, you get one as soon as someone else adds a milestone. Choose which ones you want (today's memories, new milestones or both) in your account menu, with \"Choose notifications\"."
+  },
+  "pt": {
+    "title": "Fica a saber de cada novo marco e escolhe as tuas notificações",
+    "body": "Com as notificações ativadas, recebes uma assim que outra pessoa adiciona um marco. Escolhe as que queres (as memórias do dia, os novos marcos ou ambas) no menu da tua conta, com «Escolher notificações»."
+  }
+}

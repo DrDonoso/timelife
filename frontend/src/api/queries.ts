@@ -7,6 +7,7 @@ import type {
   ChildOut,
   EventOut,
   MemoriesOut,
+  PushPreferencesOut,
   SessionOut,
   TimelineOut,
   VersionOut,
@@ -52,6 +53,7 @@ export const qk = {
   users: ['admin', 'users'] as const,
   whatsNew: ['whatsNew'] as const,
   memories: ['memories'] as const,
+  pushPreferences: ['push', 'preferences'] as const,
 }
 
 /** Query keys that stay cached when the user signs out (public, not personal data). */
@@ -134,6 +136,14 @@ export function useMemoriesState() {
   return useQuery({
     queryKey: qk.memories,
     queryFn: ({ signal }) => api.get<MemoriesOut>('/api/memories', { signal }),
+  })
+}
+
+/** The notifications the signed-in user wants on their devices. */
+export function usePushPreferences() {
+  return useQuery({
+    queryKey: qk.pushPreferences,
+    queryFn: ({ signal }) => api.get<PushPreferencesOut>('/api/push/preferences', { signal }),
   })
 }
 
