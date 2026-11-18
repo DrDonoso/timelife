@@ -1,6 +1,7 @@
 """Push notifications: devices register for them (only their own person's, only the push services
-of the major browsers), signing out stops them, and each device is told about its day's memories
-once, from 9:00 of its own time zone, unless its person already saw them or was told."""
+of the major browsers), signing out stops them, each person chooses which ones they want, each
+device is told about its day's memories once, from 9:00 of its own time zone, unless its person
+already saw them or was told, and about each milestone someone else adds, at once."""
 
 import datetime as dt
 from typing import Any
@@ -14,13 +15,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from timelife import push, webpush
 from timelife.auth import revoke_user_sessions
 from timelife.config import Settings
-from timelife.db import PushSubscription, User
+from timelife.db import Locale, MilestoneNotification, PushSubscription, User
 
 from .conftest import app_client, login_as, run_db
-from .helpers_events import add_child, category_ids, create_event
+from .helpers_events import add_child, category_ids, create_event, update_event
 from .helpers_push import Browser, PushService
 
 SUBSCRIPTION = "/api/push/subscription"
+PREFERENCES = "/api/push/preferences"
 TODAY = dt.date(2026, 11, 18)
 
 
@@ -89,8 +91,10 @@ def test_notifications_need_a_session(client: TestClient) -> None:
     browser = Browser()
     assert client.get("/api/push").status_code == 401
     assert client.put(SUBSCRIPTION, json=browser.subscription()).status_code == 401
-    for path in ("/api/push/unsubscribe", "/api/push/test"):
-        assert client.post(path, json={"endpoint": browser.endpoint}).status_code == 401
+    stop = client.post("/api/push/unsubscribe", json={"endpoint": browser.endpoint})
+    assert stop.status_code == 401
+    assert client.get(PREFERENCES).status_code == 401
+    assert client.patch(PREFERENCES, json={"memories": False}).status_code == 401
 
 
 def test_browsers_subscribe_with_the_key_of_auth_secret(viewer: TestClient, config: Settings) -> None:
@@ -166,13 +170,10 @@ def test_a_device_belongs_to_whoever_registered_it_last(client: TestClient) -> N
     # Today's memories are still to be told to the new person.
     assert row.memories_notified_on is None
 
-    # Nobody else can stop it or test it.
+    # Nobody else can stop it.
     login_as(client, "viewer")
     assert client.post("/api/push/unsubscribe", json={"endpoint": browser.endpoint}).status_code == 204
     assert len(stored(client)) == 1
-    response = client.post("/api/push/test", json={"endpoint": browser.endpoint})
-    assert response.status_code == 404
-    assert response.json() == {"code": "push_subscription_not_found"}
     login_as(client, "admin")
     assert client.post("/api/push/unsubscribe", json={"endpoint": browser.endpoint}).status_code == 204
     assert stored(client) == []
@@ -197,35 +198,49 @@ def test_a_person_keeps_their_latest_devices(
     assert {row.endpoint for row in stored(viewer)} == {browsers[0].endpoint, browsers[2].endpoint}
 
 
-def test_a_test_notification(viewer: TestClient, service: PushService) -> None:
-    browser = Browser()
-    register(viewer, browser, locale="en")
-    assert viewer.post("/api/push/test", json={"endpoint": browser.endpoint}).status_code == 204
-    (message,) = service.messages(browser)
-    assert message == {
-        "web_push": 8030,
-        "notification": {
-            "title": "Test notification",
-            "body": "It works! This is how notifications will reach you on this device.",
-            "lang": "en-GB",
-            "dir": "ltr",
-            "navigate": "http://testserver/",
-            "tag": "test",
-            "silent": False,
-            "icon": "http://testserver/icon-192.png",
-            "badge": "http://testserver/badge-96.png",
-        },
-    }
-    assert service.requests[0].headers["urgency"] == "high"
+def test_each_person_chooses_their_notifications(client: TestClient) -> None:
+    login_as(client, "admin")
+    login_as(client, "viewer")
+    assert client.get(PREFERENCES).json() == {"memories": True, "milestones": True}
 
-    service.status = 503
-    response = viewer.post("/api/push/test", json={"endpoint": browser.endpoint})
-    assert (response.status_code, response.json()) == (502, {"code": "push_failed"})
-    # Its push service forgot it: so does Timelife (the app registers it again).
-    service.status = 410
-    response = viewer.post("/api/push/test", json={"endpoint": browser.endpoint})
-    assert (response.status_code, response.json()) == (404, {"code": "push_subscription_not_found"})
-    assert stored(viewer) == []
+    response = client.patch(PREFERENCES, json={"milestones": False})
+    assert response.status_code == 200, response.text
+    assert response.json() == {"memories": True, "milestones": False}
+    # Only what is sent changes.
+    for body in ({}, {"memories": None}):
+        assert client.patch(PREFERENCES, json=body).json() == {
+            "memories": True,
+            "milestones": False,
+        }
+    assert client.patch(PREFERENCES, json={"memories": False, "milestones": True}).json() == {
+        "memories": False,
+        "milestones": True,
+    }
+    assert client.get(PREFERENCES).json() == {"memories": False, "milestones": True}
+    viewer = user_row(client, "viewer@example.com")
+    assert (viewer.notify_memories, viewer.notify_milestones) == (False, True)
+    # Everyone chooses their own.
+    login_as(client, "admin")
+    assert client.get(PREFERENCES).json() == {"memories": True, "milestones": True}
+
+
+@pytest.mark.parametrize(
+    ("body", "fields"),
+    [
+        ({"memories": "maybe"}, {"memories": "bool_parsing"}),
+        ({"milestones": [True]}, {"milestones": "bool_type"}),
+        ({"test": True}, {"test": "extra_forbidden"}),
+    ],
+)
+def test_choices_are_true_or_false(
+    viewer: TestClient, body: dict[str, Any], fields: dict[str, str]
+) -> None:
+    response = viewer.patch(PREFERENCES, json=body)
+    assert (response.status_code, response.json()) == (
+        422,
+        {"code": "invalid_request", "fields": fields},
+    )
+    assert viewer.get(PREFERENCES).json() == {"memories": True, "milestones": True}
 
 
 # Sessions ------------------------------------------------------------------------------------
@@ -411,6 +426,21 @@ def test_only_active_accounts_are_told(client: TestClient, service: PushService)
     assert service.requests == []
 
 
+def test_memories_only_reach_those_who_want_them(client: TestClient, service: PushService) -> None:
+    add_memories(client, ("Primeros pasos", "2025-11-18"))
+    login_as(client, "viewer")
+    register(client, Browser())
+    assert client.patch(PREFERENCES, json={"memories": False}).status_code == 200
+    tick(client, at(8))
+    assert service.requests == []
+    # Not told: the app tells them when they come in, and so does a notification if they want it
+    # again before the day is over.
+    assert user_row(client, "viewer@example.com").memories_announced_on is None
+    assert client.patch(PREFERENCES, json={"memories": True}).status_code == 200
+    tick(client, at(9))
+    assert len(service.requests) == 1
+
+
 def test_a_push_service_that_fails_is_tried_again_later(client: TestClient, service: PushService) -> None:
     add_memories(client, ("Primeros pasos", "2025-11-18"))
     browser = Browser()
@@ -471,3 +501,290 @@ def test_devices_their_push_service_forgot_are_forgotten(
     assert stored(client)[0].failures == 2
     tick(client, at(8, day=20))
     assert stored(client) == []
+
+
+# New milestones ------------------------------------------------------------------------------
+
+
+def add_milestone(
+    client: TestClient,
+    children: list[int],
+    title: str = "Primeros pasos",
+    *,
+    added: dt.datetime | None = None,
+) -> dict[str, Any]:
+    """A milestone added by whoever is signed in on ``client``: for its notifications, at
+    ``added`` (default 2:00 UTC on 18 November, 3:00 in Madrid)."""
+    category = next(iter(category_ids(client).values()))
+    event = create_event(client, children, [category], title=title, date="2026-11-17")
+
+    async def change(db: AsyncSession) -> None:
+        await db.execute(
+            update(MilestoneNotification)
+            .where(MilestoneNotification.event_id == event["id"])
+            .values(created_at=added or at(2))
+        )
+        await db.commit()
+
+    run_db(client, change)
+    return event
+
+
+def queued(client: TestClient) -> list[tuple[int, int]]:
+    """The (device, milestone) notifications still to be told."""
+
+    async def load(db: AsyncSession) -> list[tuple[int, int]]:
+        rows = await db.execute(
+            select(MilestoneNotification.subscription_id, MilestoneNotification.event_id)
+        )
+        return sorted((device, event) for device, event in rows)
+
+    return run_db(client, load)
+
+
+def test_a_new_milestone_is_told_at_once_to_everybody_else(
+    client: TestClient, service: PushService
+) -> None:
+    phone, laptop = Browser(), Browser("https://fcm.googleapis.com/fcm/send/laptop")
+    login_as(client, "viewer")
+    register(client, phone)
+    login_as(client, "viewer")
+    register(client, laptop, locale="en")
+    login_as(client, "admin", name="Ana")
+    own = Browser("https://fcm.googleapis.com/fcm/send/own")
+    register(client, own)
+    lucia, leo = add_child(client, "Lucía"), add_child(client, "Leo")
+    event = add_milestone(client, [leo, lucia])["id"]
+    assert len(queued(client)) == 2
+
+    # 3:00 in Madrid: new milestones do not wait for the morning.
+    tick(client, at(2))
+    assert service.messages(own) == []
+    (message,) = service.messages(phone)
+    assert message == {
+        "web_push": 8030,
+        "notification": {
+            # Its children in the order of their timelines; it opens over the first one's.
+            "title": "Nuevo hito de Lucía y Leo",
+            "body": "Ana ha añadido «Primeros pasos».",
+            "lang": "es-ES",
+            "dir": "ltr",
+            "navigate": f"http://testserver/c/lucia/e/{event}?zoom=events&focus=e{event}",
+            "tag": f"milestone-{event}",
+            "silent": False,
+            "icon": "http://testserver/icon-192.png",
+            "badge": "http://testserver/badge-96.png",
+        },
+    }
+    (english,) = service.messages(laptop)
+    assert (english["notification"]["title"], english["notification"]["body"]) == (
+        "New milestone for Lucía and Leo",
+        "Ana added “Primeros pasos”.",
+    )
+    # Kept by the push service until a day after it was added; no topic (none replaces another).
+    headers = service.requests[0].headers
+    assert (headers["ttl"], headers["urgency"], "topic" in headers) == ("86400", "normal", False)
+    assert queued(client) == []
+    tick(client, at(2, 1))
+    assert len(service.requests) == 2
+
+
+def test_each_new_milestone_is_told_once_and_edits_are_not(
+    client: TestClient, service: PushService
+) -> None:
+    browser = Browser()
+    login_as(client, "viewer")
+    register(client, browser)
+    # An administrator without a name.
+    login_as(client, "admin")
+    lucia, ines = add_child(client, "Lucía"), add_child(client, "Inés")
+    first = add_milestone(client, [lucia, ines])
+    second = add_milestone(client, [lucia], "Primer diente")
+    tick(client, at(2))
+    assert [
+        (message["notification"]["title"], message["notification"]["body"])
+        for message in service.messages(browser)
+    ] == [
+        ("Nuevo hito de Lucía e Inés", "Se ha añadido «Primeros pasos»."),
+        ("Nuevo hito de Lucía", "Se ha añadido «Primer diente»."),
+    ]
+    assert [message["notification"]["tag"] for message in service.messages(browser)] == [
+        f"milestone-{first['id']}",
+        f"milestone-{second['id']}",
+    ]
+
+    assert update_event(client, first, title="Primeros pasitos").status_code == 200
+    tick(client, at(2, 1))
+    assert len(service.requests) == 2
+    assert queued(client) == []
+
+
+def test_new_milestones_only_reach_those_who_want_them(
+    client: TestClient, service: PushService
+) -> None:
+    browser = Browser()
+    login_as(client, "viewer")
+    register(client, browser)
+    assert client.patch(PREFERENCES, json={"milestones": False}).status_code == 200
+    login_as(client, "admin")
+    child = add_child(client)
+    add_milestone(client, [child])
+    tick(client, at(2))
+    assert service.requests == []
+    assert queued(client) == []
+
+    set_user(client, "viewer@example.com", notify_milestones=True)
+    add_milestone(client, [child], "Primer diente", added=at(3))
+    tick(client, at(3))
+    assert len(service.messages(browser)) == 1
+
+
+def test_nobody_is_told_about_their_own_milestones(
+    client: TestClient, service: PushService
+) -> None:
+    tablet = Browser()
+    login_as(client, "viewer")
+    register(client, tablet)
+    login_as(client, "admin")
+    add_milestone(client, [add_child(client)])
+    # Before the round, the administrator signs in on Vera's tablet: it is theirs now.
+    register(client, tablet)
+    tick(client, at(2))
+    assert service.requests == []
+    assert queued(client) == []
+
+
+def test_milestones_are_told_to_active_devices_only_while_out_of_the_trash(
+    client: TestClient, service: PushService
+) -> None:
+    paused = Browser()
+    login_as(client, "viewer")
+    register(client, paused)
+    login_as(client, "admin")
+    child = add_child(client)
+    set_user(client, "viewer@example.com", disabled=True)
+    add_milestone(client, [child])
+    tick(client, at(2))
+    set_user(client, "viewer@example.com", disabled=False)
+    tick(client, at(2, 1))
+    assert service.requests == []
+
+    # Moved to the trash before the round.
+    event = add_milestone(client, [child], "Borrado", added=at(3))
+    assert client.delete(f"/api/admin/events/{event['id']}").status_code == 204
+    tick(client, at(3))
+    assert service.requests == []
+    assert queued(client) == []
+
+    # A device that turns them on later is not told about earlier milestones.
+    add_milestone(client, [child], "Primer diente", added=at(4))
+    login_as(client, "viewer")
+    register(client, Browser("https://fcm.googleapis.com/fcm/send/later"))
+    tick(client, at(4))
+    assert [message["notification"]["body"] for message in service.messages(paused)] == [
+        "Se ha añadido «Primer diente»."
+    ]
+    assert len(service.requests) == 1
+
+
+def test_a_new_milestone_is_tried_again_for_a_day(client: TestClient, service: PushService) -> None:
+    browser = Browser()
+    login_as(client, "viewer")
+    register(client, browser)
+    login_as(client, "admin")
+    child = add_child(client)
+    add_milestone(client, [child])
+    service.status = None
+    tick(client, at(2))
+    tick(client, at(2, 1))
+    assert len(service.requests) == 1
+    service.status = 201
+    tick(client, at(2, 2))
+    assert len(service.messages(browser)) == 2
+    # Two minutes later, two minutes less to keep it.
+    assert service.requests[1].headers["ttl"] == "86280"
+    assert queued(client) == []
+
+    # Unreachable for a day: given up.
+    add_milestone(client, [child], "Primer diente", added=at(3))
+    service.status = 503
+    tick(client, at(3))
+    tick(client, at(3, day=19))
+    assert len(service.requests) == 3
+    assert queued(client) == []
+    assert stored(client)[0].failures == 0
+
+
+def test_devices_that_refuse_new_milestones_are_forgotten(
+    client: TestClient, service: PushService
+) -> None:
+    gone, refused = Browser(), Browser("https://fcm.googleapis.com/fcm/send/refused")
+    login_as(client, "viewer")
+    register(client, gone)
+    login_as(client, "admin")
+    child = add_child(client)
+    for title in ("Uno", "Dos"):
+        add_milestone(client, [child], title)
+    # Its push service forgot it: so does Timelife, with what was queued for it.
+    service.status = 410
+    tick(client, at(2))
+    assert len(service.requests) == 1
+    assert stored(client) == []
+    assert queued(client) == []
+
+    login_as(client, "viewer")
+    register(client, refused)
+    login_as(client, "admin")
+    for title in ("Tres", "Cuatro", "Cinco"):
+        add_milestone(client, [child], title, added=at(3))
+    service.status = 403
+    tick(client, at(3))
+    # Three refused in a row.
+    assert len(service.requests) == 4
+    assert stored(client) == []
+    assert queued(client) == []
+
+
+@pytest.mark.parametrize(
+    ("names", "locale", "text"),
+    [
+        (["Lucía"], "es", "Lucía"),
+        (["Lucía", "Leo", "Emma"], "es", "Lucía, Leo y Emma"),
+        (["Lucía", "Leo", "Emma"], "en", "Lucía, Leo and Emma"),
+        (["Lucía", "Leo", "Emma"], "pt", "Lucía, Leo e Emma"),
+        # In Spanish «e» before the sound /i/, accents aside, but not before «hie»/«hia».
+        (["Lucía", "Inés"], "es", "Lucía e Inés"),
+        (["Leo", "Hilda"], "es", "Leo e Hilda"),
+        (["Leo", "Íñigo"], "es", "Leo e Íñigo"),
+        (["Leo", "Hiedra"], "es", "Leo y Hiedra"),
+        (["Leo", "Hugo"], "es", "Leo y Hugo"),
+        (["Leo", "Inés"], "pt", "Leo e Inés"),
+        (["Leo", "Inés"], "en", "Leo and Inés"),
+    ],
+)
+def test_the_children_of_a_milestone_are_listed_as_people_write_them(
+    names: list[str], locale: Locale, text: str
+) -> None:
+    assert push.listed(names, locale) == text
+
+
+def test_milestone_titles_fit_a_notification() -> None:
+    milestone = push.Milestone(
+        event_id=7, title="Mudanza", author=None, children=(), path="/all/e/7"
+    )
+    notification = push.milestone_message(milestone, "https://x.example", "pt")["notification"]
+    assert (notification["title"], notification["body"]) == (
+        "Novo marco",
+        "Foi adicionado «Mudanza».",
+    )
+
+    crowded = push.Milestone(
+        event_id=7,
+        title="Mudanza",
+        author="Ana",
+        children=("Maximiliano Alejandro",) * 20,
+        path="/all/e/7",
+    )
+    title = push.milestone_message(crowded, "https://x.example", "es")["notification"]["title"]
+    assert len(title) == push.MAX_TITLE
+    assert title.startswith("Nuevo hito de Maximiliano Alejandro, ") and title.endswith("…")

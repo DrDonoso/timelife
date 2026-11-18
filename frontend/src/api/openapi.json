@@ -1722,6 +1722,55 @@
         "title": "PushKeysIn",
         "type": "object"
       },
+      "PushPreferencesIn": {
+        "additionalProperties": false,
+        "description": "PATCH: only the fields sent change (null changes nothing).",
+        "properties": {
+          "memories": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memories"
+          },
+          "milestones": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Milestones"
+          }
+        },
+        "title": "PushPreferencesIn",
+        "type": "object"
+      },
+      "PushPreferencesOut": {
+        "additionalProperties": false,
+        "properties": {
+          "memories": {
+            "title": "Memories",
+            "type": "boolean"
+          },
+          "milestones": {
+            "title": "Milestones",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "memories",
+          "milestones"
+        ],
+        "title": "PushPreferencesOut",
+        "type": "object"
+      },
       "PushSubscriptionIn": {
         "additionalProperties": false,
         "properties": {
@@ -5080,6 +5129,67 @@
         ]
       }
     },
+    "/api/push/preferences": {
+      "get": {
+        "operationId": "preferences_api_push_preferences_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushPreferencesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Preferences",
+        "tags": [
+          "Notifications"
+        ]
+      },
+      "patch": {
+        "description": "Choose which notifications reach the user's devices (every one that has them on).",
+        "operationId": "choose_preferences_api_push_preferences_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushPreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushPreferencesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Choose Preferences",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
     "/api/push/subscription": {
       "put": {
         "description": "Register this device for notifications, or refresh its registration. An address another\naccount registered becomes this one's (someone else signed in there). 422\n``push_service_unsupported``: the browser uses a push service Timelife does not send to.",
@@ -5110,41 +5220,6 @@
           }
         },
         "summary": "Subscribe",
-        "tags": [
-          "Notifications"
-        ]
-      }
-    },
-    "/api/push/test": {
-      "post": {
-        "description": "Send a sample notification to this device now. 404 ``push_subscription_not_found`` unless\nit is registered for the signed-in user (also once its push service has forgotten it); 502\n``push_failed`` when the push service refused it or could not be reached.",
-        "operationId": "send_test_api_push_test_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PushEndpointIn"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Send Test",
         "tags": [
           "Notifications"
         ]

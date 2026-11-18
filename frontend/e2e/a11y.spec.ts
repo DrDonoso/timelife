@@ -10,6 +10,7 @@ import {
   openThemeMenu,
   openUserMenu,
   send,
+  standInPush,
   storageStateOf,
   timelineRegion,
   uniqueSuffix,
@@ -178,6 +179,21 @@ for (const theme of ['light', 'dark'] as const) {
           await panel.getByRole('button', { name: 'Novedades' }).click()
           const dialog = page.getByRole('dialog', { name: 'Novedades' })
           await expect(dialog.getByRole('heading', { name: 'Ahora te contamos las novedades' })).toBeVisible()
+          await expectTheme(page)
+          await expectAccessible(page, testInfo)
+        })
+
+        test('notification choices', async ({ page }, testInfo) => {
+          await standInPush(page, `https://fcm.googleapis.com/fcm/send/a11y-${uniqueSuffix(testInfo)}`)
+          // Read-only: the server never records this device.
+          await page.route('**/api/push/subscription', (route) => route.fulfill({ status: 204 }))
+          await page.goto(`/c/${subject.child.slug}?zoom=events`)
+          await expect(timelineRegion(page, subject.child.name).getByRole('link').first()).toBeVisible()
+          const panel = await openUserMenu(page)
+          await panel.getByText('Activar notificaciones', { exact: true }).click()
+          await panel.getByRole('button', { name: 'Elegir notificaciones' }).click()
+          const dialog = page.getByRole('dialog', { name: 'Elegir notificaciones' })
+          await expect(dialog.getByRole('switch', { name: 'Hitos nuevos' })).toBeVisible()
           await expectTheme(page)
           await expectAccessible(page, testInfo)
         })

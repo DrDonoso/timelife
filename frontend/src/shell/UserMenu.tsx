@@ -12,6 +12,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useToast } from '../contexts/ToastContext'
 import { IS_DEMO } from '../demo/config'
 import { useErrorMessage, useI18n } from '../i18n'
+import { NotificationChoices } from '../push/NotificationChoices'
 import { PushSettings } from '../push/PushSettings'
 import { browserNavigation } from '../utils/navigation'
 import { useWhatsNewMenu } from '../whatsNew/WhatsNewLayout'
@@ -60,7 +61,7 @@ function Preferences() {
   )
 }
 
-/** Avatar button opening the account panel: identity, preferences, this device's notifications, admin/timeline link, what's new, password, sign out (demo: reset). */
+/** Avatar button opening the account panel: identity, preferences, this device's notifications (and which ones arrive), admin/timeline link, what's new, password, sign out (demo: reset). */
 export function UserMenu({ context = 'app', showPreferences = false }: UserMenuProps) {
   const { t } = useI18n()
   const auth = useAuth()
@@ -70,6 +71,7 @@ export function UserMenu({ context = 'app', showPreferences = false }: UserMenuP
   const whatsNew = useWhatsNewMenu()
   const [signingOut, setSigningOut] = useState(false)
   const [changingPassword, setChangingPassword] = useState(false)
+  const [choosingNotifications, setChoosingNotifications] = useState(false)
   if (!auth.user) return null
   const { user } = auth
   const displayName = user.name || user.email
@@ -108,7 +110,12 @@ export function UserMenu({ context = 'app', showPreferences = false }: UserMenuP
 
                 {showPreferences && <Preferences />}
 
-                <PushSettings />
+                <PushSettings
+                  onChoose={() => {
+                    close()
+                    setChoosingNotifications(true)
+                  }}
+                />
 
                 <div className={styles.links}>
                   {context === 'app' && auth.isAdmin && (
@@ -170,6 +177,7 @@ export function UserMenu({ context = 'app', showPreferences = false }: UserMenuP
         </Popover>
       </DialogTrigger>
       {canChangePassword && <ChangePasswordDialog isOpen={changingPassword} onOpenChange={setChangingPassword} />}
+      <NotificationChoices isOpen={choosingNotifications} onOpenChange={setChoosingNotifications} />
     </>
   )
 }

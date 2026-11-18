@@ -260,6 +260,57 @@ export async function openUserMenu(page: Page): Promise<Locator> {
   return panel
 }
 
+/** RFC 8291's example keys of a browser: those of the stand-in subscription of {@link standInPush}. */
+export const PUSH_KEYS = {
+  p256dh: 'BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw4',
+  auth: 'BTBZMqHH6r4Tts7J_aSIgg',
+}
+
+/**
+ * Notifications in a Chromium that has neither them nor a push service in tests: stand-ins for the
+ * permission (not asked yet, granted when asked) and for the browser's subscription (`endpoint`,
+ * an address of a known push service, with {@link PUSH_KEYS}), kept across reloads. The real
+ * service worker still registers. The e2e server never sends anything to the push services.
+ */
+export async function standInPush(page: Page, endpoint: string): Promise<void> {
+  await page.addInitScript(
+    ({ endpoint, p256dh, auth }) => {
+      const PERMISSION = 'e2e.notificationPermission'
+      const STORE = 'e2e.pushSubscription'
+      Object.defineProperty(Notification, 'permission', {
+        configurable: true,
+        get: () => localStorage.getItem(PERMISSION) ?? 'default',
+      })
+      Notification.requestPermission = async () => {
+        localStorage.setItem(PERMISSION, 'granted')
+        return 'granted'
+      }
+      const subscriptionOf = (key: ArrayBuffer) =>
+        ({
+          endpoint,
+          expirationTime: null,
+          options: { applicationServerKey: key, userVisibleOnly: true },
+          toJSON: () => ({ endpoint, expirationTime: null, keys: { p256dh, auth } }),
+          unsubscribe: async () => {
+            localStorage.removeItem(STORE)
+            return true
+          },
+        }) as unknown as PushSubscription
+      const stored = () => {
+        const key = localStorage.getItem(STORE)
+        return key ? subscriptionOf(Uint8Array.from(atob(key), (character) => character.charCodeAt(0)).buffer) : null
+      }
+      PushManager.prototype.getSubscription = async () => stored()
+      PushManager.prototype.subscribe = async (options?: PushSubscriptionOptionsInit) => {
+        const key = new Uint8Array(options?.applicationServerKey as ArrayBuffer)
+        localStorage.setItem(STORE, btoa(String.fromCharCode(...key)))
+        return stored() as PushSubscription
+      }
+    },
+    { endpoint, ...PUSH_KEYS },
+  )
+}
+
 /**
  * The home-screen app as phones get it: Chromium finds the manifest it reads for Android's
  * "Install app" and parses it without complaints, and the manifest's icons and the one iOS takes

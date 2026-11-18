@@ -105,8 +105,8 @@ without the address). Most providers only accept an `SMTP_FROM` with the address
 
 ## Notifications
 
-Nothing to set: each person turns them on, per device, in the account menu (**Activar notificaciones**, see
-[Features](features.md#memories)). They need:
+Nothing to set: each person turns them on, per device, in the account menu (**Activar notificaciones**) and chooses
+which ones arrive (**Elegir notificaciones**, see [Features](features.md#notifications)). They need:
 
 1. An `https://` origin in `PUBLIC_ORIGIN`. iPhones only get notifications from HTTPS sites, and the first HTTPS
    origin tells the push services who sends them (Apple refuses `localhost`; without any HTTPS origin, the address of

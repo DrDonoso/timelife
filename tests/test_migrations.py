@@ -29,6 +29,7 @@ TABLES = {
     "year_colors",
     "app_settings",
     "push_subscriptions",
+    "milestone_notifications",
 }
 
 
@@ -408,3 +409,33 @@ def test_sqlite_memories_migration_keeps_users_and_ids(tmp_path: Path) -> None:
     ddl, rows = sqlite_table(path, "users", columns)
     assert "AUTOINCREMENT" in ddl and "memories_" not in ddl
     assert rows == [(1, "ana@x.es", None), (2, "luis@x.es", None), (5, "noa@x.es", None)]
+
+def test_sqlite_notification_choices_migration_keeps_users_and_ids(tmp_path: Path) -> None:
+    # 0010 adds the notifications each user wants in place (all of them, for existing and new
+    # users alike), and its rollback rebuilds users keeping AUTOINCREMENT and the counter (no id
+    # is reused).
+    path = tmp_path / "notification_choices.db"
+    columns = ("id", "email", "notify_memories", "notify_milestones")
+    migrate(sqlite_url(path), "0009")
+    sqlite_run(
+        path,
+        *(INSERT_USER.format(email) for email in ("ana@x.es", "luis@x.es", "eva@x.es")),
+        "DELETE FROM users WHERE id = 3",
+    )
+
+    migrate(sqlite_url(path))
+    sqlite_run(
+        path,
+        "UPDATE users SET notify_milestones = 0 WHERE id = 2",
+        INSERT_USER.format("sol@x.es"),
+    )
+    ddl, rows = sqlite_table(path, "users", columns)
+    assert "AUTOINCREMENT" in ddl
+    assert rows == [(1, "ana@x.es", 1, 1), (2, "luis@x.es", 1, 0), (4, "sol@x.es", 1, 1)]
+
+    sqlite_run(path, "DELETE FROM users WHERE id = 4")
+    migrate(sqlite_url(path), "0009", command="downgrade")
+    sqlite_run(path, INSERT_USER.format("noa@x.es"))
+    ddl, rows = sqlite_table(path, "users", columns)
+    assert "AUTOINCREMENT" in ddl and "notify_" not in ddl
+    assert rows == [(1, "ana@x.es"), (2, "luis@x.es"), (5, "noa@x.es")]

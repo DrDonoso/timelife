@@ -16,7 +16,10 @@ changes of one event run in turn.
 
 Events of the same date are shown in ``day_order`` (lower first): a new event, or one moved to
 another date, goes first of its day, and administrators reorder a day with ``PUT
-/api/admin/events/day-order``."""
+/api/admin/events/day-order``.
+
+Adding an event queues its notification for the devices of everybody else (``push`` sends it);
+events added otherwise (the demo data, an import) are not announced."""
 
 import datetime as dt
 import uuid
@@ -25,7 +28,7 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Query, Request
-from sqlalchemy import ColumnElement, and_, func, select
+from sqlalchemy import ColumnElement, and_, func, insert, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute, selectinload
@@ -46,7 +49,17 @@ from .contracts import (
     SearchQuery,
     TrashItemOut,
 )
-from .db import Category, Child, Event, EventCategory, EventChild, Image, utcnow
+from .db import (
+    Category,
+    Child,
+    Event,
+    EventCategory,
+    EventChild,
+    Image,
+    MilestoneNotification,
+    PushSubscription,
+    utcnow,
+)
 from .errors import AppError
 from .text import normalize_search, search_tokens
 
@@ -364,6 +377,30 @@ async def insert_event(
     return event
 
 
+async def queue_notifications(db: AsyncSession, event_id: int, author_id: int) -> None:
+    """Queue the notification of the new event for every device of everybody but its author
+    (``push`` tells those whose person wants it). No commit."""
+    devices = list(
+        await db.scalars(
+            select(PushSubscription.id)
+            .where(PushSubscription.user_id != author_id)
+            .order_by(PushSubscription.id)
+            # FOR KEY SHARE on PostgreSQL: a device forgotten meanwhile goes after the commit,
+            # with what was queued for it (SQLite already runs the writes one after another).
+            .with_for_update(read=True, key_share=True)
+        )
+    )
+    if devices:
+        now = utcnow()
+        await db.execute(
+            insert(MilestoneNotification),
+            [
+                {"subscription_id": device, "event_id": event_id, "created_at": now}
+                for device in devices
+            ],
+        )
+
+
 async def change_event(
     db: AsyncSession, event: Event, body: EventIn, *, user_id: int, media_dir: Path
 ) -> None:
@@ -476,6 +513,7 @@ async def create_event(body: EventIn, request: Request, admin: AdminUser, db: DB
     try:
         event = await insert_event(db, body, user_id=admin.id, media_dir=media_dir)
         event_id = event.id
+        await queue_notifications(db, event_id, admin.id)
         await db.commit()
     except IntegrityError:
         await reference_race(db, body)
