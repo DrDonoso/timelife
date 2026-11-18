@@ -43,7 +43,8 @@ const BACKEND_ERROR_CODES = [
   'invalid_category', 'invalid_year', 'backup_busy', 'import_busy', 'import_not_found', 'import_not_uploading',
   'import_offset_mismatch', 'import_size_mismatch', 'import_no_space', 'import_not_ready', 'import_not_running',
   'import_running', 'invalid_import', 'import_version_unsupported', 'import_file_missing', 'import_file_unreadable',
-  'import_interrupted', 'import_cancelled', 'import_failed',
+  'import_interrupted', 'import_cancelled', 'import_failed', 'push_service_unsupported',
+  'push_subscription_not_found', 'push_failed',
 ]
 
 describe('dictionaries', () => {

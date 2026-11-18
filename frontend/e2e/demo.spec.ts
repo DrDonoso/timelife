@@ -84,7 +84,10 @@ test("keeps what's new in the account menu, without interrupting the visit @mobi
   await expect(timeline(page, 'Emma').getByRole('link').first()).toBeVisible()
   const account = page.getByRole('button', { name: /^User menu: / })
   await account.click()
-  await page.getByRole('dialog', { name: 'User menu' }).getByRole('button', { name: "What's new" }).click()
+  const menu = page.getByRole('dialog', { name: 'User menu' })
+  // Notifications are for the real app: the demo offers none (its only service worker is its API).
+  await expect(menu.getByRole('group', { name: /notifications/i })).toHaveCount(0)
+  await menu.getByRole('button', { name: "What's new" }).click()
   const dialog = page.getByRole('dialog', { name: "What's new" })
   await expect(dialog.getByRole('heading', { name: "Now we tell you what's new", level: 5 })).toBeVisible()
   await expectAccessible(page, testInfo)

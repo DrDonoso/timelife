@@ -8,6 +8,8 @@ flowchart LR
     app --> media[("volume media<br/>/app/data/media")]
     app -. "OpenID Connect (optional)" .-> google["Google"]
     app -. "SMTP (optional)" .-> smtp["Mail server"]
+    app -. "Web Push (when a device asks)" .-> push["Push services<br/>Apple · Google · Mozilla · Microsoft"]
+    push -.-> browser
 ```
 
 - **One image, one process.** `drdonoso/timelife` runs Uvicorn on port 7779 and serves the JSON API (`/api/...`),
@@ -45,6 +47,16 @@ flowchart LR
   family timeline, on the device's calendar; the database only keeps, per user, the last day they were told about
   them and the last day they looked at them (`/api/memories`), so each person hears about them once a day on any
   device. The family timeline is only fetched for them until they have been looked at that day.
+- **Notifications** (Web Push: RFC 8030, 8291 and 8292, no third-party library or account): a device that turns them
+  on (`/api/push`) leaves its push address and keys, its language and time zone, tied to its session (signing out
+  deletes it; a new password or a disabled account pauses it until the device signs in again; the app registers it
+  again each time it opens). A task in the app process checks every minute which devices have reached 9:00 of their
+  day (until 21:00), finds that day's memories itself with the interface's rules, and sends each device one message,
+  encrypted for it and signed with a VAPID key derived from `AUTH_SECRET`, only to the push services of Apple, Google,
+  Mozilla and Microsoft (no redirects; their addresses are never logged). The message is a declarative one
+  (`"web_push": 8030`): Safari on iOS 18.4+ shows it by itself; elsewhere the service worker `/sw.js` (no fetch
+  handler, no cache) shows it and opens its page. Run a single Uvicorn worker, as the container does, or each worker
+  would send them.
 
 ## Technology
 

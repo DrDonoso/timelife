@@ -1,0 +1,17 @@
+{
+  "kind": "new",
+  "audience": "everyone",
+  "icon": "bell",
+  "es": {
+    "title": "Te avisamos de los recuerdos de cada día",
+    "body": "En el menú de tu cuenta, arriba a la derecha, activa «Avisarme de los recuerdos» y los días con recuerdos te llegará un aviso a las 9:00. En el iPhone, añade antes Timelife a la pantalla de inicio y ábrelo desde allí."
+  },
+  "en": {
+    "title": "Get notified of each day's memories",
+    "body": "In your account menu, at the top right, turn on \"Notify me of memories\" and on days with memories you'll get a notification at 9:00. On an iPhone, first add Timelife to the Home Screen and open it from there."
+  },
+  "pt": {
+    "title": "Avisamos-te das memórias de cada dia",
+    "body": "No menu da tua conta, em cima à direita, ativa «Avisar-me das memórias» e nos dias com memórias recebes um aviso às 9:00. No iPhone, adiciona primeiro o Timelife ao ecrã principal e abre-o a partir daí."
+  }
+}

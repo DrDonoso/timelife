@@ -306,6 +306,26 @@ export interface PasswordResetIn {
   token: string
 }
 
+export interface PushConfigOut {
+  public_key: string
+}
+
+export interface PushEndpointIn {
+  endpoint: string
+}
+
+export interface PushKeysIn {
+  auth: string
+  p256dh: string
+}
+
+export interface PushSubscriptionIn {
+  endpoint: string
+  keys: PushKeysIn
+  locale: 'es' | 'en' | 'pt'
+  time_zone?: string | null
+}
+
 export interface SessionOut {
   authenticated: boolean
   user: SessionUserOut | null

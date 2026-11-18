@@ -155,6 +155,9 @@ jobs:
           # Administrator recovery: a single-use link for the public origin.
           docker compose exec -T app python -m timelife.setup | grep -E '^  http://localhost:7779/setup#[0-9a-f]{64}$'
           curl -fsS "$base/" | grep -F '<div id="root">'
+          # The notifications' service worker, served as JavaScript (browsers refuse any other type).
+          curl -fsS -o /dev/null -w '%{content_type}' "$base/sw.js" | grep -E '^(text|application)/javascript'
+          curl -fsS "$base/sw.js" | grep -qF 'notificationclick'
           test "$(docker compose exec -T app id -u)" = 1000
           # Video uploads: ffprobe, and ffmpeg with H.264, AAC and the HDR tone mapping filters.
           docker compose exec -T app ffprobe -hide_banner -version >/dev/null

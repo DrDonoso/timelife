@@ -6,6 +6,8 @@ import unicodedata
 import uuid
 from collections.abc import Hashable
 from typing import Annotated, Literal, TypeVar
+from urllib.parse import urlsplit
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import Path, Query
 from pydantic import (
@@ -19,7 +21,7 @@ from pydantic import (
     field_validator,
 )
 
-from . import passwords
+from . import passwords, webpush
 
 ID_MAX = 2_147_483_647
 SLUG_PATTERN = r"^[a-z0-9]+(-[a-z0-9]+)*$"
@@ -532,6 +534,77 @@ class MemoriesOut(Contract):
 class MemoriesSeenIn(Contract):
     announced_on: CalendarToday | None = None
     opened_on: CalendarToday | None = None
+
+
+# Push notifications
+def _https_address(value: str) -> str:
+    """An HTTPS address without spaces (whose push service ``PUT /api/push/subscription``
+    checks)."""
+    if not value.isascii() or any(character.isspace() for character in value):
+        raise ValueError("Expected an HTTPS address")
+    try:
+        parts = urlsplit(value)
+    except ValueError:
+        raise ValueError("Expected an HTTPS address") from None
+    if parts.scheme != "https" or not parts.hostname:
+        raise ValueError("Expected an HTTPS address")
+    return value
+
+
+def _browser_key(value: str) -> str:
+    webpush.browser_key(value)
+    return value
+
+
+def _auth_secret(value: str) -> str:
+    webpush.auth_secret(value)
+    return value
+
+
+def _time_zone(value: str) -> str:
+    try:
+        ZoneInfo(value)
+    except (ZoneInfoNotFoundError, ValueError, OSError):
+        raise ValueError("Expected an IANA time zone") from None
+    return value
+
+
+PushEndpoint = Annotated[
+    str,
+    Field(min_length=1, max_length=webpush.MAX_ENDPOINT_LENGTH),
+    AfterValidator(_https_address),
+]
+TimeZone = Annotated[
+    str,
+    Field(max_length=64, pattern=r"^[A-Za-z0-9_+-]+(/[A-Za-z0-9_+-]+)*$"),
+    AfterValidator(_time_zone),
+]
+
+
+class PushConfigOut(Contract):
+    # The server's VAPID public key: the ``applicationServerKey`` browsers subscribe with (an
+    # uncompressed P-256 point in URL-safe base64).
+    public_key: str
+
+
+class PushKeysIn(Contract):
+    # The browser's keys, as ``PushSubscription.toJSON()`` gives them (URL-safe base64).
+    p256dh: Annotated[str, Field(max_length=100), AfterValidator(_browser_key)]
+    auth: Annotated[str, Field(max_length=40), AfterValidator(_auth_secret)]
+
+
+class PushSubscriptionIn(Contract):
+    endpoint: PushEndpoint
+    keys: PushKeysIn
+    # Language of the notifications (the interface's).
+    locale: Locale
+    # IANA time zone of the device: the memories of its day, told in its morning. Null: the
+    # server's (``TZ``).
+    time_zone: TimeZone | None = None
+
+
+class PushEndpointIn(Contract):
+    endpoint: PushEndpoint
 
 
 # Backup (export and import)

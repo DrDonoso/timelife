@@ -5,12 +5,15 @@
 //   icon-192.png            192×192  manifest.webmanifest, purpose "any"
 //   icon-512.png            512×512  manifest.webmanifest, purpose "any"
 //   icon-maskable-512.png   512×512  manifest.webmanifest, purpose "maskable" (Android launchers)
+//   badge-96.png             96×96   notifications' "badge" (src/timelife/push.py): Android's status bar
 //
 // Home screens need an opaque square: iOS fills transparency with black and never uses an SVG
 // apple-touch-icon, so the transparent favicon is drawn on a light cream tile (--color-bg-elevated
 // to --color-surface-2 of src/styles/tokens.css). Android crops the maskable icon to the
 // launcher's shape (circle, squircle…) and only promises the centred circle of 40 % radius: the
 // favicon's mark reaches 36.4/64 from its centre, so there it must stay below 0.70 of the tile.
+// The status bar only uses the alpha channel of a notification's badge: the mark in white on
+// transparency.
 //
 // Uses Playwright's Chromium (`npx playwright install chromium` once). Run `npm run gen:icons`
 // after changing favicon.svg and commit the PNGs.
@@ -22,26 +25,27 @@ import { fileURLToPath } from 'node:url'
 
 const PUBLIC = resolve(dirname(fileURLToPath(import.meta.url)), '../public')
 const TILE = 'linear-gradient(#fffcf8, #f6efe7)'
-// `mark`: the favicon's size as a fraction of the icon's.
+// `mark`: the favicon's size as a fraction of the icon's; `silhouette`: white on transparency.
 const ICONS = [
   { file: 'apple-touch-icon.png', size: 180, mark: 0.76 },
   { file: 'icon-192.png', size: 192, mark: 0.76 },
   { file: 'icon-512.png', size: 512, mark: 0.76 },
   { file: 'icon-maskable-512.png', size: 512, mark: 0.68 },
+  { file: 'badge-96.png', size: 96, mark: 0.92, silhouette: true },
 ]
 
 const favicon = `data:image/svg+xml;base64,${readFileSync(resolve(PUBLIC, 'favicon.svg')).toString('base64')}`
 
 const browser = await chromium.launch()
 try {
-  for (const { file, size, mark } of ICONS) {
+  for (const { file, size, mark, silhouette = false } of ICONS) {
     const page = await browser.newPage({ viewport: { width: size, height: size }, deviceScaleFactor: 1 })
     await page.setContent(
-      `<body style="margin: 0; height: ${size}px; display: grid; place-items: center; background: ${TILE}">` +
-        `<img src="${favicon}" alt="" style="width: ${mark * size}px; height: ${mark * size}px"></body>`,
+      `<body style="margin: 0; height: ${size}px; display: grid; place-items: center; background: ${silhouette ? 'transparent' : TILE}">` +
+        `<img src="${favicon}" alt="" style="width: ${mark * size}px; height: ${mark * size}px${silhouette ? '; filter: brightness(0) invert(1)' : ''}"></body>`,
     )
     await page.locator('img').evaluate((image) => image.decode())
-    await page.screenshot({ path: resolve(PUBLIC, file) })
+    await page.screenshot({ path: resolve(PUBLIC, file), omitBackground: silhouette })
     await page.close()
     console.log(`public/${file}  ${size}×${size}`)
   }

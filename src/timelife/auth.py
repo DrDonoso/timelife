@@ -19,7 +19,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .config import LOOPBACK_HOSTS, Settings, is_loopback, normalize_origin
 from .contracts import AuthConfigOut, DevLoginIn, SessionOut, SessionUserOut
-from .db import AuthLimit, GoogleAuthFlow, PasswordReset, User, UserRole, UserSession, utcnow
+from .db import (
+    AuthLimit,
+    GoogleAuthFlow,
+    PasswordReset,
+    PushSubscription,
+    User,
+    UserRole,
+    UserSession,
+    utcnow,
+)
 from .errors import AppError
 
 SESSION_COOKIE = "timelife_session"
@@ -195,17 +204,30 @@ async def issue_session(
     )
     if signed_in is None:
         raise AppError("authentication_required", 401)
+    token = secrets.token_hex(32)
+    token_hash = access_hash(config, "session", token)
     previous = request.cookies.get(SESSION_COOKIE, "")
     if TOKEN.fullmatch(previous):
+        previous_hash = access_hash(config, "session", previous)
+        await db.execute(delete(UserSession).where(UserSession.token_hash == previous_hash))
+        # This browser's notifications follow its new session: they go on for the same person
+        # (a new password signs the other devices out, not this one) and stop for anyone else.
         await db.execute(
-            delete(UserSession).where(
-                UserSession.token_hash == access_hash(config, "session", previous)
+            update(PushSubscription)
+            .where(
+                PushSubscription.session_hash == previous_hash,
+                PushSubscription.user_id == user.id,
             )
+            .values(session_hash=token_hash, auth_version=user.auth_version),
+            execution_options=UNSYNCHRONIZED,
         )
-    token = secrets.token_hex(32)
+        await db.execute(
+            delete(PushSubscription).where(PushSubscription.session_hash == previous_hash),
+            execution_options=UNSYNCHRONIZED,
+        )
     db.add(
         UserSession(
-            token_hash=access_hash(config, "session", token),
+            token_hash=token_hash,
             user_id=user.id,
             auth_version=user.auth_version,
             expires_at=now + timedelta(days=config.session_days),
@@ -393,11 +415,13 @@ async def logout(request: Request, response: Response, db: DB) -> None:
     config = settings(request)
     token = request.cookies.get(SESSION_COOKIE, "")
     if TOKEN.fullmatch(token):
+        token_hash = access_hash(config, "session", token)
+        # Signed out, the device gets no more notifications.
         await db.execute(
-            delete(UserSession).where(
-                UserSession.token_hash == access_hash(config, "session", token)
-            )
+            delete(PushSubscription).where(PushSubscription.session_hash == token_hash),
+            execution_options=UNSYNCHRONIZED,
         )
+        await db.execute(delete(UserSession).where(UserSession.token_hash == token_hash))
     browser = request.cookies.get(GOOGLE_COOKIE, "")
     if TOKEN.fullmatch(browser):
         await db.execute(

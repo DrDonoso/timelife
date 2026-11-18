@@ -9,6 +9,8 @@ Run Timelife on your own server with Docker Compose: the published image
 - A Linux host (VM, LXC container or VPS) with Docker Engine and the Compose plugin. The image is built for
   `linux/amd64`.
 - A domain name with an HTTPS reverse proxy in front (Caddy, Traefik, nginx, Nginx Proxy Manager, Cloudflare Tunnel, …).
+- For notifications on phones and computers: outbound HTTPS from the server to the browsers' push services (see
+  [Notifications](configuration.md#notifications)).
 - Optional: a [Google OAuth client](configuration.md#google-sign-in-setup-optional) and an
   [SMTP server](configuration.md#e-mail-smtp-setup-optional).
 
@@ -129,7 +131,8 @@ the Portuguese one until it is edited); an older Timelife refuses a copy made by
 to a new server, keeping an extra copy you can browse, or bringing back something deleted. It leaves out what only makes sense on one server: sessions (everyone signs in again), the link
 between an account and its Google identity (made again, by e-mail, at the next sign-in), which **Novedades** each
 person has already read (imported accounts start with nothing to catch up on), when they were last told about their
-memories and the passwords — after
+memories, the devices that get notifications (they register again when Timelife opens there, once signed in) and the
+passwords — after
 *Reemplazar todo* on another server, only the importing administrator keeps theirs: give the others new temporary
 passwords from **Usuarios** (or they use *¿Has olvidado tu contraseña?* or Google). The thumbnails and the
 browser-ready videos are made again after an import (videos show *Procesando…* for a while). An import needs free

@@ -1,13 +1,16 @@
 /**
  * localStorage access that never throws (private mode, blocked site data) — preferences are a
  * nicety, never a requirement. Keys: `timelife.theme` (light/dark mode), `timelife.palette`
- * (colour palette), `timelife.lang`, `timelife.child`.
+ * (colour palette), `timelife.lang`, `timelife.child`, `timelife.push` (the id of the person who
+ * turned notifications on in this browser) and `timelife.pushInvite` (their invite was shown).
  */
 export const STORAGE_KEYS = {
   theme: 'timelife.theme',
   palette: 'timelife.palette',
   lang: 'timelife.lang',
   child: 'timelife.child',
+  push: 'timelife.push',
+  pushInvite: 'timelife.pushInvite',
 } as const
 
 export function readStorage(key: string): string | null {

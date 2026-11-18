@@ -28,6 +28,7 @@ TABLES = {
     "event_categories",
     "year_colors",
     "app_settings",
+    "push_subscriptions",
 }
 
 

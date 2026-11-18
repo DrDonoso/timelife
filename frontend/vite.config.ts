@@ -61,13 +61,16 @@ function demoStaticHostHeaders(outDir: string): Plugin {
   }
 }
 
-/** public/mockServiceWorker.js is copied into every build: only the demo may ship it. */
-function withoutMockServiceWorker(outDir: string): Plugin {
+/**
+ * Files of public/ that are copied into every build but belong to only one of them:
+ * mockServiceWorker.js to the demo (it is its API), sw.js (notifications) to the real app.
+ */
+function withoutPublicFile(outDir: string, file: string): Plugin {
   return {
-    name: 'timelife:without-mock-service-worker',
+    name: `timelife:without-${file}`,
     apply: 'build',
     async closeBundle() {
-      await rm(path.resolve(import.meta.dirname, outDir, 'mockServiceWorker.js'), { force: true })
+      await rm(path.resolve(import.meta.dirname, outDir, file), { force: true })
     },
   }
 }
@@ -93,7 +96,12 @@ export default defineConfig(({ mode }) => {
   const demo = mode === 'demo'
   const outDir = demo ? 'dist-demo' : 'dist'
   return {
-    plugins: [react(), ...(demo ? [demoIndexHtml(), demoStaticHostHeaders(outDir)] : [withoutMockServiceWorker(outDir)])],
+    plugins: [
+      react(),
+      ...(demo
+        ? [demoIndexHtml(), demoStaticHostHeaders(outDir), withoutPublicFile(outDir, 'sw.js')]
+        : [withoutPublicFile(outDir, 'mockServiceWorker.js')]),
+    ],
     define: {
       // Shown as the demo's "version" date (src/demo/handlers.ts).
       __DEMO_BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)),

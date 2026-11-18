@@ -91,6 +91,10 @@ export const errors: Messages<typeof source> = {
   import_interrupted: 'The server restarted while importing.',
   import_cancelled: 'It was cancelled.',
   import_failed: 'Saving the changes failed.',
+  // Notifications
+  push_service_unsupported: 'This browser uses a notification service Timelife does not support.',
+  push_subscription_not_found: 'This device no longer gets notifications: turn them on again.',
+  push_failed: 'The notification service did not accept the notification. Try again later.',
   demo_unavailable: 'Not available in the demo: nothing is stored on a server here.',
   inUse: {
     child_in_use: {

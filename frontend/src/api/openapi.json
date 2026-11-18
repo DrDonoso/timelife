@@ -1671,6 +1671,100 @@
         "title": "PasswordResetIn",
         "type": "object"
       },
+      "PushConfigOut": {
+        "additionalProperties": false,
+        "properties": {
+          "public_key": {
+            "title": "Public Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "public_key"
+        ],
+        "title": "PushConfigOut",
+        "type": "object"
+      },
+      "PushEndpointIn": {
+        "additionalProperties": false,
+        "properties": {
+          "endpoint": {
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Endpoint",
+            "type": "string"
+          }
+        },
+        "required": [
+          "endpoint"
+        ],
+        "title": "PushEndpointIn",
+        "type": "object"
+      },
+      "PushKeysIn": {
+        "additionalProperties": false,
+        "properties": {
+          "auth": {
+            "maxLength": 40,
+            "title": "Auth",
+            "type": "string"
+          },
+          "p256dh": {
+            "maxLength": 100,
+            "title": "P256Dh",
+            "type": "string"
+          }
+        },
+        "required": [
+          "p256dh",
+          "auth"
+        ],
+        "title": "PushKeysIn",
+        "type": "object"
+      },
+      "PushSubscriptionIn": {
+        "additionalProperties": false,
+        "properties": {
+          "endpoint": {
+            "maxLength": 2048,
+            "minLength": 1,
+            "title": "Endpoint",
+            "type": "string"
+          },
+          "keys": {
+            "$ref": "#/components/schemas/PushKeysIn"
+          },
+          "locale": {
+            "enum": [
+              "es",
+              "en",
+              "pt"
+            ],
+            "title": "Locale",
+            "type": "string"
+          },
+          "time_zone": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9_+-]+(/[A-Za-z0-9_+-]+)*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Zone"
+          }
+        },
+        "required": [
+          "endpoint",
+          "keys",
+          "locale"
+        ],
+        "title": "PushSubscriptionIn",
+        "type": "object"
+      },
       "SessionOut": {
         "additionalProperties": false,
         "properties": {
@@ -4962,6 +5056,132 @@
         "summary": "Mark Seen",
         "tags": [
           "Memories"
+        ]
+      }
+    },
+    "/api/push": {
+      "get": {
+        "operationId": "push_config_api_push_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushConfigOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Push Config",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/push/subscription": {
+      "put": {
+        "description": "Register this device for notifications, or refresh its registration. An address another\naccount registered becomes this one's (someone else signed in there). 422\n``push_service_unsupported``: the browser uses a push service Timelife does not send to.",
+        "operationId": "subscribe_api_push_subscription_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushSubscriptionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Subscribe",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/push/test": {
+      "post": {
+        "description": "Send a sample notification to this device now. 404 ``push_subscription_not_found`` unless\nit is registered for the signed-in user (also once its push service has forgotten it); 502\n``push_failed`` when the push service refused it or could not be reached.",
+        "operationId": "send_test_api_push_test_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushEndpointIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Send Test",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/push/unsubscribe": {
+      "post": {
+        "description": "Stop the notifications of this device (nothing happens unless it is registered for the\nsigned-in user).",
+        "operationId": "unsubscribe_api_push_unsubscribe_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushEndpointIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unsubscribe",
+        "tags": [
+          "Notifications"
         ]
       }
     },

@@ -25,6 +25,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from . import crops
 
 UserRole = Literal["admin", "viewer"]
+Locale = Literal["es", "en", "pt"]
 ImagePurpose = Literal["event", "avatar", "background"]
 MediaKind = Literal["image", "video"]
 VideoStatus = Literal["processing", "ready", "failed"]
@@ -129,6 +130,38 @@ class UserSession(Base):
     auth_version: Mapped[int]
     expires_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), index=True)
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class PushSubscription(Base):
+    """A browser or installed app that asked for notifications (see ``push``): where its push
+    service delivers them, the keys to encrypt them, and what is needed to write and time them."""
+
+    __tablename__ = "push_subscriptions"
+    __table_args__ = (CheckConstraint("locale IN ('es', 'en', 'pt')", name="locale"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    # The user's ``auth_version`` when it registered: a password change, a new role or a disabled
+    # account stops the notifications until the device signs in again (and registers again).
+    auth_version: Mapped[int]
+    # The session (its ``token_hash``) of the device: signing out there stops them.
+    session_hash: Mapped[str] = mapped_column(String(64), index=True)
+    # The push service address the browser gave (``webpush.PUSH_SERVICES`` only).
+    endpoint: Mapped[str] = mapped_column(String(2048), unique=True)
+    p256dh: Mapped[str] = mapped_column(String(100))
+    auth: Mapped[str] = mapped_column(String(40))
+    # The public origin the device uses: the links of its notifications.
+    origin: Mapped[str] = mapped_column(String(255))
+    locale: Mapped[Locale] = mapped_column(String(2))
+    # IANA time zone of the device: the memories of its day, told in its morning.
+    time_zone: Mapped[str] = mapped_column(String(64))
+    # The last day (on the device's calendar) its memories were dealt with: told, or nothing to
+    # tell. NULL: never.
+    memories_notified_on: Mapped[dt.date | None] = mapped_column(Date)
+    # Days in a row its push service refused the notifications; forgotten after a few.
+    failures: Mapped[int] = mapped_column(default=0, server_default="0")
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
 class GoogleAuthFlow(Base):

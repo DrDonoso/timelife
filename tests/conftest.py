@@ -10,6 +10,8 @@
 * ``sessions``: async sessionmaker on the test database for direct checks in ``async`` tests.
 * ``database_url``: migrated but unseeded database; ``make_settings(...)``/``migrate(...)`` helpers.
 * ``fast_passwords`` (automatic): cheap scrypt parameters (``PASSWORD_PARAMETERS``: the real ones).
+* ``offline_push`` (automatic): the notifications only go out when a test calls
+  ``app.state.notifier.tick(now)``, and never to a real push service (``webpush.TRANSPORT``).
 
 Helpers for started clients (inside ``with``), usable from sync and async tests:
 ``login_as(client, role="admin", *, email=None, name=None) -> user_id`` signs in directly (user +
@@ -39,7 +41,7 @@ from sqlalchemy import select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from timelife import passwords
+from timelife import passwords, push, webpush
 from timelife.app import create_app
 from timelife.auth import SESSION_COOKIE, SESSION_COOKIE_PATH, access_hash
 from timelife.config import Settings
@@ -61,6 +63,22 @@ def fast_passwords(monkeypatch: pytest.MonkeyPatch) -> None:
     """Cheap scrypt parameters: a hash with the real ones takes a large fraction of a second."""
     monkeypatch.setattr(passwords, "COST", 2**4)
     monkeypatch.setattr(passwords, "PARALLELISM", 1)
+
+
+def refuse_push(request: httpx.Request) -> httpx.Response:
+    raise AssertionError("A test reached a push service (replace webpush.TRANSPORT)")
+
+
+@pytest.fixture(autouse=True)
+def offline_push(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No notification is sent on its own (tests call ``Notifier.tick`` with the time they want)
+    and none reaches a real push service."""
+
+    async def idle(self: push.Notifier) -> None:
+        return None
+
+    monkeypatch.setattr(push.Notifier, "run", idle)
+    monkeypatch.setattr(webpush, "TRANSPORT", httpx.MockTransport(refuse_push))
 
 
 def sqlite_url(path: Path) -> str:

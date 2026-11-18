@@ -8,6 +8,7 @@ import { useI18n } from '../i18n'
 import { MemoriesAnnouncer } from '../memories/MemoriesAnnouncer'
 import { MemoriesButton } from '../memories/MemoriesButton'
 import { MemoriesProvider } from '../memories/MemoriesContext'
+import { PushInvite } from '../push/PushInvite'
 import { FilterPanelProvider } from '../search/FilterPanelContext'
 import { FilterToggleButton } from '../search/FilterToggleButton'
 import { SearchBar } from '../search/SearchBar'
@@ -23,7 +24,8 @@ import { UserMenu } from './UserMenu'
  * Signed-in app frame: sticky translucent header (brand, child switcher, search + filters on
  * timeline routes, memories, theme, language, account) and the routed page. Mobile: compact
  * header, search expands from an icon, theme/language move into the account panel. Today's
- * memories are told once a day on the timelines (see MemoriesAnnouncer).
+ * memories are told once a day on the timelines (see MemoriesAnnouncer), and the installed app
+ * offers once to notify them (PushInvite).
  */
 export function AppShell() {
   const { t } = useI18n()
@@ -120,6 +122,7 @@ export function AppShell() {
             <Outlet />
           </main>
           {onTimeline && <MemoriesAnnouncer />}
+          {onTimeline && <PushInvite />}
         </div>
       </MemoriesProvider>
     </FilterPanelProvider>
