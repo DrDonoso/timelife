@@ -15,6 +15,7 @@ import { demo } from './demo'
 import { detail } from './detail'
 import { errors } from './errors'
 import { memories } from './memories'
+import { push } from './push'
 import { search } from './search'
 import { shell } from './shell'
 import { timeline } from './timeline'
@@ -40,4 +41,5 @@ export const pt: Messages<Dictionary> = {
   demo,
   whatsNew,
   memories,
+  push,
 }

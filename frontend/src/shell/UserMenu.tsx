@@ -12,6 +12,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import { useToast } from '../contexts/ToastContext'
 import { IS_DEMO } from '../demo/config'
 import { useErrorMessage, useI18n } from '../i18n'
+import { PushSettings } from '../push/PushSettings'
 import { browserNavigation } from '../utils/navigation'
 import { useWhatsNewMenu } from '../whatsNew/WhatsNewLayout'
 import { LanguageList } from './LanguageMenu'
@@ -59,7 +60,7 @@ function Preferences() {
   )
 }
 
-/** Avatar button opening the account panel: identity, admin/timeline link, preferences, what's new, password, sign out (demo: reset). */
+/** Avatar button opening the account panel: identity, preferences, this device's notifications, admin/timeline link, what's new, password, sign out (demo: reset). */
 export function UserMenu({ context = 'app', showPreferences = false }: UserMenuProps) {
   const { t } = useI18n()
   const auth = useAuth()
@@ -106,6 +107,8 @@ export function UserMenu({ context = 'app', showPreferences = false }: UserMenuP
                 </div>
 
                 {showPreferences && <Preferences />}
+
+                <PushSettings />
 
                 <div className={styles.links}>
                   {context === 'app' && auth.isAdmin && (

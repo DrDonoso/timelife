@@ -57,4 +57,9 @@ describe('home-screen app', () => {
     expect(manifest.background_color).toBe(THEME_COLORS.light)
     expect(manifest.theme_color).toBe(THEME_COLORS.light)
   })
+
+  it('gives Android’s status bar a silhouette for the notifications', () => {
+    // src/timelife/push.py names it as their `badge`: only its alpha channel is drawn.
+    expect(png(publicFile('/badge-96.png'))).toEqual({ size: '96x96', alpha: true })
+  })
 })

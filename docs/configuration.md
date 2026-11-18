@@ -9,7 +9,7 @@ excluded from the Docker build context — never commit it.
 | Variable | Default | `docker-compose.yml` | Description |
 | --- | --- | --- | --- |
 | `POSTGRES_PASSWORD` | – | **required** | Password of the bundled PostgreSQL role/database `timelife`. Must be URL-safe (it is embedded in `DATABASE_URL`). Applied only when the `pgdata` volume is first initialised. |
-| `AUTH_SECRET` | – | **required** | HMAC key (≥ 32 characters) for session tokens and sign-in state. Rotating it signs everybody out. |
+| `AUTH_SECRET` | – | **required** | HMAC key (≥ 32 characters) for session tokens and sign-in state, and the source of the key that signs notifications. Rotating it signs everybody out (devices with notifications register them again when Timelife opens there). |
 | `PUBLIC_ORIGIN` | `http://localhost:7779` | **required** | Browser origin(s), comma-separated, e.g. `https://timelife.example.com,https://timelife.home.example.com`. Drives the host allow-list, the CSRF `Origin` check and the Google redirect URIs. No paths, credentials or wildcards. |
 | `AUTH_COOKIE_SECURE` | `true` | optional | Secure cookies and HSTS. While `true`, every origin that is not localhost/127.0.0.1/[::1] must use HTTPS. |
 | `GOOGLE_CLIENT_ID` | empty | optional | OAuth client ID (`….apps.googleusercontent.com`, type *Web application*). Both Google values or neither; with them, people can also sign in with Google (see [Google sign-in setup](#google-sign-in-setup-optional)). |
@@ -23,7 +23,7 @@ excluded from the Docker build context — never commit it.
 | `MAX_UPLOAD_MB` | `30` | optional | Maximum size of one uploaded photo in MB (1–200). |
 | `MAX_VIDEO_UPLOAD_MB` | `500` | optional | Maximum size of one uploaded video in MB (1–4096). |
 | `MAX_VIDEO_MINUTES` | `10` | optional | Maximum length of one uploaded video in minutes (1–240). |
-| `TZ` | `Europe/Madrid` | optional | IANA time zone of the server. |
+| `TZ` | `Europe/Madrid` | optional | IANA time zone of the server (and of the notifications of a device that does not tell its own). |
 | `TRUSTED_PROXY_IPS` | `127.0.0.1` | optional | IPs/networks allowed to set `X-Forwarded-*` headers (Uvicorn `--forwarded-allow-ips`). Never `*`. |
 | `APP_PORT` | `7779` | optional | Published host port; `127.0.0.1:7779` publishes on loopback only (production file). |
 | `IMAGE_TAG` | `latest` | optional | Image tag pulled by `docker-compose.yml`; pin a release such as `20261102`. |
@@ -102,3 +102,20 @@ SMTP_FROM=timelife@home.example.com
 
 Sending happens after the request was answered; a failure is only logged (`E-mail not sent (password reset: …)`,
 without the address). Most providers only accept an `SMTP_FROM` with the address of `SMTP_USERNAME`.
+
+## Notifications
+
+Nothing to set: each person turns them on, per device, in the account menu (**Avisarme de los recuerdos**, see
+[Features](features.md#memories)). They need:
+
+1. An `https://` origin in `PUBLIC_ORIGIN`. iPhones only get notifications from HTTPS sites, and the first HTTPS
+   origin tells the push services who sends them (Apple refuses `localhost`; without any HTTPS origin, the address of
+   `SMTP_FROM` is used).
+2. Outbound HTTPS (port 443) from the `app` container to the browsers' push services: `fcm.googleapis.com` (Chrome,
+   Edge and other Android browsers), `*.push.apple.com` (Safari, iPhone and iPad), `*.push.services.mozilla.com`
+   (Firefox) and `*.notify.windows.com` (Edge on Windows). Timelife never sends them anywhere else.
+
+They are signed with a key derived from `AUTH_SECRET`: nothing to generate or keep, but rotating the secret makes the
+devices register again (the app does it by itself the next time it opens there). Failures are logged with the push
+service, never the device's address: `Push message refused by web.push.apple.com (403 BadJwtToken)` (check
+`PUBLIC_ORIGIN`) or `Push message not sent to fcm.googleapis.com (ConnectError)` (the server cannot reach it).

@@ -29,6 +29,7 @@ from . import (
     media,
     memories,
     password_auth,
+    push,
     setup,
     timeline,
     users,
@@ -86,6 +87,7 @@ def create_app(config: Settings | None = None) -> FastAPI:
         provider: google_auth.GoogleProvider | None = None
         jobs: video.VideoJobs | None = None
         backups: backup.Backups | None = None
+        notifier: push.Notifier | None = None
         try:
             application.state.sessions = async_sessionmaker(engine, expire_on_commit=False)
             provider = google_auth.GoogleProvider(current)
@@ -95,6 +97,8 @@ def create_app(config: Settings | None = None) -> FastAPI:
             application.state.video_jobs = jobs
             backups = backup.Backups(application.state.sessions, current, jobs)
             application.state.backups = backups
+            notifier = push.Notifier(application.state.sessions, current)
+            application.state.notifier = notifier
             try:
                 async with application.state.sessions() as db:
                     await auth.purge_expired(db)
@@ -107,8 +111,12 @@ def create_app(config: Settings | None = None) -> FastAPI:
                 raise RuntimeError(
                     "Database not ready: check DATABASE_URL and run 'alembic upgrade head'"
                 ) from error
+            # The day's memories, to the devices that asked for them.
+            await notifier.start()
             yield
         finally:
+            if notifier is not None:
+                await notifier.stop()
             if backups is not None:
                 await backups.stop()
             if jobs is not None:
@@ -173,6 +181,7 @@ def create_app(config: Settings | None = None) -> FastAPI:
         backup.admin_router,
         whats_new.router,
         memories.router,
+        push.router,
     ):
         application.include_router(router)
 

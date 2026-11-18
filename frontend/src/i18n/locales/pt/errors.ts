@@ -91,6 +91,10 @@ export const errors: Messages<typeof source> = {
   import_interrupted: 'O servidor reiniciou-se a meio da importação.',
   import_cancelled: 'Foi cancelada.',
   import_failed: 'Ocorreu um erro ao guardar as alterações.',
+  // Notifications
+  push_service_unsupported: 'Este navegador usa um serviço de avisos que o Timelife não suporta.',
+  push_subscription_not_found: 'Este dispositivo já não recebe avisos: volta a ativá-los.',
+  push_failed: 'O serviço de avisos não aceitou o aviso. Tenta novamente mais tarde.',
   demo_unavailable: 'Indisponível na demo: aqui nada fica guardado num servidor.',
   inUse: {
     child_in_use: {

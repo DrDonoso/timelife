@@ -1,9 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { createContext, use, useCallback, useMemo, useState, type ReactNode } from 'react'
+import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { api } from '../api/client'
 import { EMPTY_FILTERS, qk, useMemoriesState, useTimeline } from '../api/queries'
 import type { MemoriesOut, MemoriesSeenIn, TimelineEventOut } from '../api/schema.gen'
 import { FAMILY_PATH, useCurrentChild } from '../contexts/CurrentChildContext'
+import { consumeMemoriesIntent } from '../push/launch'
+import { setAppBadge } from '../push/support'
 import { useToday } from '../utils/useToday'
 import { memoriesOn, type Memory } from './memories'
 
@@ -21,6 +23,8 @@ export interface MemoriesValue {
   unseen: number
   /** Today has memories this account was neither told about nor looked at. */
   announce: boolean
+  /** Whether there is anything to tell today is known (`announce` will not turn true later). */
+  settled: boolean
   markAnnounced: () => void
   markOpened: () => void
   /** The panel of today's memories (opening it counts them as seen). */
@@ -45,13 +49,17 @@ function reached(day: string | null | undefined, today: string): boolean {
  * Today's memories for the timeline pages. The family's milestones are only loaded while they are
  * needed: until this account has looked at today's memories (for the count and the notice) and
  * while the panel is open. Being told about them and looking at them is saved for the account, so
- * every device knows (failing to save only means hearing about them again).
+ * every device knows (failing to save only means hearing about them again). A notification that
+ * opened the app opens the panel, or counts them as seen when it opened one of them
+ * (push/launch.ts); the app's badge shows how many are left to see.
  */
 export function MemoriesProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const today = useToday()
   const state = useMemoriesState()
-  const [isOpen, setIsOpen] = useState(false)
+  // What the notification that opened the app asked for (push/launch.ts), once.
+  const [intent] = useState(consumeMemoriesIntent)
+  const [isOpen, setIsOpen] = useState(intent === 'open')
   const { child, children: family, isAll, timelinePath } = useCurrentChild()
 
   const opened = reached(state.data?.opened_on, today)
@@ -87,6 +95,20 @@ export function MemoriesProvider({ children }: { children: ReactNode }) {
     [markOpened],
   )
 
+  // Opened by a notification: today's memories count as seen (their list, or one of them, is open),
+  // that day only.
+  const intentHandled = useRef(false)
+  useEffect(() => {
+    if (intent === null || intentHandled.current) return
+    intentHandled.current = true
+    markOpened()
+  }, [intent, markOpened])
+
+  const badge = !state.isSuccess ? null : opened ? 0 : (memories?.length ?? null)
+  useEffect(() => {
+    if (badge !== null) setAppBadge(badge)
+  }, [badge])
+
   const hrefOf = useCallback(
     (event: TimelineEventOut) => {
       const here = isAll || (child !== null && event.child_ids.includes(child.id))
@@ -100,6 +122,7 @@ export function MemoriesProvider({ children }: { children: ReactNode }) {
   const { error, refetch } = timeline
   const retry = useCallback(() => void refetch(), [refetch])
   const unseen = state.isSuccess && !opened ? (memories?.length ?? 0) : 0
+  const settled = state.isSuccess && (opened || announced || memories !== null)
   const value = useMemo<MemoriesValue>(
     () => ({
       today,
@@ -109,13 +132,14 @@ export function MemoriesProvider({ children }: { children: ReactNode }) {
       retry,
       unseen,
       announce: unseen > 0 && !announced,
+      settled,
       markAnnounced,
       markOpened,
       isOpen,
       setOpen,
       hrefOf,
     }),
-    [today, events, memories, error, retry, unseen, announced, markAnnounced, markOpened, isOpen, setOpen, hrefOf],
+    [today, events, memories, error, retry, unseen, announced, settled, markAnnounced, markOpened, isOpen, setOpen, hrefOf],
   )
   return <MemoriesContext value={value}>{children}</MemoriesContext>
 }

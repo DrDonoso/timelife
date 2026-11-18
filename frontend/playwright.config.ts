@@ -38,7 +38,7 @@ export default defineConfig({
       name: 'flows',
       use: desktop,
       dependencies: ['setup'],
-      testMatch: /(auth|event-flow|media|admin|memories)\.spec\.ts$/,
+      testMatch: /(auth|event-flow|media|admin|memories|push)\.spec\.ts$/,
       workers: 1,
     },
   ],

@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { MemoriesOut, MemoriesSeenIn, TimelineEventOut, TimelineOut } from '../api/schema.gen'
+import { takeLaunchIntent } from '../push/launch'
 import { VIEWER_SESSION, mockSignedIn, renderApp, type MockRequest } from '../utils/test-utils'
 import { NOTES } from '../whatsNew/notes'
 import { ANNOUNCE_DELAY_MS } from './MemoriesAnnouncer'
@@ -50,6 +51,8 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers()
+  Reflect.deleteProperty(navigator, 'setAppBadge')
+  Reflect.deleteProperty(navigator, 'clearAppBadge')
 })
 
 describe('memories', () => {
@@ -132,5 +135,49 @@ describe('memories', () => {
     expect(within(panel).getByText('El próximo, el 20 de noviembre de 2026:')).toBeInTheDocument()
     expect(within(panel).getByRole('link', { name: /^Día de playa/ })).toHaveAttribute('href', '/c/ana/e/3?zoom=events&focus=e3')
     expect(saved).toEqual([{ opened_on: '2026-11-17' }])
+  })
+})
+
+describe('memories opened from their notification', () => {
+  const opening = (path: string) => takeLaunchIntent({ href: `http://localhost${path}` } as Location)
+
+  it('open the list of today’s memories', async () => {
+    const saved = signedIn([FIRST_WORDS, FIRST_STEPS], { announced_on: '2026-11-17', opened_on: null })
+    opening('/?memories=open')
+    renderApp('/')
+
+    const panel = await screen.findByRole('dialog', { name: 'Recuerdos de hoy' })
+    expect(await within(panel).findAllByRole('link')).toHaveLength(2)
+    expect(saved).toEqual([{ opened_on: '2026-11-17' }])
+  })
+
+  it('count as seen when it opened one of them', async () => {
+    const saved = signedIn([FIRST_WORDS])
+    opening('/c/ana?zoom=events&focus=e1&memories=seen')
+    renderApp('/c/ana?zoom=events&focus=e1')
+
+    await waitFor(() => expect(saved).toEqual([{ opened_on: '2026-11-17' }]))
+    expect(await screen.findByRole('button', { name: 'Recuerdos' })).toBeInTheDocument()
+    await afterTheDelay()
+    noNotice()
+    expect(screen.queryByRole('dialog', { name: 'Recuerdos de hoy' })).not.toBeInTheDocument()
+  })
+
+  it('leave on the app’s badge how many are still to see', async () => {
+    vi.stubGlobal('Notification', { permission: 'granted' })
+    const setAppBadge = vi.fn(() => Promise.resolve())
+    const clearAppBadge = vi.fn(() => Promise.resolve())
+    Object.defineProperties(navigator, {
+      setAppBadge: { configurable: true, value: setAppBadge },
+      clearAppBadge: { configurable: true, value: clearAppBadge },
+    })
+    signedIn([FIRST_WORDS, FIRST_STEPS], { announced_on: '2026-11-17', opened_on: null })
+    const user = userEvent.setup()
+    renderApp('/c/ana')
+
+    await waitFor(() => expect(setAppBadge).toHaveBeenCalledWith(2))
+    expect(clearAppBadge).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Recuerdos (2 nuevos hoy)' }))
+    await waitFor(() => expect(clearAppBadge).toHaveBeenCalled())
   })
 })

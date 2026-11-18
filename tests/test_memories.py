@@ -1,16 +1,20 @@
 """Memories: the last day each user was told about their memories and looked at them
 (``/api/memories``), only ever their own, never moving back, and only for a day that is today
-somewhere in the world."""
+somewhere in the world; and the memories of a day as the server finds them (for the morning
+notification), with the same rules as the interface."""
 
 import datetime as dt
 from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from timelife import contracts
+from timelife.memories import Memory, memories_on, memory_age
 
-from .conftest import login_as
+from .conftest import login_as, run_db
+from .helpers_events import add_child, category_ids, create_event
 
 SEEN = "/api/memories/seen"
 TODAY = dt.date(2026, 11, 17)
@@ -87,3 +91,77 @@ def test_only_days_that_are_today_somewhere_are_accepted(
     assert response.status_code == 422
     assert response.json() == {"code": "invalid_request", "fields": {field: error}}
     assert viewer.get("/api/memories").json() == NOTHING
+
+# The same cases as frontend/src/memories/memories.test.ts: both must find the same memories.
+@pytest.mark.parametrize(
+    ("date", "day", "age"),
+    [
+        ("2026-10-17", "2026-11-17", ("months", 1)),
+        ("2025-12-17", "2026-11-17", ("months", 11)),
+        ("2025-11-17", "2026-11-17", ("years", 1)),
+        ("2023-11-17", "2026-11-17", ("years", 3)),
+        *[
+            (date, "2026-11-17", None)
+            for date in (
+                "2026-11-17", "2026-11-16", "2026-10-16", "2025-10-17", "2024-05-17", "2026-12-17"
+            )
+        ],
+        # The 29th to 31st on the last day of shorter months, 29 February on the 28th.
+        *[
+            (date, "2026-02-28", ("months", 1))
+            for date in ("2026-01-28", "2026-01-29", "2026-01-30", "2026-01-31")
+        ],
+        ("2026-03-31", "2026-04-30", ("months", 1)),
+        ("2026-01-31", "2026-03-31", ("months", 2)),
+        ("2026-01-31", "2026-03-28", None),
+        ("2028-01-31", "2028-02-29", ("months", 1)),
+        ("2028-01-31", "2028-02-28", None),
+        ("2024-02-29", "2025-02-28", ("years", 1)),
+        ("2024-02-29", "2028-02-29", ("years", 4)),
+        ("2024-02-29", "2028-02-28", None),
+    ],
+)
+def test_the_server_counts_ages_as_the_interface(
+    date: str, day: str, age: tuple[str, int] | None
+) -> None:
+    assert memory_age(dt.date.fromisoformat(date), dt.date.fromisoformat(day)) == age
+
+
+def test_the_server_finds_the_memories_of_a_day(admin: TestClient) -> None:
+    lucia, mateo = add_child(admin, "Lucía"), add_child(admin, "Mateo")
+    category = next(iter(category_ids(admin).values()))
+    dates = {
+        "Hoy": "2026-11-17",
+        "Dos años": "2024-11-17",
+        "Un mes": "2026-10-17",
+        "Un año": "2025-11-17",
+        "Tres meses": "2026-08-17",
+        "Otro mes": "2026-10-17",
+        "Casi": "2026-10-18",
+        "En la papelera": "2025-11-17",
+    }
+    ids = {
+        title: create_event(
+            admin, [mateo] if title == "Un año" else [mateo, lucia], [category], title=title,
+            date=date,
+        )["id"]
+        for title, date in dates.items()
+    }
+    assert admin.delete(f"/api/admin/events/{ids['En la papelera']}").status_code == 204
+
+    async def find(db: AsyncSession) -> list[Memory]:
+        return await memories_on(db, dt.date(2026, 11, 17))
+
+    found = run_db(admin, find)
+    # The most recent first; those of the same age in the timeline's order.
+    timeline = [event["title"] for event in admin.get("/api/timeline").json()["events"]]
+    month_old = [title for title in timeline if title in {"Un mes", "Otro mes"}]
+    assert [memory.title for memory in found] == [*month_old, "Tres meses", "Un año", "Dos años"]
+    assert [(memory.unit, memory.count) for memory in found][2:] == [
+        ("months", 3), ("years", 1), ("years", 2),
+    ]
+    # They open over the timeline of their first child.
+    paths = {memory.title: memory.path for memory in found}
+    one_year = ids["Un año"]
+    assert paths["Un año"] == f"/c/mateo/e/{one_year}?zoom=events&focus=e{one_year}"
+    assert paths["Dos años"].startswith(f"/c/lucia/e/{ids['Dos años']}?")

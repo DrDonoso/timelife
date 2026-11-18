@@ -91,6 +91,10 @@ export const errors = {
   import_interrupted: 'El servidor se reinició mientras importaba.',
   import_cancelled: 'Se canceló.',
   import_failed: 'Falló al guardar los cambios.',
+  // Notifications
+  push_service_unsupported: 'Este navegador usa un servicio de avisos que Timelife no admite.',
+  push_subscription_not_found: 'Este dispositivo ya no recibe avisos: vuelve a activarlos.',
+  push_failed: 'El servicio de avisos no ha aceptado el aviso. Inténtalo de nuevo más tarde.',
   demo_unavailable: 'No disponible en la demo: aquí nada se guarda en un servidor.',
   /** `*_in_use` with the number of milestones (`detail.events`): used instead of the message above. */
   inUse: {

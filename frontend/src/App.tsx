@@ -14,6 +14,7 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage'
 import { RouteErrorPage } from './pages/RouteErrorPage'
 import { SetupPage } from './pages/SetupPage'
 import { TimelinePage } from './pages/TimelinePage'
+import { PushProvider } from './push/PushContext'
 import { AppShell } from './shell/AppShell'
 import { RequireAdmin, RequireAuth, RequireChild, RequireFamily, RootRedirect } from './shell/guards'
 import { RootLayout } from './shell/RootLayout'
@@ -60,7 +61,8 @@ function timelineChildren(): RouteObject[] {
  * /login · /setup (administrator recovery link) · /reset-password (e-mailed link) · / (→
  * remembered/first child, or the family) · /c/:childSlug (timeline) · /all (every child together)
  * · …/e/:eventId (detail) · …/new (new milestone, admins) · /admin/* (admins, lazy) · * (404).
- * Every signed-in page can show what is new in Timelife (WhatsNewLayout).
+ * Every signed-in page can show what is new in Timelife (WhatsNewLayout) and knows whether this
+ * device gets notifications (PushProvider).
  */
 export const routes: RouteObject[] = [
   {
@@ -73,7 +75,9 @@ export const routes: RouteObject[] = [
       {
         element: (
           <RequireAuth>
-            <WhatsNewLayout />
+            <PushProvider>
+              <WhatsNewLayout />
+            </PushProvider>
           </RequireAuth>
         ),
         children: [

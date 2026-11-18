@@ -5,6 +5,10 @@ import './styles/base.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './App'
+import { takeLaunchIntent } from './push/launch'
+
+// A notification's page says what it opens for (today's memories): taken before the router starts.
+takeLaunchIntent()
 
 const container = document.getElementById('root')
 if (!container) throw new Error('Timelife: the #root element is missing from index.html')

@@ -16,7 +16,7 @@ Try it at **<https://demo.timelife.lauvid.com>**.
 - **Nothing is stored or sent anywhere.** Changes, including uploaded photos and videos (processed in the browser:
   videos and Live Photo clips play as uploaded, so only formats the browser can decode work), live in the tab's
   memory: a reload, or **Reset the demo** in the user menu (where *Sign out* would be), brings the sample data back. A
-  welcome message says so once per tab.
+  welcome message says so once per tab. There are no notifications either (the account menu offers none).
 - **HTTPS only.** Browsers run service workers only over HTTPS (or on `localhost`), and some not in private windows
   (Firefox); without one the page explains that the demo cannot start.
 
@@ -34,7 +34,7 @@ npm run preview:demo    # serves dist-demo/ on http://localhost:4173
 
 Normal builds never contain the demo: the flag comes only from `frontend/.env.demo` (`VITE_DEMO=1`, read in
 `--mode demo`), the demo code is a separate chunk loaded behind that flag, and `mockServiceWorker.js` is removed from
-`dist/`.
+`dist/` (as the notifications' `sw.js` is from `dist-demo/`).
 
 ## Deploy it to Cloudflare
 

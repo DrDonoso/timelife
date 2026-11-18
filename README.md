@@ -48,7 +48,8 @@ and try every administration page. Nothing is stored or sent anywhere — reload
   carousel, full-screen photos, playable videos and iPhone **Live Photos**.
 - **Search and filters** by title, date range and category.
 - **Memories, "on this day"**: the milestones that turn a month (up to 11) or a whole year old today, told once when
-  you come in and kept under the clock in the header.
+  you come in — or in a notification at 9:00, also on an iPhone with the app on the Home Screen — and kept under the
+  clock in the header.
 - **Administration** to add milestones (drag-and-drop uploads, cover framing, the order of a day's milestones),
   children, categories, colours, users and a trash bin.
 - **Import and export**: one ZIP with everything, original photos included, to move to another server or keep a copy.

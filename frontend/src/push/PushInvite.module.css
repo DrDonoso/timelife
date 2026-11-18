@@ -1,0 +1,10 @@
+/* The invite's picture: a bell in the brand's soft gradient, the size of a memory's photo. */
+.bell {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gradient-brand-soft);
+  color: var(--color-primary);
+}
