@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import type { Locator, Page, TestInfo } from '@playwright/test'
-import { escapeRegExp, expect, expectInstallable, fixture, setPressed, test as base, waitForAnimations } from './support'
+import { escapeRegExp, expect, expectInstallable, fixture, setPressed, test as base, touchscreen, waitForAnimations } from './support'
 
 // The public demo (playwright.demo.config.ts): the static build with its in-browser API. Besides
 // each test's own checks, nothing may go wrong unnoticed: no uncaught error, no console error (the
@@ -128,6 +128,35 @@ test("tells about the day's memories, and lists them by age @mobile", async ({ p
   await expect(page).toHaveURL(/\/c\/leo\/e\/\d+\?zoom=events&focus=e\d+$/)
   await expect(page.getByRole('dialog', { name: 'Rolls over' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Memories', exact: true, includeHidden: true })).toHaveCount(1)
+})
+
+test('a memory glides the line to it, and then the line follows the finger again @mobile', async ({ page, isMobile }) => {
+  test.skip(!isMobile, 'scrolling the line with a finger is the phone layout')
+  await page.clock.setFixedTime(new Date('2026-11-17T10:00:00Z'))
+  await page.goto('/all')
+  const family = page.getByRole('region', { name: 'Everyone’s timeline' })
+  await expect(family.getByRole('link').first()).toBeVisible()
+  await page.getByRole('button', { name: 'Memories (2 new today)' }).click()
+  await page.getByRole('dialog', { name: 'Today’s memories' }).getByRole('link', { name: /^Rides her trike/ }).click()
+  const card = page.getByRole('dialog', { name: 'Rides her trike' })
+  await card.getByRole('button', { name: 'Close' }).click()
+  await expect(card).toBeHidden()
+  await expect(family.getByRole('link', { name: /^Rides her trike · / })).toBeInViewport()
+
+  // A finger scrolls the line back up, and nothing pulls it down to the memory again. The line
+  // scrolls inside the region (its only child that scrolls).
+  const scrolled = () => family.evaluate((region) => Math.max(0, ...Array.from(region.children, (child) => child.scrollTop)))
+  const box = await family.boundingBox()
+  expect(box, 'the timeline region').not.toBeNull()
+  if (!box) return
+  const x = box.x + box.width * 0.75
+  const before = await scrolled()
+  const finger = await touchscreen(page)
+  await finger.drag([x, box.y + box.height * 0.3], [x, box.y + box.height * 0.7])
+  await expect.poll(scrolled).toBeLessThan(before - 100)
+  await page.waitForTimeout(300)
+  expect(await scrolled()).toBeLessThan(before - 100)
+  await finger.detach()
 })
 
 test('shows everyone together, each child on their own line @mobile', async ({ page }, testInfo) => {

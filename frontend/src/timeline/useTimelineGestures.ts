@@ -47,7 +47,7 @@ export function writeScroll(element: HTMLElement, orientation: Orientation, valu
  * - Ctrl/⌘ + wheel and trackpad pinch (wheel + ctrlKey) → accumulated zoom steps;
  * - vertical mouse wheel → eased horizontal scroll (desktop); trackpads keep native scrolling;
  * - mouse drag → pan with momentum (the click after a drag is swallowed);
- * - two-finger touch pinch → zoom steps.
+ * - two-finger touch pinch → zoom steps; any touch stops eased scrolling (native scrolling takes over).
  */
 export function useTimelineGestures(
   containerRef: RefObject<HTMLElement | null>,
@@ -92,12 +92,15 @@ export function useTimelineGestures(
       if (mode === 'ease') {
         const current = read()
         const next = current + (target - current) * WHEEL_EASE
-        if (Math.abs(target - next) < 0.75) {
+        const close = Math.abs(target - next) < 0.75
+        if (!close) write(next)
+        // Browsers round scroll offsets (to whole or device pixels): a step rounded back to where it
+        // started would repeat every frame, holding the line against the user's own scrolling.
+        if (close || read() === current) {
           write(target)
           mode = null
           return
         }
-        write(next)
       } else if (mode === 'momentum') {
         const elapsed = Math.min(48, now - lastTick || 16)
         lastTick = now
@@ -234,10 +237,9 @@ export function useTimelineGestures(
       Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY)
 
     function onTouchStart(event: TouchEvent) {
-      if (event.touches.length === 2) {
-        stop()
-        pinch = { distance: touchDistance(event.touches) }
-      }
+      // A finger on the line takes over from an eased scroll (e.g. the jump to a memory).
+      stop()
+      if (event.touches.length === 2) pinch = { distance: touchDistance(event.touches) }
     }
 
     function onTouchMove(event: TouchEvent) {
