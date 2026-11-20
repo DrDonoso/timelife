@@ -13,7 +13,7 @@ import { useErrorMessage, useI18n } from '../i18n'
 import styles from './NotificationChoices.module.css'
 
 /** The notifications each person can choose (src/timelife/push.py), in the order shown. */
-const KINDS = ['memories', 'milestones'] as const
+const KINDS = ['memories', 'birthdays', 'milestones'] as const
 type Kind = (typeof KINDS)[number]
 
 function Choices() {

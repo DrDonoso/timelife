@@ -34,7 +34,7 @@ export const adminChildren = {
     nameRequired: 'Escribe el nombre.',
     tooLong: 'Como máximo {max} caracteres.',
     birthDate: 'Fecha de nacimiento',
-    birthDateHelp: 'Opcional.',
+    birthDateHelp: 'Opcional. Con ella, las notificaciones avisan de su cumpleaños.',
     birthDateInvalid: 'La fecha no es válida.',
     waitUpload: 'Espera a que termine de subirse la foto.',
     create: 'Añadir niño',

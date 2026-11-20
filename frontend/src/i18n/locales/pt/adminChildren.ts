@@ -37,7 +37,7 @@ export const adminChildren: Messages<typeof source> = {
     nameRequired: 'Escreve o nome.',
     tooLong: 'No máximo, {max} caracteres.',
     birthDate: 'Data de nascimento',
-    birthDateHelp: 'Opcional.',
+    birthDateHelp: 'Opcional. Com ela, as notificações avisam do aniversário.',
     birthDateInvalid: 'A data não é válida.',
     waitUpload: 'Espera que a foto acabe de carregar.',
     create: 'Adicionar criança',

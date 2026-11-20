@@ -238,8 +238,11 @@ To try them by hand, Chrome on `http://localhost` (the Vite dev server or the lo
 them: sign in as `viewer` there and add a milestone as `admin` in another browser (or a private window), and it
 arrives within a minute. An iPhone needs an HTTPS address in `PUBLIC_ORIGIN` (a test deployment, or a tunnel to your
 machine) and the app added to its Home Screen. The memories' notification goes out at the first minute between 9:00
-and 21:00 of the device's day while the person has memories that day not yet told nor looked at; a new milestone's,
-at the next minute, to every device of everybody but whoever added it.
+and 21:00 of the device's day while the person has memories that day not yet told nor looked at; a birthday's, in the
+same window, once a day on each device, when a child turns a year older (or a month, during their first year); a new
+milestone's, at the next minute, to every device of everybody but whoever added it. To try the birthdays, give a child
+the birth date of a year ago today before nine: a device already dealt with that day waits for the next one, unless
+its `push_subscriptions.birthdays_notified_on` is cleared.
 
 ## Documentation screenshots
 

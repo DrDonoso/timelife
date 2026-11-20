@@ -320,11 +320,13 @@ export interface PushKeysIn {
 }
 
 export interface PushPreferencesIn {
+  birthdays?: boolean | null
   memories?: boolean | null
   milestones?: boolean | null
 }
 
 export interface PushPreferencesOut {
+  birthdays: boolean
   memories: boolean
   milestones: boolean
 }

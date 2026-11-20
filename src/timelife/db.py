@@ -114,9 +114,10 @@ class User(Base):
     memories_announced_on: Mapped[dt.date | None] = mapped_column(Date)
     memories_opened_on: Mapped[dt.date | None] = mapped_column(Date)
     # The notifications the user wants on the devices that have them on (see ``push``): each
-    # day's memories, and the milestones other people add.
+    # day's memories, the milestones other people add and the children's birthdays.
     notify_memories: Mapped[bool] = mapped_column(default=True, server_default=true())
     notify_milestones: Mapped[bool] = mapped_column(default=True, server_default=true())
+    notify_birthdays: Mapped[bool] = mapped_column(default=True, server_default=true())
 
     @property
     def google_linked(self) -> bool:
@@ -163,6 +164,8 @@ class PushSubscription(Base):
     # The last day (on the device's calendar) its memories were dealt with: told, or nothing to
     # tell. NULL: never.
     memories_notified_on: Mapped[dt.date | None] = mapped_column(Date)
+    # The same for the children's birthdays.
+    birthdays_notified_on: Mapped[dt.date | None] = mapped_column(Date)
     # Notifications in a row its push service refused; forgotten after a few.
     failures: Mapped[int] = mapped_column(default=0, server_default="0")
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

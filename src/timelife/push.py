@@ -1,5 +1,5 @@
 """Push notifications: the devices that turned them on, and what they are told (each day's
-memories and the milestones other people add, as each person chose).
+memories, the children's birthdays and the milestones other people add, as each person chose).
 
 A browser, or the app installed on a phone's Home Screen, registers from the account panel
 (``PUT /api/push/subscription``) with its push address and keys (``webpush``), the language of
@@ -18,6 +18,10 @@ otherwise).
   notice of the interface: the first memory, and how many more. It counts as telling them
   (``users.memories_announced_on``), so the interface does not tell them again. Tapping it opens
   that milestone, or today's memories when there are several.
+- **Birthdays**: at the same time of the device's day, on the day a child turns a whole number of
+  years old, or one more month during their first year (with the dates of the memories:
+  ``memory_age``), with one notification per child that opens their timeline. Each device is told
+  once a day (``push_subscriptions.birthdays_notified_on``); the interface does not tell them.
 - **New milestones**: adding one (``events``) queues it for every device of everybody else
   (``milestone_notifications``), and the next round tells each of them, at any time of day, with
   one notification per milestone (for which children, who added it, its title) that opens it. It
@@ -73,7 +77,7 @@ from .db import (
     utcnow,
 )
 from .errors import AppError
-from .memories import Memory, event_path, memories_on
+from .memories import Memory, MemoryUnit, event_path, memories_on, memory_age
 
 log = logging.getLogger(__name__)
 
@@ -95,6 +99,9 @@ MAX_DEVICES = 20
 MILESTONE_WINDOW = dt.timedelta(days=1)
 # The longest title of a notification (a milestone of many children would not fit otherwise).
 MAX_TITLE = 120
+# What happened to the notifications of a device, the worst first: its outcome when it was sent
+# several at once.
+WORST_FIRST: tuple[webpush.Outcome, ...] = ("gone", "retry", "rejected", "delivered")
 LANGUAGE_TAGS: dict[Locale, str] = {"es": "es-ES", "en": "en-GB", "pt": "pt-PT"}
 
 
@@ -108,6 +115,12 @@ class Texts:
     several: tuple[str, str]
     months: tuple[str, str]
     years: tuple[str, str]
+    # A child's birthday, with their ``{name}`` and the ``{count}`` of years they turn (or of
+    # months, during their first year): its title, and its body.
+    turns_years: tuple[str, str]
+    turns_months: tuple[str, str]
+    birthday: str
+    born_months_ago: tuple[str, str]
     # A new milestone: its title (of whose children), and who added it (``added``: an account
     # without a name, or gone).
     milestone: str
@@ -128,6 +141,10 @@ TEXTS: dict[Locale, Texts] = {
         ),
         months=("hace {count} mes", "hace {count} meses"),
         years=("hace {count} año", "hace {count} años"),
+        turns_years=("{name} cumple {count} año", "{name} cumple {count} años"),
+        turns_months=("{name} cumple {count} mes", "{name} cumple {count} meses"),
+        birthday="Hoy es su cumpleaños.",
+        born_months_ago=("Hoy hace {count} mes que nació.", "Hoy hace {count} meses que nació."),
         milestone="Nuevo hito",
         milestone_of="Nuevo hito de {children}",
         added_by="{name} ha añadido «{title}».",
@@ -143,6 +160,13 @@ TEXTS: dict[Locale, Texts] = {
         ),
         months=("{count} month ago", "{count} months ago"),
         years=("{count} year ago", "{count} years ago"),
+        turns_years=("{name} turns {count}", "{name} turns {count}"),
+        turns_months=("{name} is {count} month old", "{name} is {count} months old"),
+        birthday="Today is {name}’s birthday.",
+        born_months_ago=(
+            "{name} was born {count} month ago today.",
+            "{name} was born {count} months ago today.",
+        ),
         milestone="New milestone",
         milestone_of="New milestone for {children}",
         added_by="{name} added “{title}”.",
@@ -158,6 +182,10 @@ TEXTS: dict[Locale, Texts] = {
         ),
         months=("há {count} mês", "há {count} meses"),
         years=("há {count} ano", "há {count} anos"),
+        turns_years=("{name} faz {count} ano", "{name} faz {count} anos"),
+        turns_months=("{name} faz {count} mês", "{name} faz {count} meses"),
+        birthday="Hoje é o aniversário de {name}.",
+        born_months_ago=("Faz hoje {count} mês que nasceu.", "Faz hoje {count} meses que nasceu."),
         milestone="Novo marco",
         milestone_of="Novo marco de {children}",
         added_by="{name} adicionou «{title}».",
@@ -238,6 +266,52 @@ def memories_message(memories: Sequence[Memory], origin: str, locale: Locale) ->
     )
     message["app_badge"] = len(memories)
     return message
+
+
+@dataclass(frozen=True)
+class Birthday:
+    """A child who turns a whole number of years old today, or (their first year) of months."""
+
+    child_id: int
+    name: str
+    unit: MemoryUnit
+    count: int
+    # Their timeline.
+    path: str
+
+
+async def birthdays_on(db: AsyncSession, day: dt.date) -> list[Birthday]:
+    """The children who have a birthday on ``day`` (as old as a memory of the day they were born
+    would be), in the order of their timelines."""
+    found: list[Birthday] = []
+    for child_id, name, slug, born in await db.execute(
+        select(Child.id, Child.name, Child.slug, Child.birth_date)
+        .where(Child.birth_date < day)
+        .order_by(Child.sort_order, Child.id)
+    ):
+        age = None if born is None else memory_age(born, day)
+        if age is not None:
+            found.append(Birthday(child_id, name, *age, path=f"/c/{slug}"))
+    return found
+
+
+def birthday_message(birthday: Birthday, origin: str, locale: Locale) -> dict[str, Any]:
+    """The notification of a child's birthday: who, and how old they turn; it opens their
+    timeline."""
+    texts = TEXTS[locale]
+    if birthday.unit == "years":
+        title, body = plural(texts.turns_years, birthday.count), texts.birthday
+    else:
+        title = plural(texts.turns_months, birthday.count)
+        body = plural(texts.born_months_ago, birthday.count)
+    return notification(
+        origin,
+        locale,
+        title=title.format(name=birthday.name, count=birthday.count),
+        body=body.format(name=birthday.name, count=birthday.count),
+        path=birthday.path,
+        tag=f"birthday-{birthday.child_id}",
+    )
 
 
 @dataclass(frozen=True)
@@ -341,6 +415,7 @@ async def subscribe(body: PushSubscriptionIn, request: Request, user: CurrentUse
         locale=body.locale,
         time_zone=body.time_zone or config.tz,
         memories_notified_on=None,
+        birthdays_notified_on=None,
         failures=0,
         created_at=now,
         updated_at=now,
@@ -350,14 +425,18 @@ async def subscribe(body: PushSubscriptionIn, request: Request, user: CurrentUse
         statement.on_conflict_do_update(
             index_elements=[PushSubscription.endpoint],
             set_={
-                # Another person's device until now: today's memories are still to be told.
-                "memories_notified_on": case(
-                    (
-                        PushSubscription.user_id == new.user_id,
-                        PushSubscription.memories_notified_on,
-                    ),
-                    else_=None,
-                ),
+                # Another person's device until now: today's memories and birthdays are still to
+                # be told.
+                **{
+                    column: case(
+                        (
+                            PushSubscription.user_id == new.user_id,
+                            getattr(PushSubscription, column),
+                        ),
+                        else_=None,
+                    )
+                    for column in ("memories_notified_on", "birthdays_notified_on")
+                },
                 **{
                     name: getattr(new, name)
                     for name in (
@@ -403,7 +482,11 @@ async def unsubscribe(body: PushEndpointIn, user: CurrentUser, db: DB) -> None:
 
 
 def preferences_out(user: User) -> PushPreferencesOut:
-    return PushPreferencesOut(memories=user.notify_memories, milestones=user.notify_milestones)
+    return PushPreferencesOut(
+        memories=user.notify_memories,
+        milestones=user.notify_milestones,
+        birthdays=user.notify_birthdays,
+    )
 
 
 @router.get("/preferences", response_model=PushPreferencesOut)
@@ -432,13 +515,16 @@ async def choose_preferences(
         account.notify_memories = body.memories
     if body.milestones is not None:
         account.notify_milestones = body.milestones
+    if body.birthdays is not None:
+        account.notify_birthdays = body.birthdays
     await db.commit()
     return preferences_out(account)
 
 
 @dataclass(frozen=True)
 class Due:
-    """A device whose day has reached the time of its memories, with what it needs to be told."""
+    """A device whose day has reached the time of its morning notifications (memories and
+    birthdays), with what it needs to be told."""
 
     id: int
     user_id: int
@@ -471,7 +557,7 @@ class MilestoneDue:
 @dataclass(frozen=True)
 class Retry:
     """A notification its push service or the network failed: tried again from ``not_before``.
-    ``day``: of the memories it tells (None for a new milestone)."""
+    ``day``: of the memories or birthdays it tells (None for a new milestone)."""
 
     attempts: int
     not_before: dt.datetime
@@ -486,9 +572,9 @@ def retry_after(previous: Retry | None, now: dt.datetime, day: dt.date | None = 
 
 
 class Notifier:
-    """Tells the registered devices about their day's memories and the new milestones (see the
-    module's description); ``tick`` does one round, ``start``/``stop`` run one every minute in
-    the app's process."""
+    """Tells the registered devices about their day's memories, the children's birthdays and the
+    new milestones (see the module's description); ``tick`` does one round, ``start``/``stop`` run
+    one every minute in the app's process."""
 
     def __init__(
         self,
@@ -499,8 +585,10 @@ class Notifier:
         self.sessions = sessions
         self.config = config
         self.sender = sender or webpush.WebPush(config)
-        # What to try again: memories by device, new milestones by (device, milestone).
-        self.retries: dict[int, Retry] = {}
+        # What to try again: memories and birthdays by device, new milestones by (device,
+        # milestone).
+        self.memory_retries: dict[int, Retry] = {}
+        self.birthday_retries: dict[int, Retry] = {}
         self.milestone_retries: dict[tuple[int, int], Retry] = {}
         self.task: asyncio.Task[None] | None = None
 
@@ -536,7 +624,80 @@ class Notifier:
         """Send the notifications that are due at ``now``, then record what was done."""
         now = now or utcnow()
         await self.tell_memories(now)
+        await self.tell_birthdays(now)
         await self.tell_milestones(now)
+
+    # Each morning: memories and birthdays ------------------------------------------------------
+
+    def due(
+        self,
+        row: PushSubscription,
+        dealt_with_on: dt.date | None,
+        retry: Retry | None,
+        now: dt.datetime,
+    ) -> Due | None:
+        """The device ``row``, with what it needs to be told now about the news of its day (its
+        memories, or its birthdays), last dealt with on ``dealt_with_on``. None before 9:00 and
+        from 21:00 of its own day, once that day was dealt with, and while it waits to be tried
+        again."""
+        local = now.astimezone(self.zone(row.time_zone))
+        day = local.date()
+        if (
+            not NOTIFY_FROM <= local.time() < NOTIFY_UNTIL
+            or (dealt_with_on is not None and dealt_with_on >= day)
+            or (retry is not None and retry.day == day and retry.not_before > now)
+        ):
+            return None
+        midnight = dt.datetime.combine(day + dt.timedelta(days=1), dt.time(), local.tzinfo)
+        return Due(
+            id=row.id,
+            user_id=row.user_id,
+            subscription=subscription_of(row),
+            origin=row.origin,
+            locale=row.locale,
+            day=day,
+            ttl=max(60, int((midnight - now).total_seconds())),
+        )
+
+    async def record_day(
+        self,
+        db: AsyncSession,
+        now: dt.datetime,
+        column: str,
+        retries: dict[int, Retry],
+        handled: Sequence[tuple[int, dt.date]],
+        results: Sequence[tuple[Due, webpush.Outcome]],
+    ) -> None:
+        """Record what was done with the news of each device's day (``column``: the last day it
+        was dealt with): nothing to tell (``handled``), or sent, with the outcome. A push service
+        or a network that failed is tried again later (``retries``); a refused notification counts
+        as dealt with, and as one more failure of the device; a device its push service forgot is
+        forgotten. No commit."""
+        for subscription_id, day in handled:
+            await self.mark(db, subscription_id, {column: day})
+        for due, result in results:
+            if result == "retry":
+                retries[due.id] = retry_after(retries.get(due.id), now, due.day)
+                continue
+            retries.pop(due.id, None)
+            if result == "gone":
+                await db.execute(
+                    delete(PushSubscription).where(PushSubscription.id == due.id),
+                    execution_options=UNSYNCHRONIZED,
+                )
+            else:
+                failures = 0 if result == "delivered" else PushSubscription.failures + 1
+                await self.mark(db, due.id, {column: due.day, "failures": failures})
+        await self.forget_refusing(db)
+
+    @staticmethod
+    async def mark(db: AsyncSession, subscription_id: int, values: dict[str, Any]) -> None:
+        await db.execute(
+            update(PushSubscription)
+            .where(PushSubscription.id == subscription_id)
+            .values(values),
+            execution_options=UNSYNCHRONIZED,
+        )
 
     # Memories -----------------------------------------------------------------------------------
 
@@ -557,18 +718,16 @@ class Notifier:
                 )
             ).all()
             active = {row.id for row, *_ in rows}
-            self.retries = {key: retry for key, retry in self.retries.items() if key in active}
+            self.memory_retries = {
+                key: retry for key, retry in self.memory_retries.items() if key in active
+            }
             days: dict[dt.date, list[Memory]] = {}
             for row, announced_on, opened_on in rows:
-                local = now.astimezone(self.zone(row.time_zone))
-                day = local.date()
-                retry = self.retries.get(row.id)
-                if (
-                    not NOTIFY_FROM <= local.time() < NOTIFY_UNTIL
-                    or (row.memories_notified_on is not None and row.memories_notified_on >= day)
-                    or (retry is not None and retry.day == day and retry.not_before > now)
-                ):
+                retry = self.memory_retries.get(row.id)
+                due = self.due(row, row.memories_notified_on, retry, now)
+                if due is None:
                     continue
+                day = due.day
                 # Read before anything is sent: every device of a person due now is told (and a
                 # device tried again later still is, unless the memories were looked at meanwhile).
                 retrying = retry is not None and retry.day == day
@@ -580,16 +739,6 @@ class Notifier:
                 if told or not days[day]:
                     handled.append((row.id, day))
                     continue
-                midnight = dt.datetime.combine(day + dt.timedelta(days=1), dt.time(), local.tzinfo)
-                due = Due(
-                    id=row.id,
-                    user_id=row.user_id,
-                    subscription=subscription_of(row),
-                    origin=row.origin,
-                    locale=row.locale,
-                    day=day,
-                    ttl=max(60, int((midnight - now).total_seconds())),
-                )
                 sends.append((due, days[day]))
         results = [(due, await self.deliver_memories(due, memories)) for due, memories in sends]
         if handled or results:
@@ -616,20 +765,12 @@ class Notifier:
         results: Sequence[tuple[Due, webpush.Outcome]],
     ) -> None:
         async with self.sessions() as db:
-            for subscription_id, day in handled:
-                await self.mark(db, subscription_id, day)
+            await self.record_day(
+                db, now, "memories_notified_on", self.memory_retries, handled, results
+            )
             for due, result in results:
-                if result == "retry":
-                    self.retries[due.id] = retry_after(self.retries.get(due.id), now, due.day)
-                    continue
-                self.retries.pop(due.id, None)
-                if result == "gone":
-                    await db.execute(
-                        delete(PushSubscription).where(PushSubscription.id == due.id),
-                        execution_options=UNSYNCHRONIZED,
-                    )
-                elif result == "delivered":
-                    await self.mark(db, due.id, due.day, failures=0)
+                if result == "delivered":
+                    # Its person was told: the interface does not tell them again.
                     await db.execute(
                         update(User)
                         .where(
@@ -642,23 +783,87 @@ class Notifier:
                         .values(memories_announced_on=due.day),
                         execution_options=UNSYNCHRONIZED,
                     )
-                else:
-                    await self.mark(db, due.id, due.day, failures=PushSubscription.failures + 1)
-            await self.forget_refusing(db)
             await db.commit()
         told = sum(result == "delivered" for _, result in results)
         if told:
             log.info("Memories told on %d device(s)", told)
 
-    @staticmethod
-    async def mark(db: AsyncSession, subscription_id: int, day: dt.date, **values: Any) -> None:
-        """Record that the memories of ``day`` were dealt with on the device."""
-        await db.execute(
-            update(PushSubscription)
-            .where(PushSubscription.id == subscription_id)
-            .values(memories_notified_on=day, **values),
-            execution_options=UNSYNCHRONIZED,
-        )
+    # Birthdays ----------------------------------------------------------------------------------
+
+    async def tell_birthdays(self, now: dt.datetime) -> None:
+        handled: list[tuple[int, dt.date]] = []
+        sends: list[tuple[Due, list[Birthday]]] = []
+        async with self.sessions() as db:
+            rows = list(
+                await db.scalars(
+                    select(PushSubscription)
+                    .join(User, User.id == PushSubscription.user_id)
+                    .where(
+                        User.disabled.is_(False),
+                        User.notify_birthdays.is_(True),
+                        PushSubscription.auth_version == User.auth_version,
+                    )
+                    .order_by(PushSubscription.id)
+                )
+            )
+            active = {row.id for row in rows}
+            self.birthday_retries = {
+                key: retry for key, retry in self.birthday_retries.items() if key in active
+            }
+            days: dict[dt.date, list[Birthday]] = {}
+            for row in rows:
+                retry = self.birthday_retries.get(row.id)
+                due = self.due(row, row.birthdays_notified_on, retry, now)
+                if due is None:
+                    continue
+                if due.day not in days:
+                    days[due.day] = await birthdays_on(db, due.day)
+                if days[due.day]:
+                    sends.append((due, days[due.day]))
+                else:
+                    handled.append((row.id, due.day))
+        results = [(due, await self.deliver_birthdays(due, birthdays)) for due, birthdays in sends]
+        if handled or results:
+            await self.record_birthdays(now, handled, results)
+
+    async def deliver_birthdays(
+        self, due: Due, birthdays: Sequence[Birthday]
+    ) -> webpush.Outcome:
+        """Send the notification of each birthday to one device; never fails (as
+        ``deliver_memories``). The outcome of the device is the worst of them: its push service
+        forgot it, else to try again (all of them: those already delivered are replaced, as they
+        have the same tag and topic), else refused, else delivered."""
+        outcomes: list[webpush.Outcome] = []
+        for birthday in birthdays:
+            try:
+                outcome = await self.sender.send(
+                    due.subscription,
+                    birthday_message(birthday, due.origin, due.locale),
+                    ttl=due.ttl,
+                    topic=f"birthday-{birthday.child_id}",
+                )
+            except Exception as error:
+                log.error("Birthday not sent to a device (%s)", type(error).__name__)
+                outcome = "retry"
+            if outcome == "gone":
+                return outcome
+            outcomes.append(outcome)
+        return min(outcomes, key=WORST_FIRST.index)
+
+    async def record_birthdays(
+        self,
+        now: dt.datetime,
+        handled: Sequence[tuple[int, dt.date]],
+        results: Sequence[tuple[Due, webpush.Outcome]],
+    ) -> None:
+        async with self.sessions() as db:
+            await self.record_day(
+                db, now, "birthdays_notified_on", self.birthday_retries, handled, results
+            )
+            await db.commit()
+        told = sum(result == "delivered" for _, result in results)
+        if told:
+            log.info("Birthdays told on %d device(s)", told)
 
     # New milestones -----------------------------------------------------------------------------
 

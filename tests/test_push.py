@@ -1,7 +1,8 @@
 """Push notifications: devices register for them (only their own person's, only the push services
 of the major browsers), signing out stops them, each person chooses which ones they want, each
 device is told about its day's memories once, from 9:00 of its own time zone, unless its person
-already saw them or was told, and about each milestone someone else adds, at once."""
+already saw them or was told, about the children's birthdays once, at the same time, and about
+each milestone someone else adds, at once."""
 
 import datetime as dt
 from typing import Any
@@ -16,6 +17,7 @@ from timelife import push, webpush
 from timelife.auth import revoke_user_sessions
 from timelife.config import Settings
 from timelife.db import Locale, MilestoneNotification, PushSubscription, User
+from timelife.memories import MemoryUnit
 
 from .conftest import app_client, login_as, run_db
 from .helpers_events import add_child, category_ids, create_event, update_event
@@ -24,6 +26,8 @@ from .helpers_push import Browser, PushService
 SUBSCRIPTION = "/api/push/subscription"
 PREFERENCES = "/api/push/preferences"
 TODAY = dt.date(2026, 11, 18)
+# Everybody's notifications until they choose.
+ALL = {"memories": True, "milestones": True, "birthdays": True}
 
 
 def at(hour: int, minute: int = 0, day: int = 18) -> dt.datetime:
@@ -167,8 +171,8 @@ def test_a_device_belongs_to_whoever_registered_it_last(client: TestClient) -> N
     register(client, browser)
     (row,) = stored(client)
     assert row.user_id == user_row(client, "admin@example.com").id
-    # Today's memories are still to be told to the new person.
-    assert row.memories_notified_on is None
+    # Today's memories and birthdays are still to be told to the new person.
+    assert (row.memories_notified_on, row.birthdays_notified_on) == (None, None)
 
     # Nobody else can stop it.
     login_as(client, "viewer")
@@ -181,7 +185,9 @@ def test_a_device_belongs_to_whoever_registered_it_last(client: TestClient) -> N
 
 def mark_notified(day: dt.date) -> Any:
     async def change(db: AsyncSession) -> None:
-        await db.execute(update(PushSubscription).values(memories_notified_on=day))
+        await db.execute(
+            update(PushSubscription).values(memories_notified_on=day, birthdays_notified_on=day)
+        )
         await db.commit()
 
     return change
@@ -201,27 +207,26 @@ def test_a_person_keeps_their_latest_devices(
 def test_each_person_chooses_their_notifications(client: TestClient) -> None:
     login_as(client, "admin")
     login_as(client, "viewer")
-    assert client.get(PREFERENCES).json() == {"memories": True, "milestones": True}
+    assert client.get(PREFERENCES).json() == ALL
 
     response = client.patch(PREFERENCES, json={"milestones": False})
     assert response.status_code == 200, response.text
-    assert response.json() == {"memories": True, "milestones": False}
+    assert response.json() == {**ALL, "milestones": False}
     # Only what is sent changes.
     for body in ({}, {"memories": None}):
-        assert client.patch(PREFERENCES, json=body).json() == {
-            "memories": True,
-            "milestones": False,
-        }
-    assert client.patch(PREFERENCES, json={"memories": False, "milestones": True}).json() == {
-        "memories": False,
-        "milestones": True,
-    }
-    assert client.get(PREFERENCES).json() == {"memories": False, "milestones": True}
+        assert client.patch(PREFERENCES, json=body).json() == {**ALL, "milestones": False}
+    chosen = {"memories": False, "milestones": True, "birthdays": False}
+    assert client.patch(PREFERENCES, json=chosen).json() == chosen
+    assert client.get(PREFERENCES).json() == chosen
     viewer = user_row(client, "viewer@example.com")
-    assert (viewer.notify_memories, viewer.notify_milestones) == (False, True)
+    assert (viewer.notify_memories, viewer.notify_milestones, viewer.notify_birthdays) == (
+        False,
+        True,
+        False,
+    )
     # Everyone chooses their own.
     login_as(client, "admin")
-    assert client.get(PREFERENCES).json() == {"memories": True, "milestones": True}
+    assert client.get(PREFERENCES).json() == ALL
 
 
 @pytest.mark.parametrize(
@@ -229,6 +234,7 @@ def test_each_person_chooses_their_notifications(client: TestClient) -> None:
     [
         ({"memories": "maybe"}, {"memories": "bool_parsing"}),
         ({"milestones": [True]}, {"milestones": "bool_type"}),
+        ({"birthdays": "sí"}, {"birthdays": "bool_parsing"}),
         ({"test": True}, {"test": "extra_forbidden"}),
     ],
 )
@@ -240,7 +246,7 @@ def test_choices_are_true_or_false(
         422,
         {"code": "invalid_request", "fields": fields},
     )
-    assert viewer.get(PREFERENCES).json() == {"memories": True, "milestones": True}
+    assert viewer.get(PREFERENCES).json() == ALL
 
 
 # Sessions ------------------------------------------------------------------------------------
@@ -501,6 +507,212 @@ def test_devices_their_push_service_forgot_are_forgotten(
     assert stored(client)[0].failures == 2
     tick(client, at(8, day=20))
     assert stored(client) == []
+
+
+# Birthdays -----------------------------------------------------------------------------------
+
+
+def add_children(client: TestClient, *children: tuple[str, str | None]) -> dict[str, int]:
+    """Children (``(name, birth date)``), added by an administrator who stays signed in; their
+    ids by name."""
+    login_as(client, "admin")
+    return {name: add_child(client, name, birth_date=born) for name, born in children}
+
+
+def test_birthdays_are_told_at_nine_of_each_device_day(
+    client: TestClient, service: PushService
+) -> None:
+    add_children(client, ("Lucía", "2022-11-18"))
+    madrid, new_york = Browser("https://web.push.apple.com/madrid"), Browser()
+    login_as(client, "viewer")
+    register(client, madrid)
+    login_as(client, "admin")
+    register(client, new_york, time_zone="America/New_York", locale="en")
+
+    tick(client, at(7, 59))  # 8:59 in Madrid
+    assert service.requests == []
+    tick(client, at(8))
+    assert [message["notification"]["title"] for message in service.messages(madrid)] == [
+        "Lucía cumple 4 años"
+    ]
+    tick(client, at(8, 1))
+    tick(client, at(13, 59))  # 8:59 in New York
+    assert len(service.requests) == 1
+    tick(client, at(14))
+    assert [message["notification"]["title"] for message in service.messages(new_york)] == [
+        "Lucía turns 4"
+    ]
+    tick(client, at(22))
+    assert len(service.requests) == 2
+    assert [row.birthdays_notified_on for row in stored(client)] == [TODAY, TODAY]
+    # The next day brings none.
+    tick(client, at(8, day=19))
+    assert len(service.requests) == 2
+    assert stored(client)[0].birthdays_notified_on == dt.date(2026, 11, 19)
+
+
+def test_each_birthday_opens_the_timeline_of_its_child(
+    client: TestClient, service: PushService
+) -> None:
+    # Twins: one notification each, in the order of their timelines.
+    ids = add_children(client, ("Lucía", "2025-11-18"), ("Leo", "2025-11-18"))
+    browser = Browser()
+    register(client, browser)
+    tick(client, at(8, 30))
+
+    lucia, leo = service.messages(browser)
+    assert lucia == {
+        "web_push": 8030,
+        "notification": {
+            "title": "Lucía cumple 1 año",
+            "body": "Hoy es su cumpleaños.",
+            "lang": "es-ES",
+            "dir": "ltr",
+            "navigate": "http://testserver/c/lucia",
+            "tag": f"birthday-{ids['Lucía']}",
+            "silent": False,
+            "icon": "http://testserver/icon-192.png",
+            "badge": "http://testserver/badge-96.png",
+        },
+    }
+    assert (leo["notification"]["title"], leo["notification"]["navigate"]) == (
+        "Leo cumple 1 año",
+        "http://testserver/c/leo",
+    )
+    # Kept by the push service until midnight in Madrid at most (23:00 UTC); a newer one for the
+    # same child replaces it there.
+    assert [(request.headers["ttl"], request.headers["topic"]) for request in service.requests] == [
+        ("52200", f"birthday-{ids['Lucía']}"),
+        ("52200", f"birthday-{ids['Leo']}"),
+    ]
+
+
+def test_birthdays_come_every_month_of_the_first_year_then_every_year(client: TestClient) -> None:
+    add_children(
+        client,
+        ("Ana", "2025-11-18"),
+        ("Leo", "2026-04-18"),
+        ("Mía", "2025-10-18"),
+        ("Eva", "2026-11-18"),
+        ("Noa", "2026-12-18"),
+        ("Sol", None),
+        ("Teo", "2024-02-29"),
+        ("Iris", "2026-01-31"),
+    )
+
+    def on(day: dt.date) -> list[tuple[str, str, int, str]]:
+        async def find(db: AsyncSession) -> list[tuple[str, str, int, str]]:
+            return [
+                (birthday.name, birthday.unit, birthday.count, birthday.path)
+                for birthday in await push.birthdays_on(db, day)
+            ]
+
+        return run_db(client, find)
+
+    # Not 13 months, nor the day they are born (or not yet), nor without a birth date.
+    assert on(TODAY) == [("Ana", "years", 1, "/c/ana"), ("Leo", "months", 7, "/c/leo")]
+    # Those born at the end of a month have theirs at the end of shorter months.
+    assert on(dt.date(2026, 2, 28)) == [
+        ("Teo", "years", 2, "/c/teo"),
+        ("Iris", "months", 1, "/c/iris"),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("unit", "count", "locale", "title", "body"),
+    [
+        ("years", 4, "es", "Lucía cumple 4 años", "Hoy es su cumpleaños."),
+        ("years", 1, "es", "Lucía cumple 1 año", "Hoy es su cumpleaños."),
+        ("months", 7, "es", "Lucía cumple 7 meses", "Hoy hace 7 meses que nació."),
+        ("months", 1, "es", "Lucía cumple 1 mes", "Hoy hace 1 mes que nació."),
+        ("years", 4, "en", "Lucía turns 4", "Today is Lucía’s birthday."),
+        ("months", 7, "en", "Lucía is 7 months old", "Lucía was born 7 months ago today."),
+        ("months", 1, "en", "Lucía is 1 month old", "Lucía was born 1 month ago today."),
+        ("years", 4, "pt", "Lucía faz 4 anos", "Hoje é o aniversário de Lucía."),
+        ("years", 1, "pt", "Lucía faz 1 ano", "Hoje é o aniversário de Lucía."),
+        ("months", 7, "pt", "Lucía faz 7 meses", "Faz hoje 7 meses que nasceu."),
+        ("months", 1, "pt", "Lucía faz 1 mês", "Faz hoje 1 mês que nasceu."),
+    ],
+)
+def test_birthdays_say_how_old_each_child_turns(
+    unit: MemoryUnit, count: int, locale: Locale, title: str, body: str
+) -> None:
+    birthday = push.Birthday(child_id=3, name="Lucía", unit=unit, count=count, path="/c/lucia")
+    notification = push.birthday_message(birthday, "https://x.example", locale)["notification"]
+    assert (notification["title"], notification["body"]) == (title, body)
+
+
+def test_birthdays_only_reach_active_people_who_want_them(
+    client: TestClient, service: PushService
+) -> None:
+    add_children(client, ("Lucía", "2022-11-18"))
+    unwanted = Browser("https://fcm.googleapis.com/fcm/send/unwanted")
+    paused = Browser("https://fcm.googleapis.com/fcm/send/paused")
+    wanted = Browser()
+    login_as(client, "viewer")
+    register(client, unwanted)
+    assert client.patch(PREFERENCES, json={"birthdays": False}).status_code == 200
+    login_as(client, "viewer", email="abuela@example.com")
+    register(client, paused)
+    # A new password elsewhere: paused until the device signs in again.
+    set_user(client, "abuela@example.com", auth_version=2)
+    login_as(client, "admin")
+    register(client, wanted)
+
+    tick(client, at(8))
+    assert [str(request.url) for request in service.requests] == [wanted.endpoint]
+    # Wanted again before the day is over: told.
+    set_user(client, "viewer@example.com", notify_birthdays=True)
+    tick(client, at(9))
+    assert len(service.messages(unwanted)) == 1
+    assert service.messages(paused) == []
+
+
+def test_a_device_that_misses_a_birthday_is_told_them_all_again(
+    client: TestClient, service: PushService, caplog: pytest.LogCaptureFixture
+) -> None:
+    ids = add_children(client, ("Lucía", "2025-11-18"), ("Leo", "2025-11-18"))
+    browser = Browser()
+    register(client, browser)
+    service.broken.add(browser.endpoint)
+    tick(client, at(8))
+    assert "Birthday not sent to a device (RuntimeError)" in caplog.text
+    service.broken.clear()
+    # Lucía's arrives, but not Leo's (its push service fails for now).
+    service.statuses = [201, 503]
+    tick(client, at(8, 2))
+    tick(client, at(8, 6))
+    assert len(service.requests) == 4
+    # Both again: Lucía's replaces the one already there (same tag).
+    tick(client, at(8, 7))
+    tags = [message["notification"]["tag"] for message in service.messages(browser)]
+    assert tags == [f"birthday-{ids['Lucía']}", f"birthday-{ids['Leo']}"] * 3
+    (row,) = stored(client)
+    assert (row.birthdays_notified_on, row.failures) == (TODAY, 0)
+    tick(client, at(8, 30))
+    assert len(service.requests) == 6
+
+
+def test_devices_forgotten_or_refusing_are_not_told_their_birthdays_again(
+    client: TestClient, service: PushService
+) -> None:
+    add_children(client, ("Lucía", "2025-11-18"), ("Leo", "2025-11-18"))
+    gone, refused = Browser(), Browser("https://fcm.googleapis.com/fcm/send/refused")
+    register(client, gone)
+    # Its push service forgot it: so does Timelife, without sending it the rest.
+    service.status = 410
+    tick(client, at(8))
+    assert len(service.requests) == 1
+    assert stored(client) == []
+
+    register(client, refused)
+    service.status = 403
+    tick(client, at(9))
+    # Refused: not sent again that day, and one more failure of the device.
+    (row,) = stored(client)
+    assert (row.birthdays_notified_on, row.failures) == (TODAY, 1)
+    tick(client, at(9, 30))
+    assert len(service.requests) == 3
 
 
 # New milestones ------------------------------------------------------------------------------

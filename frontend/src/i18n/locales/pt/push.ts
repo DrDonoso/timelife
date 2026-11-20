@@ -10,13 +10,17 @@ export const push: Messages<typeof source> = {
     'Para receberes notificações no iPhone ou no iPad, adiciona o Timelife ao ecrã principal (Partilhar → Adicionar ao ecrã principal) e abre-o a partir daí.',
   denied: 'As notificações do Timelife estão bloqueadas neste dispositivo: permite-as nas definições do navegador ou do sistema.',
   invite: {
-    message: 'Ativamos as notificações? Avisamos-te das memórias de cada dia e dos novos marcos.',
+    message: 'Ativamos as notificações? Avisamos-te das memórias de cada dia, dos aniversários e dos novos marcos.',
     action: 'Ativar',
   },
   choose: 'Escolher notificações',
   choices: {
     intro: 'Escolhe as que queres receber. Valem para todos os teus dispositivos com as notificações ativadas.',
     memories: { label: 'Memórias do dia', description: 'Às 9:00, nos dias com memórias.' },
+    birthdays: {
+      label: 'Aniversários',
+      description: 'Às 9:00, no dia em que cada criança faz anos, e todos os meses durante o primeiro ano.',
+    },
     milestones: { label: 'Novos marcos', description: 'Quando outra pessoa adiciona um marco.' },
     error: 'Não foi possível carregar as tuas notificações.',
     done: 'Concluído',

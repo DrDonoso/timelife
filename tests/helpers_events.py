@@ -19,8 +19,8 @@ from .conftest import run_db
 from .helpers_children import add_image, media_dir
 
 
-def add_child(client: TestClient, name: str = "Lucía") -> int:
-    response = client.post("/api/admin/children", json={"name": name})
+def add_child(client: TestClient, name: str = "Lucía", *, birth_date: str | None = None) -> int:
+    response = client.post("/api/admin/children", json={"name": name, "birth_date": birth_date})
     assert response.status_code == 201, response.text
     child_id: int = response.json()["id"]
     return child_id

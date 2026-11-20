@@ -52,13 +52,14 @@ flowchart LR
   deletes it; a new password or a disabled account pauses it until the device signs in again; the app registers it
   again each time it opens), and each person chooses which ones they want (`/api/push/preferences`). A task in the app
   process does a round every minute: the devices that have reached 9:00 of their day (until 21:00) get that day's
-  memories, which it finds itself with the interface's rules; and the milestones added since the last round, queued
-  in the same transaction for every device of everybody else (`milestone_notifications`), go out to them, one message
-  each. Every message is encrypted for its device and signed with a VAPID key derived from `AUTH_SECRET`, and only
-  sent to the push services of Apple, Google, Mozilla and Microsoft (no redirects; their addresses are never logged).
-  The message is a declarative one (`"web_push": 8030`): Safari on iOS 18.4+ shows it by itself; elsewhere the
-  service worker `/sw.js` (no fetch handler, no cache) shows it and opens its page. Run a single Uvicorn worker, as
-  the container does, or each worker would send them.
+  memories, which it finds itself with the interface's rules, and the children's birthdays (`children.birth_date`,
+  counted the same way: whole years, or months during the first year); and the milestones added since the last round,
+  queued in the same transaction for every device of everybody else (`milestone_notifications`), go out to them, one
+  message each. Every message is encrypted for its device and signed with a VAPID key derived from `AUTH_SECRET`, and
+  only sent to the push services of Apple, Google, Mozilla and Microsoft (no redirects; their addresses are never
+  logged). The message is a declarative one (`"web_push": 8030`): Safari on iOS 18.4+ shows it by itself; elsewhere
+  the service worker `/sw.js` (no fetch handler, no cache) shows it and opens its page. Run a single Uvicorn worker,
+  as the container does, or each worker would send them.
 
 ## Technology
 

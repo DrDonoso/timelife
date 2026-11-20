@@ -37,7 +37,7 @@ export const adminChildren: Messages<typeof source> = {
     nameRequired: 'Enter the name.',
     tooLong: 'At most {max} characters.',
     birthDate: 'Date of birth',
-    birthDateHelp: 'Optional.',
+    birthDateHelp: 'Optional. With it, notifications remind everyone of their birthday.',
     birthDateInvalid: 'The date is not valid.',
     waitUpload: 'Wait until the photo finishes uploading.',
     create: 'Add child',
