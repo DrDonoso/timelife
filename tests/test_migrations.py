@@ -439,3 +439,54 @@ def test_sqlite_notification_choices_migration_keeps_users_and_ids(tmp_path: Pat
     ddl, rows = sqlite_table(path, "users", columns)
     assert "AUTOINCREMENT" in ddl and "notify_" not in ddl
     assert rows == [(1, "ana@x.es"), (2, "luis@x.es"), (5, "noa@x.es")]
+
+
+INSERT_DEVICE = (
+    "INSERT INTO push_subscriptions (user_id, auth_version, session_hash, endpoint, p256dh, auth,"
+    " origin, locale, time_zone, created_at, updated_at) VALUES ({0}, 1, 'session', '{1}', 'key',"
+    " 'secret', 'https://x.es', 'es', 'Europe/Madrid', '2025-01-01 10:00:00',"
+    " '2025-01-01 10:00:00')"
+)
+
+
+async def test_sqlite_birthdays_migration_keeps_users_devices_and_ids(tmp_path: Path) -> None:
+    # 0011 adds the choice of birthdays in place (on, for existing and new users alike) and the
+    # last day each device was told about them; its rollback rebuilds both tables, keeping the
+    # AUTOINCREMENT and the counter of users (no id is reused), the devices and their constraints.
+    path = tmp_path / "birthdays.db"
+    users = ("id", "email", "notify_birthdays")
+    devices = ("id", "user_id", "birthdays_notified_on")
+    migrate(sqlite_url(path), "0010")
+    sqlite_run(
+        path,
+        *(INSERT_USER.format(email) for email in ("ana@x.es", "luis@x.es", "eva@x.es")),
+        "DELETE FROM users WHERE id = 3",
+        INSERT_DEVICE.format(2, "https://web.push.apple.com/luis"),
+    )
+
+    migrate(sqlite_url(path))
+    sqlite_run(
+        path,
+        "UPDATE users SET notify_birthdays = 0 WHERE id = 2",
+        "UPDATE push_subscriptions SET birthdays_notified_on = '2026-11-20'",
+        INSERT_USER.format("sol@x.es"),
+    )
+    ddl, rows = sqlite_table(path, "users", users)
+    assert "AUTOINCREMENT" in ddl
+    assert rows == [(1, "ana@x.es", 1), (2, "luis@x.es", 0), (4, "sol@x.es", 1)]
+    assert sqlite_table(path, "push_subscriptions", devices)[1] == [(1, 2, "2026-11-20")]
+
+    sqlite_run(path, "DELETE FROM users WHERE id = 4")
+    migrate(sqlite_url(path), "0010", command="downgrade")
+    sqlite_run(path, INSERT_USER.format("noa@x.es"))
+    ddl, rows = sqlite_table(path, "users", users)
+    assert "AUTOINCREMENT" in ddl and "notify_birthdays" not in ddl
+    assert rows == [(1, "ana@x.es"), (2, "luis@x.es"), (5, "noa@x.es")]
+    ddl, rows = sqlite_table(path, "push_subscriptions", devices)
+    assert "ck_push_subscriptions_locale" in ddl and "birthdays_notified_on" not in ddl
+    assert rows == [(1, 2)]
+    # Upgraded again, it matches the models (the rebuilt tables kept their indexes and keys).
+    migrate(sqlite_url(path))
+    tables, differences = await inspect_database(sqlite_url(path))
+    assert tables == TABLES
+    assert differences == []

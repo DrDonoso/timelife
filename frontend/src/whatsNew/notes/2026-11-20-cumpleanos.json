@@ -1,0 +1,17 @@
+{
+  "kind": "new",
+  "audience": "everyone",
+  "icon": "gift",
+  "es": {
+    "title": "Te avisamos del cumpleaños de cada niño",
+    "body": "Con las notificaciones activadas, te llega una a las 9:00 el día de su cumpleaños, y cada mes durante su primer año. Si no la quieres, quítala en «Elegir notificaciones», en el menú de tu cuenta."
+  },
+  "en": {
+    "title": "We remind you of each child's birthday",
+    "body": "With notifications on, you get one at 9:00 on their birthday, and every month during their first year. If you don't want it, turn it off in \"Choose notifications\", in your account menu."
+  },
+  "pt": {
+    "title": "Avisamos-te do aniversário de cada criança",
+    "body": "Com as notificações ativadas, recebes uma às 9:00 no dia do aniversário, e todos os meses durante o primeiro ano. Se não a quiseres, desativa-a em «Escolher notificações», no menu da tua conta."
+  }
+}

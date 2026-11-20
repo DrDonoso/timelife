@@ -1726,6 +1726,17 @@
         "additionalProperties": false,
         "description": "PATCH: only the fields sent change (null changes nothing).",
         "properties": {
+          "birthdays": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birthdays"
+          },
           "memories": {
             "anyOf": [
               {
@@ -1755,6 +1766,10 @@
       "PushPreferencesOut": {
         "additionalProperties": false,
         "properties": {
+          "birthdays": {
+            "title": "Birthdays",
+            "type": "boolean"
+          },
           "memories": {
             "title": "Memories",
             "type": "boolean"
@@ -1766,7 +1781,8 @@
         },
         "required": [
           "memories",
-          "milestones"
+          "milestones",
+          "birthdays"
         ],
         "title": "PushPreferencesOut",
         "type": "object"

@@ -48,23 +48,25 @@ class Browser:
 
 class PushService:
     """Stands in for every push service (``httpx.MockTransport``): records the requests and
-    answers ``status``, or fails to connect while it is None; addresses in ``broken`` raise an
-    unexpected error."""
+    answers ``status`` (after the answers queued in ``statuses``, one per request), or fails to
+    connect while it is None; addresses in ``broken`` raise an unexpected error."""
 
     def __init__(self) -> None:
         self.requests: list[httpx.Request] = []
         self.status: int | None = 201
+        self.statuses: list[int | None] = []
         self.broken: set[str] = set()
 
     def __call__(self, request: httpx.Request) -> httpx.Response:
         self.requests.append(request)
         if str(request.url) in self.broken:
             raise RuntimeError("unexpected")
-        if self.status is None:
+        status = self.statuses.pop(0) if self.statuses else self.status
+        if status is None:
             raise httpx.ConnectError("unreachable", request=request)
-        if self.status >= 400:
-            return httpx.Response(self.status, json={"reason": "TestRefusal"})
-        return httpx.Response(self.status)
+        if status >= 400:
+            return httpx.Response(status, json={"reason": "TestRefusal"})
+        return httpx.Response(status)
 
     def messages(self, browser: Browser) -> list[Any]:
         """What ``browser`` received, decrypted, oldest first."""

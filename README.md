@@ -49,8 +49,8 @@ and try every administration page. Nothing is stored or sent anywhere — reload
 - **Search and filters** by title, date range and category.
 - **Memories, "on this day"**: the milestones that turn a month (up to 11) or a whole year old today, told once when
   you come in — or in a notification at 9:00 — and kept under the clock in the header.
-- **Notifications** on phones and computers (an iPhone too, with the app on the Home Screen): the day's memories and
-  each milestone someone else adds, as each person chooses.
+- **Notifications** on phones and computers (an iPhone too, with the app on the Home Screen): the day's memories, the
+  children's birthdays and each milestone someone else adds, as each person chooses.
 - **Administration** to add milestones (drag-and-drop uploads, cover framing, the order of a day's milestones),
   children, categories, colours, users and a trash bin.
 - **Import and export**: one ZIP with everything, original photos included, to move to another server or keep a copy.

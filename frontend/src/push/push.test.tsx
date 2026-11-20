@@ -96,7 +96,7 @@ function signedIn(extra: Record<string, unknown> = {}) {
     removed: [],
     chosen: [],
   }
-  let preferences: PushPreferencesOut = { memories: true, milestones: true }
+  let preferences: PushPreferencesOut = { memories: true, milestones: true, birthdays: true }
   mockSignedIn(VIEWER_SESSION, {
     'GET /api/push': { public_key: KEY },
     'PUT /api/push/subscription': ({ body }: MockRequest) => {
@@ -111,7 +111,11 @@ function signedIn(extra: Record<string, unknown> = {}) {
     'PATCH /api/push/preferences': ({ body }: MockRequest) => {
       const change = body as PushPreferencesIn
       sent.chosen.push(change)
-      preferences = { memories: change.memories ?? preferences.memories, milestones: change.milestones ?? preferences.milestones }
+      preferences = {
+        memories: change.memories ?? preferences.memories,
+        milestones: change.milestones ?? preferences.milestones,
+        birthdays: change.birthdays ?? preferences.birthdays,
+      }
       return preferences
     },
     'GET /api/timeline': { child_id: null, total: 0, events: [] },
@@ -246,9 +250,13 @@ describe('the choice of notifications', () => {
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Menú de usuario' })).not.toBeInTheDocument())
     expect(within(dialog).getByText(/^Elige las que quieres recibir\. Valen para todos tus dispositivos/)).toBeInTheDocument()
     const memories = await within(dialog).findByRole('switch', { name: 'Recuerdos del día' })
+    const birthdays = within(dialog).getByRole('switch', { name: 'Cumpleaños' })
     const milestones = within(dialog).getByRole('switch', { name: 'Hitos nuevos' })
+    expect(within(dialog).getAllByRole('switch')).toEqual([memories, birthdays, milestones])
     expect(memories).toBeChecked()
     expect(memories).toHaveAccessibleDescription('A las 9:00, los días con recuerdos.')
+    expect(birthdays).toBeChecked()
+    expect(birthdays).toHaveAccessibleDescription('A las 9:00, el día que cada niño cumple años, y cada mes durante su primer año.')
     expect(milestones).toBeChecked()
     expect(milestones).toHaveAccessibleDescription('Cuando otra persona añade un hito.')
 
@@ -256,6 +264,10 @@ describe('the choice of notifications', () => {
     expect(milestones).not.toBeChecked()
     await waitFor(() => expect(sent.chosen).toEqual([{ milestones: false }]))
     expect(memories).toBeChecked()
+    await user.click(birthdays)
+    expect(birthdays).not.toBeChecked()
+    await waitFor(() => expect(sent.chosen).toEqual([{ milestones: false }, { birthdays: false }]))
+    expect(milestones).not.toBeChecked()
 
     await user.click(within(dialog).getByRole('button', { name: 'Listo' }))
     await waitFor(() => expect(screen.queryByRole('dialog', { name: CHOOSE })).not.toBeInTheDocument())
@@ -265,7 +277,8 @@ describe('the choice of notifications', () => {
     turnedOn()
     let loads = 0
     signedIn({
-      'GET /api/push/preferences': () => (++loads === 1 ? reply(500, { code: 'internal_error' }) : { memories: true, milestones: false }),
+      'GET /api/push/preferences': () =>
+        ++loads === 1 ? reply(500, { code: 'internal_error' }) : { memories: true, milestones: false, birthdays: true },
       'PATCH /api/push/preferences': reply(500, { code: 'internal_error' }),
     })
     const user = userEvent.setup()
@@ -291,7 +304,7 @@ describe('the invite of the installed app', () => {
     const { unmount } = renderApp('/c/ana')
 
     const invite = await screen.findByText(
-      '¿Activamos las notificaciones? Te avisaremos de los recuerdos de cada día y de los hitos nuevos.',
+      '¿Activamos las notificaciones? Te avisaremos de los recuerdos de cada día, de los cumpleaños y de los hitos nuevos.',
       {},
       { timeout: INVITE_DELAY_MS + 4000 },
     )

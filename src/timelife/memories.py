@@ -55,7 +55,8 @@ def add_months(day: dt.date, months: int) -> dt.date:
 
 def memory_age(date: dt.date, day: dt.date) -> tuple[MemoryUnit, int] | None:
     """How old a milestone of ``date`` is on ``day`` when that makes it one of the day's memories:
-    1 to 11 months, or whole years, counted from the same day of the month."""
+    1 to 11 months, or whole years, counted from the same day of the month. A child born on
+    ``date`` has a birthday on ``day`` by the same rule (``push``)."""
     months = months_between(date, day)
     if months < 1 or (months >= 12 and months % 12) or add_months(date, months) != day:
         return None

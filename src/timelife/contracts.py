@@ -609,9 +609,10 @@ class PushEndpointIn(Contract):
 
 class PushPreferencesOut(Contract):
     # The notifications the user wants on every device that has them on: each day's memories,
-    # and the milestones other people add.
+    # the milestones other people add and the children's birthdays.
     memories: bool
     milestones: bool
+    birthdays: bool
 
 
 class PushPreferencesIn(Contract):
@@ -619,6 +620,7 @@ class PushPreferencesIn(Contract):
 
     memories: bool | None = None
     milestones: bool | None = None
+    birthdays: bool | None = None
 
 
 # Backup (export and import)

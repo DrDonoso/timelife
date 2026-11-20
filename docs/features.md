@@ -71,12 +71,17 @@ Everything Timelife does, in detail. The [README](../README.md#features) has the
     (the app does not tell them again), and it is not sent when they were already looked at or told that day; every
     device of a person that is due at that time gets it. A server that was down at nine sends it when it is back,
     until 21:00, never later.
+  - **Cumpleaños** (*Birthdays*): at the same time, on the day a child turns a year older and, during their first
+    year, every month: *Lucía cumple 4 años — Hoy es su cumpleaños.*, *Leo cumple 7 meses — Hoy hace 7 meses que
+    nació.* Those born on the 29th to the 31st have theirs on the last day of shorter months, as the
+    [memories](#memories). One notification per child, once a day on each device; tapping it opens the child's
+    timeline. Only children with a birth date have them.
   - **Hitos nuevos** (*New milestones*): when someone adds a milestone, everybody else is told within a minute, at any
     time of day: *Nuevo hito de Lucía y Leo — Ana ha añadido «Primeros pasos».* Tapping it opens the milestone. One
     notification per milestone; editing one tells nobody, and neither does one moved to the trash before it went out
     nor the milestones of an import. A device that cannot be reached gets it when it is back, within a day.
 - **Elegir notificaciones** (*Choose notifications*), under the switch once they are on, chooses which of them arrive.
-  It is each person's choice, for all their devices, and saved at once; everybody gets both until they choose.
+  It is each person's choice, for all their devices, and saved at once; everybody gets all of them until they choose.
 - **iPhone and iPad** (iOS/iPadOS 16.4 or later): only the app added to the Home Screen gets notifications; in Safari
   the account menu explains how to add it. The first time the installed app opens, it offers to turn them on.
 - **Android and computers**: Chrome, Edge, Firefox and Safari on the Mac, installed or not.
@@ -117,8 +122,9 @@ Under `/admin`, for administrators only.
 - **Categorías** — Spanish, English and Portuguese names, colour, icon and order. Eleven defaults are created on first
   start: General, Académico, Dentición, Lenguaje y comunicación, Sueño, Motricidad gruesa, Motricidad fina, Desarrollo
   cognitivo, Desarrollo social y emocional, Alimentación, Autonomía y cuidado personal.
-- **Niños** — name, birth date, avatar and order. The address of a child's timeline (`/c/<name>`) is made from the
-  name when the child is added and never changes afterwards, not even after a rename, so saved links keep working.
+- **Niños** — name, birth date (it brings the [birthday notifications](#notifications)), avatar and order. The
+  address of a child's timeline (`/c/<name>`) is made from the name when the child is added and never changes
+  afterwards, not even after a rename, so saved links keep working.
 - **Colores y apariencia** — the years that should not use their automatic colour (add a year, pick its colour and
   its months follow; removing it brings the automatic colour back), the colour of each child's line on *Todos juntos*
   (automatic or chosen), background image and opacity, default zoom level, and which way time runs along the timeline
@@ -181,6 +187,6 @@ Under `/admin`, for administrators only.
   Content-Security-Policy; request size limits and throttling of sign-ins, password e-mails and links.
 - Notifications are encrypted for the device that asked for them (only it can read them) and travel through its
   browser's push service (Apple, Google, Mozilla or Microsoft), the only addresses the server sends them to; they
-  carry the title of a milestone (a new one's also its children's names and who added it), never its photos, notes
-  or place.
+  carry the title of a milestone (a new one's also its children's names and who added it) or, on a birthday, a
+  child's name and age, never photos, notes or places.
 - Non-root container with `no-new-privileges`; PostgreSQL is not published to the host.

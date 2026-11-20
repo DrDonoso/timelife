@@ -9,7 +9,7 @@ export const push = {
     'Para recibir notificaciones en el iPhone o el iPad, añade Timelife a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde allí.',
   denied: 'Las notificaciones de Timelife están bloqueadas en este dispositivo: permítelas en los ajustes del navegador o del sistema.',
   invite: {
-    message: '¿Activamos las notificaciones? Te avisaremos de los recuerdos de cada día y de los hitos nuevos.',
+    message: '¿Activamos las notificaciones? Te avisaremos de los recuerdos de cada día, de los cumpleaños y de los hitos nuevos.',
     action: 'Activar',
   },
   /** The button of the account panel and the title of its window. */
@@ -17,6 +17,10 @@ export const push = {
   choices: {
     intro: 'Elige las que quieres recibir. Valen para todos tus dispositivos con las notificaciones activadas.',
     memories: { label: 'Recuerdos del día', description: 'A las 9:00, los días con recuerdos.' },
+    birthdays: {
+      label: 'Cumpleaños',
+      description: 'A las 9:00, el día que cada niño cumple años, y cada mes durante su primer año.',
+    },
     milestones: { label: 'Hitos nuevos', description: 'Cuando otra persona añade un hito.' },
     error: 'No se han podido cargar tus notificaciones.',
     done: 'Listo',
